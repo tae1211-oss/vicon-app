@@ -497,7 +497,7 @@ function showProdMonth(year, month) {
         + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
         + '<td style="white-space:nowrap">'
         + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
-        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#f57c00;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
     detailHtml += '<tr class="day-total">'
@@ -1063,7 +1063,7 @@ function showProdMonth(year, month) {
         + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
         + '<td style="white-space:nowrap">'
         + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
-        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#f57c00;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
     detailHtml += '<tr class="day-total">'
@@ -1612,7 +1612,7 @@ function showProdMonth(year, month) {
         + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
         + '<td style="white-space:nowrap">'
         + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
-        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#f57c00;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
     detailHtml += '<tr class="day-total">'
@@ -2161,7 +2161,7 @@ function showProdMonth(year, month) {
         + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
         + '<td style="white-space:nowrap">'
         + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
-        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#f57c00;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
     detailHtml += '<tr class="day-total">'
@@ -2230,7 +2230,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .tabs{display:flex;background:#fff;border-bottom:2px solid #e0e0e0;position:sticky;top:44px;z-index:99;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:1;min-width:56px;padding:8px 4px 6px;text-align:center;font-size:.65rem;color:#888;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
-.tab.active{color:#e65100;border-bottom-color:#e65100;font-weight:700}
+.tab.active{color:#222222;border-bottom-color:#e65100;font-weight:700}
 .tab-icon{font-size:1.2rem;display:block;margin-bottom:1px}
 
 /* ─── PAGES ─── */
@@ -2240,7 +2240,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
 /* ─── CARD ─── */
 .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.card-title{font-size:.88rem;font-weight:700;color:#e65100;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card-title{font-size:.88rem;font-weight:700;color:#222222;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 
 /* ─── BUTTONS ─── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:10px;border:none;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .15s;min-height:46px;font-family:inherit}
@@ -2250,7 +2250,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .btn-danger{background:#c62828;color:#fff}
 .btn-secondary{background:#eceff1;color:#37474f}
 .btn-warning{background:#e65100;color:#fff}
-.btn-outline{background:#fff;color:#e65100;border:2px solid #e65100}
+.btn-outline{background:#fff;color:#222222;border:2px solid #e65100}
 .btn-full{width:100%}
 .btn-sm{padding:7px 12px;font-size:.78rem;min-height:34px}
 
@@ -2263,7 +2263,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
 /* ─── ALERTS ─── */
 .alert{padding:11px 14px;border-radius:10px;margin-bottom:10px;font-size:.82rem;line-height:1.5}
-.alert-info{background:#fff3e0;border:1px solid #ffcc80;color:#e65100}
+.alert-info{background:#fff3e0;border:1px solid #ffcc80;color:#222222}
 .alert-success{background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32}
 .alert-warning{background:#fff8e1;border:1px solid #ffe082;color:#5d4037}
 .alert-error{background:#ffebee;border:1px solid #ef9a9a;color:#b71c1c}
@@ -2304,7 +2304,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .zone-grid-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
 .zone-btn-pick{padding:16px 8px;text-align:center;border-radius:10px;border:2px solid #cfd8dc;cursor:pointer;font-size:1.1rem;font-weight:800;transition:all .15s;background:#f5f7fa;color:#37474f}
 .zone-btn-pick.selected{background:#e65100;color:#fff;border-color:#e65100;transform:scale(1.05)}
-.zone-btn-pick:hover{border-color:#e65100;color:#e65100}
+.zone-btn-pick:hover{border-color:#e65100;color:#222222}
 
 /* ─── LOADING ─── */
 .loading{text-align:center;padding:28px;color:#90a4ae}
@@ -2330,8 +2330,8 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 /* ─── STAT ROW ─── */
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-card{background:#fbe9e7;border-radius:10px;padding:12px 8px;text-align:center}
-.stat-num{font-size:1.4rem;font-weight:800;color:#e65100}
-.stat-lbl{font-size:.68rem;color:#ef6c00;margin-top:2px}
+.stat-num{font-size:1.4rem;font-weight:800;color:#222222}
+.stat-lbl{font-size:.68rem;color:#555555;margin-top:2px}
 
 /* ─── HOME SCREEN ─── */
 .screen{display:none !important}
@@ -2347,7 +2347,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .app-card:active{transform:scale(.97);box-shadow:0 2px 10px rgba(0,0,0,.12)}
 .app-card-icon{font-size:2.4rem;flex-shrink:0}
 .app-card-info{}
-.app-card-name{font-size:1.05rem;font-weight:800;color:#e65100}
+.app-card-name{font-size:1.05rem;font-weight:800;color:#222222}
 .app-card-desc{font-size:.78rem;color:#78909c;margin-top:3px;line-height:1.4}
 .home-back{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:none;color:#fff;font-size:.82rem;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:inherit}
 
@@ -2355,13 +2355,13 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .prod-type-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;overflow-x:auto;scrollbar-width:none;position:sticky;top:44px;z-index:98}
 .prod-type-bar::-webkit-scrollbar{display:none}
 .prod-type-btn{flex:1;min-width:88px;padding:14px 6px 11px;text-align:center;font-size:1rem;color:#888;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
-.prod-type-btn.active{color:#e65100;border-bottom-color:#e65100;font-weight:700}
+.prod-type-btn.active{color:#222222;border-bottom-color:#e65100;font-weight:700}
 .prod-tabs-sticky{top:88px}
 .prod-stat-table{width:100%;border-collapse:collapse;font-size:.74rem}
 .prod-stat-table th{background:#fff3e0;color:#37474f;font-weight:700;padding:6px 7px;text-align:center;white-space:nowrap;position:sticky;top:0}
 .prod-stat-table td{padding:5px 7px;border-bottom:1px solid #f0f0f0;text-align:center;white-space:nowrap}
-.prod-stat-table tr.day-total td{background:#f5f7fa;font-weight:700;color:#e65100}
-.prod-stat-table tr.month-total td{background:#ffe0b2;font-weight:800;color:#e65100;font-size:.8rem}
+.prod-stat-table tr.day-total td{background:#f5f7fa;font-weight:700;color:#222222}
+.prod-stat-table tr.month-total td{background:#ffe0b2;font-weight:800;color:#222222;font-size:.8rem}
 .stat-back-btn{background:#fff;border:1.5px solid #cfd8dc;border-radius:8px;padding:5px 14px;font-size:.78rem;color:#546e7a;cursor:pointer;margin-bottom:10px;font-family:inherit}
 .pack-detail-row{display:flex;align-items:center;padding:7px 12px;border-bottom:1px solid #f5f5f5}
 .pack-detail-badge{display:inline-flex;gap:10px;font-size:.73rem;color:#546e7a;margin-left:auto}
@@ -2377,7 +2377,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .login-box{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,.25)}
 .login-logo{text-align:center;margin-bottom:28px}
 .login-logo-icon{font-size:2.8rem}
-.login-logo-title{font-size:1.2rem;font-weight:800;color:#e65100;margin-top:8px}
+.login-logo-title{font-size:1.2rem;font-weight:800;color:#222222;margin-top:8px}
 .login-logo-sub{font-size:.75rem;color:#90a4ae;margin-top:4px}
 .login-field{margin-bottom:14px}
 .login-field label{font-size:.78rem;font-weight:700;color:#546e7a;display:block;margin-bottom:5px}
@@ -2644,7 +2644,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     </div>
     <!-- 재고수불 백업 카드 -->
     <div class="card" style="margin-top:12px;border:1.5px solid #f57c00">
-      <div class="card-title" style="color:#f57c00">💾 재고 데이터 백업</div>
+      <div class="card-title" style="color:#222222">💾 재고 데이터 백업</div>
       <div style="font-size:.78rem;color:#546e7a;margin-bottom:10px">전체 재고기록을 JSON 파일로 저장합니다.<br>삭제 전이나 정기적으로 백업하세요.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
@@ -2659,7 +2659,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div style="font-size:.72rem;color:#90a4ae;margin-bottom:10px">※ 날짜를 비우면 전체 데이터를 백업합니다.</div>
       <button id="inv-backup-btn" class="btn btn-full" onclick="backupInventory()"
         style="background:#f57c00;color:#fff;font-weight:700">💾 재고 데이터 백업 다운로드</button>
-      <div id="inv-backup-status" style="font-size:.8rem;margin-top:8px;min-height:16px;color:#f57c00"></div>
+      <div id="inv-backup-status" style="font-size:.8rem;margin-top:8px;min-height:16px;color:#222222"></div>
     </div>
   </div>
 </div>
@@ -2860,7 +2860,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       </div>
       <!-- 데이터 백업 카드 -->
       <div class="card" style="margin-top:12px;border:1.5px solid #f57c00">
-        <div class="card-title" style="color:#f57c00">💾 데이터 백업</div>
+        <div class="card-title" style="color:#222222">💾 데이터 백업</div>
         <div style="font-size:.78rem;color:#546e7a;margin-bottom:10px">전체 생산기록을 JSON 파일로 저장합니다.<br>삭제 전이나 월말에 정기적으로 백업하세요.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
@@ -2875,7 +2875,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         <div style="font-size:.72rem;color:#90a4ae;margin-bottom:10px">※ 날짜를 비우면 전체 데이터를 백업합니다.</div>
         <button id="backup-btn" class="btn btn-full" onclick="backupData()"
           style="background:#f57c00;color:#fff;font-weight:700">💾 데이터 백업 다운로드</button>
-        <div id="backup-status" style="font-size:.8rem;margin-top:8px;min-height:16px;color:#f57c00"></div>
+        <div id="backup-status" style="font-size:.8rem;margin-top:8px;min-height:16px;color:#222222"></div>
       </div>
     </div>
     <div id="prod-noadmin-sec" class="card" style="display:none">
@@ -3258,12 +3258,12 @@ async function handleInbound(data) {
     let html = '<div style="font-size:.83rem;margin-bottom:10px;line-height:1.6">'
       + '<strong>' + esc(data.site) + '</strong><br>'
       + '<span style="color:#546e7a">' + esc(data.company) + '</span><br>'
-      + '<span style="color:#e65100">패킹 ' + data.pack_from + '~' + data.pack_to + ' (' + packs.length + '개)</span>'
+      + '<span style="color:#222222">패킹 ' + data.pack_from + '~' + data.pack_to + ' (' + packs.length + '개)</span>'
       + '</div>';
 
     if (alreadyIn.length > 0) {
       html += '<div style="background:#fff3e0;border:1px solid #ffb74d;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.78rem">'
-        + '<div style="font-weight:700;color:#e65100;margin-bottom:4px">⚠️ 이미 재고 있음 (' + alreadyIn.length + '개)</div>'
+        + '<div style="font-weight:700;color:#222222;margin-bottom:4px">⚠️ 이미 재고 있음 (' + alreadyIn.length + '개)</div>'
         + '<div style="color:#555;line-height:1.7">';
       const byZoneWarn = {};
       alreadyIn.forEach(p => { const z = stockZone[p]||'?'; (byZoneWarn[z]=byZoneWarn[z]||[]).push(p); });
@@ -3271,7 +3271,7 @@ async function handleInbound(data) {
         html += z + '구역: ' + ps.join(', ') + '번<br>';
       });
       html += '</div>'
-        + '<div style="margin-top:6px;color:#bf360c">이미 입고된 패킹은 자동 해제되었습니다. 필요 시 직접 체크하세요.</div>'
+        + '<div style="margin-top:6px;color:#222222">이미 입고된 패킹은 자동 해제되었습니다. 필요 시 직접 체크하세요.</div>'
         + '</div>';
     }
 
@@ -3400,7 +3400,7 @@ async function handleOutbound(data) {
       byZone[z].push(p);
     });
     html += `<div style="background:#f5f7fa;border-radius:10px;padding:10px 12px;margin-bottom:10px">
-      <div style="font-weight:700;font-size:.8rem;margin-bottom:6px;color:#e65100">📦 구역별 현황</div>`;
+      <div style="font-weight:700;font-size:.8rem;margin-bottom:6px;color:#222222">📦 구역별 현황</div>`;
     Object.entries(byZone).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([z,packs])=>{
       const isUnreg = z==='미등록';
       html += `<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
@@ -4364,7 +4364,7 @@ function showProdMonth(year, month) {
         + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
         + '<td style="white-space:nowrap">'
         + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
-        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#f57c00;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+        + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
     detailHtml += '<tr class="day-total">'
@@ -4545,7 +4545,7 @@ function previewBatchDelete() {
     prev.innerHTML = '<span style="color:#e53935">조건에 맞는 기록이 없습니다.</span>';
     btn.style.display = 'none';
   } else {
-    prev.innerHTML = `<span style="color:#f57c00;font-weight:700">${matched.length}건</span> 이 검색되었습니다.`;
+    prev.innerHTML = `<span style="color:#222222;font-weight:700">${matched.length}건</span> 이 검색되었습니다.`;
     btn.style.display = 'block';
   }
 }
@@ -4688,7 +4688,7 @@ function showDupWarning(dupPacks, dupRecordMap) {
     const yr = (rec.date||'').slice(0,4);
     const mo = (rec.date||'').slice(5,7);
     html += `<div style="background:#fff3e0;border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:4px solid #f57c00">
-      <div style="font-size:.85rem;color:#bf360c;font-weight:700">📦 ${rec.packs.join(', ')}번 패킹</div>
+      <div style="font-size:.85rem;color:#222222;font-weight:700">📦 ${rec.packs.join(', ')}번 패킹</div>
       <div style="font-size:.82rem;color:#555;margin-top:5px;line-height:1.7">
         📅 등록일: <strong>${rec.date}</strong><br>
         🕐 구분: <strong>${rec.shift}</strong> &nbsp; 🏭 호기: <strong>${rec.machine}호기</strong>
@@ -4887,7 +4887,7 @@ async function downloadDailyReport() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="font-size:.78rem;font-weight:700;color:#546e7a">취소할 패킹번호 체크 해제</div>
       <div style="display:flex;gap:6px">
-        <button onclick="setAllPackCb(true)"  style="font-size:.72rem;padding:3px 8px;background:#fff3e0;color:#f57c00;border:1px solid #ffcc80;border-radius:6px;cursor:pointer;font-family:inherit">일괄선택</button>
+        <button onclick="setAllPackCb(true)"  style="font-size:.72rem;padding:3px 8px;background:#fff3e0;color:#222222;border:1px solid #ffcc80;border-radius:6px;cursor:pointer;font-family:inherit">일괄선택</button>
         <button onclick="setAllPackCb(false)" style="font-size:.72rem;padding:3px 8px;background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;cursor:pointer;font-family:inherit">일괄취소</button>
       </div>
     </div>
