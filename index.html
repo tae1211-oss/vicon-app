@@ -4913,16 +4913,10 @@ async function loadUsawonFolders() {
 async function deleteUsawonFolder(folderId, folderName) {
   if (!confirm(`"${folderName}" 폴더와 안의 사진을 모두 삭제할까요?`)) return;
   try {
-    // 사진 Firestore 문서 삭제
     const photos = await db.collection('usawon_photos').where('folder_id','==',folderId).get();
-    const storage = firebase.storage();
     const batch = db.batch();
-    for (const p of photos.docs) {
-      batch.delete(p.ref);
-      try { await storage.refFromURL(p.data().url).delete(); } catch(_) {}
-    }
+    photos.docs.forEach(p => batch.delete(p.ref));
     await batch.commit();
-    // 폴더 문서 삭제
     await db.collection('usawon_folders').doc(folderId).delete();
     toast('폴더가 삭제됐습니다.');
     loadUsawonFolders();
@@ -4946,13 +4940,11 @@ function backToUsawonFolders() {
 
 async function uploadUsawonPhotos(input) {
   if (!input.files.length || !usawonCurrentFolderId) return;
-  if (!firebase.storage) { alert('Firebase Storage가 초기화되지 않았습니다.'); return; }
 
-  const storage = firebase.storage();
+  const IMGBB_KEY = '4eb10b1119b494061cc3956d233de290';
   const totalFiles = input.files.length;
   let count = 0;
 
-  // 업로드 상태 표시 영역
   const grid = document.getElementById('usawon-photo-grid');
   const statusDiv = document.createElement('div');
   statusDiv.id = 'upload-status';
@@ -4962,10 +4954,26 @@ async function uploadUsawonPhotos(input) {
 
   for (const file of input.files) {
     try {
-      const fileName = `${Date.now()}_${file.name}`;
-      const ref = storage.ref(`usawon/${usawonCurrentFolderId}/${fileName}`);
-      await ref.put(file);
-      const url = await ref.getDownloadURL();
+      // 파일 → base64 변환
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // ImgBB 업로드
+      const form = new FormData();
+      form.append('key', IMGBB_KEY);
+      form.append('image', base64);
+      form.append('name', file.name);
+
+      const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:form });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error?.message || '알 수 없는 오류');
+
+      const url = json.data.url;
+
       await db.collection('usawon_photos').add({
         folder_id: usawonCurrentFolderId,
         url,
@@ -4977,7 +4985,7 @@ async function uploadUsawonPhotos(input) {
       statusDiv.textContent = `📤 업로드 중... (${count}/${totalFiles})`;
     } catch(e) {
       console.error('업로드 오류:', e);
-      alert(`업로드 실패: ${e.code || e.message}\n\n※ Firebase Storage 규칙 문제일 수 있습니다.`);
+      alert(`업로드 실패: ${e.message}`);
       break;
     }
   }
@@ -5022,7 +5030,6 @@ async function deleteUsawonPhoto(photoId, photoUrl) {
   if (!confirm('이 사진을 삭제할까요?')) return;
   try {
     await db.collection('usawon_photos').doc(photoId).delete();
-    try { await firebase.storage().refFromURL(photoUrl).delete(); } catch(_) {}
     toast('사진이 삭제됐습니다.');
     loadUsawonPhotos(usawonCurrentFolderId);
   } catch(e) { toast('삭제 오류: ' + e.message); }
