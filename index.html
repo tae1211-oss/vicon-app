@@ -4946,15 +4946,26 @@ function backToUsawonFolders() {
 
 async function uploadUsawonPhotos(input) {
   if (!input.files.length || !usawonCurrentFolderId) return;
-  if (!firebase.storage) { toast('Storage 미연결'); return; }
+  if (!firebase.storage) { alert('Firebase Storage가 초기화되지 않았습니다.'); return; }
+
   const storage = firebase.storage();
-  toast('업로드 중...');
+  const totalFiles = input.files.length;
   let count = 0;
+
+  // 업로드 상태 표시 영역
+  const grid = document.getElementById('usawon-photo-grid');
+  const statusDiv = document.createElement('div');
+  statusDiv.id = 'upload-status';
+  statusDiv.style.cssText = 'grid-column:1/-1;text-align:center;padding:16px;color:#9c27b0;font-size:.85rem';
+  statusDiv.textContent = `📤 업로드 중... (0/${totalFiles})`;
+  grid.insertBefore(statusDiv, grid.firstChild);
+
   for (const file of input.files) {
     try {
-      const ref = storage.ref(`usawon/${usawonCurrentFolderId}/${Date.now()}_${file.name}`);
-      const snap = await ref.put(file);
-      const url = await snap.ref.getDownloadURL();
+      const fileName = `${Date.now()}_${file.name}`;
+      const ref = storage.ref(`usawon/${usawonCurrentFolderId}/${fileName}`);
+      await ref.put(file);
+      const url = await ref.getDownloadURL();
       await db.collection('usawon_photos').add({
         folder_id: usawonCurrentFolderId,
         url,
@@ -4963,10 +4974,22 @@ async function uploadUsawonPhotos(input) {
         uploaded_by: currentUserEmail
       });
       count++;
-    } catch(e) { toast('업로드 실패: ' + e.message); }
+      statusDiv.textContent = `📤 업로드 중... (${count}/${totalFiles})`;
+    } catch(e) {
+      console.error('업로드 오류:', e);
+      alert(`업로드 실패: ${e.code || e.message}\n\n※ Firebase Storage 규칙 문제일 수 있습니다.`);
+      break;
+    }
   }
+
   input.value = '';
-  if (count > 0) { toast(`${count}장 업로드 완료!`); loadUsawonPhotos(usawonCurrentFolderId); }
+  const s = document.getElementById('upload-status');
+  if (s) s.remove();
+
+  if (count > 0) {
+    toast(`${count}장 업로드 완료!`);
+    loadUsawonPhotos(usawonCurrentFolderId);
+  }
 }
 
 async function loadUsawonPhotos(folderId) {
