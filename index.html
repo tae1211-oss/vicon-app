@@ -4,12 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>비콘㈜ 관리시스템</title>
-<!-- auto-push test -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
 // ─────────────────────────────────────────────────────────
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
+  // TI전용 접근 제어
+  if (name === 'ti') {
+    if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0,0);
@@ -19,6 +25,15 @@ function goHome() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   window.scrollTo(0,0);
+}
+function updateTiCardVisibility() {
+  const card = document.getElementById('ti-card');
+  if (!card) return;
+  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
+    card.style.display = '';
+  } else {
+    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  }
 }
 function showPTab(name) {
   document.querySelectorAll('[id^="ppage-"]').forEach(p => p.classList.remove('active'));
@@ -576,6 +591,13 @@ async function deleteProdRecord(docId, btn) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
+  // TI전용 접근 제어
+  if (name === 'ti') {
+    if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0,0);
@@ -585,6 +607,15 @@ function goHome() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   window.scrollTo(0,0);
+}
+function updateTiCardVisibility() {
+  const card = document.getElementById('ti-card');
+  if (!card) return;
+  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
+    card.style.display = '';
+  } else {
+    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  }
 }
 function showPTab(name) {
   document.querySelectorAll('[id^="ppage-"]').forEach(p => p.classList.remove('active'));
@@ -1125,6 +1156,13 @@ async function deleteProdRecord(docId, btn) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
+  // TI전용 접근 제어
+  if (name === 'ti') {
+    if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0,0);
@@ -1134,6 +1172,15 @@ function goHome() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   window.scrollTo(0,0);
+}
+function updateTiCardVisibility() {
+  const card = document.getElementById('ti-card');
+  if (!card) return;
+  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
+    card.style.display = '';
+  } else {
+    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  }
 }
 function showPTab(name) {
   document.querySelectorAll('[id^="ppage-"]').forEach(p => p.classList.remove('active'));
@@ -1674,6 +1721,13 @@ async function deleteProdRecord(docId, btn) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
+  // TI전용 접근 제어
+  if (name === 'ti') {
+    if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0,0);
@@ -1683,6 +1737,15 @@ function goHome() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   window.scrollTo(0,0);
+}
+function updateTiCardVisibility() {
+  const card = document.getElementById('ti-card');
+  if (!card) return;
+  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
+    card.style.display = '';
+  } else {
+    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  }
 }
 function showPTab(name) {
   document.querySelectorAll('[id^="ppage-"]').forEach(p => p.classList.remove('active'));
@@ -2477,9 +2540,31 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           <div class="app-card-desc">생산실적, 공정별 생산량 관리</div>
         </div>
       </div>
+      <div class="app-card" id="ti-card" onclick="goApp('ti')" style="border:2px solid #f57c00">
+        <div class="app-card-icon">🔒</div>
+        <div class="app-card-info">
+          <div class="app-card-name">TI전용</div>
+          <div class="app-card-desc">TI 전용 메뉴 (허가된 계정만 접근 가능)</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+
+<!-- ════════════════════ TI 전용 ════════════════════ -->
+<div id="screen-ti" class="screen">
+  <header>
+    <button class="home-back" onclick="goHome()">⬅ 홈</button>
+    <h1 style="font-size:.88rem">🔒 TI전용</h1>
+    <div style="width:60px"></div>
+  </header>
+  <div style="padding:24px 16px;text-align:center;color:#78909c;margin-top:40px">
+    <div style="font-size:2.5rem;margin-bottom:12px">🚧</div>
+    <div style="font-size:1rem;font-weight:700;color:#222;margin-bottom:8px">준비 중</div>
+    <div style="font-size:.82rem">TI전용 메뉴가 곧 추가될 예정입니다.</div>
+  </div>
+</div><!-- /screen-ti -->
 
 
 <!-- ════════════════════ INVENTORY APP ════════════════════ -->
@@ -2921,6 +3006,14 @@ const BUILDINGS = [];
 // ─────────────────────────────────────────────────────────
 let db = null;
 let currentUser = localStorage.getItem('bvy_user') || '';
+let currentUserEmail = '';  // 로그인한 사용자의 이메일
+
+// ── TI전용 메뉴 접근 허용 이메일 목록 ──────────────────────
+// 아래 목록에 허용할 이메일을 추가하세요 (예: 'user@example.com')
+const TI_ALLOWED_EMAILS = [
+  // 'example@company.com',
+];
+
 let scanners = {inbound: null, outbound: null, production: null};
 let pendingIB = null;
 let pendingOB = null;
@@ -3877,6 +3970,13 @@ function toast(msg) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
+  // TI전용 접근 제어
+  if (name === 'ti') {
+    if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0,0);
@@ -3886,6 +3986,15 @@ function goHome() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   window.scrollTo(0,0);
+}
+function updateTiCardVisibility() {
+  const card = document.getElementById('ti-card');
+  if (!card) return;
+  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
+    card.style.display = '';
+  } else {
+    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  }
 }
 function showPTab(name) {
   document.querySelectorAll('[id^="ppage-"]').forEach(p => p.classList.remove('active'));
@@ -4443,7 +4552,9 @@ function initAuth() {
       // 로그인됨 → 홈 화면
       const name = user.displayName || user.email?.split('@')[0] || '사용자';
       currentUser = name;
+      currentUserEmail = user.email || '';
       updateUserDisp();
+      updateTiCardVisibility();
       const el = document.getElementById('home-user-name');
       if (el) el.textContent = name;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -4492,7 +4603,9 @@ async function doLogin() {
     // 로그인 성공 → 직접 화면 전환 (onAuthStateChanged 대기 없이)
     const name = user.displayName || user.email?.split('@')[0] || '사용자';
     currentUser = name;
+    currentUserEmail = user.email || '';
     try { updateUserDisp(); } catch(_) {}
+    try { updateTiCardVisibility(); } catch(_) {}
     const nameEl = document.getElementById('home-user-name');
     if (nameEl) nameEl.textContent = name;
 
