@@ -9,12 +9,18 @@
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
-  // TI전용 접근 제어
   if (name === 'ti') {
     if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
       toast('접근 권한이 없습니다.');
       return;
     }
+  }
+  if (name === 'usawon') {
+    if (typeof USAWON_ALLOWED_EMAILS !== 'undefined' && USAWON_ALLOWED_EMAILS.length > 0 && !USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+    loadUsawonFolders();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -27,12 +33,13 @@ function goHome() {
   window.scrollTo(0,0);
 }
 function updateTiCardVisibility() {
-  const card = document.getElementById('ti-card');
-  if (!card) return;
-  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
-    card.style.display = '';
-  } else {
-    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  const tiCard = document.getElementById('ti-card');
+  if (tiCard) {
+    tiCard.style.display = (TI_ALLOWED_EMAILS.length === 0 || TI_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
+  }
+  const uwCard = document.getElementById('usawon-card');
+  if (uwCard) {
+    uwCard.style.display = (USAWON_ALLOWED_EMAILS.length === 0 || USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
   }
 }
 function showPTab(name) {
@@ -586,17 +593,24 @@ async function deleteProdRecord(docId, btn) {
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
 // ─────────────────────────────────────────────────────────
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
-  // TI전용 접근 제어
   if (name === 'ti') {
     if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
       toast('접근 권한이 없습니다.');
       return;
     }
+  }
+  if (name === 'usawon') {
+    if (typeof USAWON_ALLOWED_EMAILS !== 'undefined' && USAWON_ALLOWED_EMAILS.length > 0 && !USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+    loadUsawonFolders();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -609,12 +623,13 @@ function goHome() {
   window.scrollTo(0,0);
 }
 function updateTiCardVisibility() {
-  const card = document.getElementById('ti-card');
-  if (!card) return;
-  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
-    card.style.display = '';
-  } else {
-    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  const tiCard = document.getElementById('ti-card');
+  if (tiCard) {
+    tiCard.style.display = (TI_ALLOWED_EMAILS.length === 0 || TI_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
+  }
+  const uwCard = document.getElementById('usawon-card');
+  if (uwCard) {
+    uwCard.style.display = (USAWON_ALLOWED_EMAILS.length === 0 || USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
   }
 }
 function showPTab(name) {
@@ -1156,12 +1171,18 @@ async function deleteProdRecord(docId, btn) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
-  // TI전용 접근 제어
   if (name === 'ti') {
     if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
       toast('접근 권한이 없습니다.');
       return;
     }
+  }
+  if (name === 'usawon') {
+    if (typeof USAWON_ALLOWED_EMAILS !== 'undefined' && USAWON_ALLOWED_EMAILS.length > 0 && !USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+    loadUsawonFolders();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -1174,12 +1195,13 @@ function goHome() {
   window.scrollTo(0,0);
 }
 function updateTiCardVisibility() {
-  const card = document.getElementById('ti-card');
-  if (!card) return;
-  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
-    card.style.display = '';
-  } else {
-    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  const tiCard = document.getElementById('ti-card');
+  if (tiCard) {
+    tiCard.style.display = (TI_ALLOWED_EMAILS.length === 0 || TI_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
+  }
+  const uwCard = document.getElementById('usawon-card');
+  if (uwCard) {
+    uwCard.style.display = (USAWON_ALLOWED_EMAILS.length === 0 || USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
   }
 }
 function showPTab(name) {
@@ -1721,12 +1743,18 @@ async function deleteProdRecord(docId, btn) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
-  // TI전용 접근 제어
   if (name === 'ti') {
     if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
       toast('접근 권한이 없습니다.');
       return;
     }
+  }
+  if (name === 'usawon') {
+    if (typeof USAWON_ALLOWED_EMAILS !== 'undefined' && USAWON_ALLOWED_EMAILS.length > 0 && !USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+    loadUsawonFolders();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -1739,12 +1767,13 @@ function goHome() {
   window.scrollTo(0,0);
 }
 function updateTiCardVisibility() {
-  const card = document.getElementById('ti-card');
-  if (!card) return;
-  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
-    card.style.display = '';
-  } else {
-    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  const tiCard = document.getElementById('ti-card');
+  if (tiCard) {
+    tiCard.style.display = (TI_ALLOWED_EMAILS.length === 0 || TI_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
+  }
+  const uwCard = document.getElementById('usawon-card');
+  if (uwCard) {
+    uwCard.style.display = (USAWON_ALLOWED_EMAILS.length === 0 || USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
   }
 }
 function showPTab(name) {
@@ -2547,9 +2576,81 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           <div class="app-card-desc">[TI관리메뉴-허가된 계정만 접근가능]</div>
         </div>
       </div>
+      <div class="app-card" id="usawon-card" onclick="goApp('usawon')" style="border:2px solid #9c27b0">
+        <div class="app-card-icon">🐾</div>
+        <div class="app-card-info">
+          <div class="app-card-name">우사원</div>
+          <div class="app-card-desc" style="color:#9c27b0;font-weight:600">허가된 계정만 접근가능</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+
+<!-- ════════════════════ 우사원 ════════════════════ -->
+<div id="screen-usawon" class="screen">
+  <header style="background:linear-gradient(135deg,#9c27b0,#ce93d8)">
+    <button class="home-back" onclick="goHome()" style="color:#fff">⬅ 홈</button>
+    <h1 style="font-size:.88rem;color:#fff">🐾 우사원</h1>
+    <div style="width:60px"></div>
+  </header>
+
+  <!-- 폴더 목록 뷰 -->
+  <div id="usawon-folder-view" style="padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:.9rem;font-weight:700;color:#7b1fa2">📁 내 폴더</div>
+      <button class="btn" onclick="showCreateFolderModal()"
+        style="background:#9c27b0;color:#fff;font-size:.8rem;padding:8px 16px;border-radius:20px;border:none">
+        + 새 폴더
+      </button>
+    </div>
+    <div id="usawon-folder-list">
+      <div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem">폴더가 없습니다</div>
+    </div>
+  </div>
+
+  <!-- 폴더 내부 뷰 -->
+  <div id="usawon-photo-view" style="display:none;padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <button onclick="backToUsawonFolders()"
+        style="background:none;border:none;font-size:.85rem;color:#9c27b0;cursor:pointer;font-family:inherit">
+        ← 폴더 목록
+      </button>
+      <div id="usawon-current-folder-name" style="font-size:.88rem;font-weight:700;color:#7b1fa2"></div>
+      <label style="background:#9c27b0;color:#fff;font-size:.8rem;padding:8px 14px;border-radius:20px;cursor:pointer">
+        + 사진
+        <input type="file" id="usawon-photo-input" accept="image/*" multiple style="display:none" onchange="uploadUsawonPhotos(this)">
+      </label>
+    </div>
+    <div id="usawon-photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+      <div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">사진이 없습니다</div>
+    </div>
+  </div>
+
+  <!-- 새 폴더 만들기 모달 -->
+  <div id="usawon-folder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:none;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:24px;width:80%;max-width:320px">
+      <div style="font-size:.95rem;font-weight:700;margin-bottom:16px;color:#7b1fa2">📁 새 폴더 만들기</div>
+      <input id="usawon-folder-name-inp" type="text" placeholder="폴더 이름 입력"
+        style="width:100%;padding:10px 12px;border:1.5px solid #ce93d8;border-radius:10px;font-size:.9rem;box-sizing:border-box;outline:none">
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button onclick="hideCreateFolderModal()"
+          style="flex:1;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;font-size:.85rem;cursor:pointer">취소</button>
+        <button onclick="createUsawonFolder()"
+          style="flex:1;padding:10px;border:none;border-radius:10px;background:#9c27b0;color:#fff;font-size:.85rem;cursor:pointer;font-weight:700">만들기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사진 전체보기 모달 -->
+  <div id="usawon-photo-modal" onclick="closePhotoModal()"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center">
+    <img id="usawon-photo-modal-img" style="max-width:95%;max-height:90vh;border-radius:8px;object-fit:contain">
+    <button onclick="closePhotoModal()"
+      style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:1.4rem;width:40px;height:40px;border-radius:50%;cursor:pointer">✕</button>
+  </div>
+</div><!-- /screen-usawon -->
 
 
 <!-- ════════════════════ TI 전용 ════════════════════ -->
@@ -3009,12 +3110,17 @@ let currentUser = localStorage.getItem('bvy_user') || '';
 let currentUserEmail = '';  // 로그인한 사용자의 이메일
 
 // ── TI전용 메뉴 접근 허용 이메일 목록 ──────────────────────
-// 아래 목록에 허용할 이메일을 추가하세요 (예: 'user@example.com')
 const TI_ALLOWED_EMAILS = [
   '관리자@vicon.com',
   '최우일@vicon.com',
   'ti-master@vicon.com',
   '김성명@vicon.com',
+];
+
+// ── 우사원 메뉴 접근 허용 이메일 목록 ──────────────────────
+const USAWON_ALLOWED_EMAILS = [
+  '우젤기@귀엽다.너무',
+  '관리자@vicon.com',
 ];
 
 let scanners = {inbound: null, outbound: null, production: null};
@@ -3973,12 +4079,18 @@ function toast(msg) {
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
 function goApp(name) {
-  // TI전용 접근 제어
   if (name === 'ti') {
     if (typeof TI_ALLOWED_EMAILS !== 'undefined' && TI_ALLOWED_EMAILS.length > 0 && !TI_ALLOWED_EMAILS.includes(currentUserEmail)) {
       toast('접근 권한이 없습니다.');
       return;
     }
+  }
+  if (name === 'usawon') {
+    if (typeof USAWON_ALLOWED_EMAILS !== 'undefined' && USAWON_ALLOWED_EMAILS.length > 0 && !USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) {
+      toast('접근 권한이 없습니다.');
+      return;
+    }
+    loadUsawonFolders();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
@@ -3991,12 +4103,13 @@ function goHome() {
   window.scrollTo(0,0);
 }
 function updateTiCardVisibility() {
-  const card = document.getElementById('ti-card');
-  if (!card) return;
-  if (typeof TI_ALLOWED_EMAILS === 'undefined' || TI_ALLOWED_EMAILS.length === 0) {
-    card.style.display = '';
-  } else {
-    card.style.display = TI_ALLOWED_EMAILS.includes(currentUserEmail) ? '' : 'none';
+  const tiCard = document.getElementById('ti-card');
+  if (tiCard) {
+    tiCard.style.display = (TI_ALLOWED_EMAILS.length === 0 || TI_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
+  }
+  const uwCard = document.getElementById('usawon-card');
+  if (uwCard) {
+    uwCard.style.display = (USAWON_ALLOWED_EMAILS.length === 0 || USAWON_ALLOWED_EMAILS.includes(currentUserEmail)) ? '' : 'none';
   }
 }
 function showPTab(name) {
@@ -4734,6 +4847,170 @@ async function _backupEngine(cfg) {
   } finally {
     btn.disabled = false; btn.textContent = origLabel;
   }
+}
+
+// ─────────────────────────────────────────────────────────
+//  우사원 - 폴더 & 사진 관리
+// ─────────────────────────────────────────────────────────
+let usawonCurrentFolderId = null;
+let usawonCurrentFolderName = '';
+
+function showCreateFolderModal() {
+  const m = document.getElementById('usawon-folder-modal');
+  m.style.display = 'flex';
+  document.getElementById('usawon-folder-name-inp').value = '';
+  setTimeout(() => document.getElementById('usawon-folder-name-inp').focus(), 100);
+}
+function hideCreateFolderModal() {
+  document.getElementById('usawon-folder-modal').style.display = 'none';
+}
+
+async function createUsawonFolder() {
+  const name = document.getElementById('usawon-folder-name-inp').value.trim();
+  if (!name) { toast('폴더 이름을 입력하세요.'); return; }
+  if (!db) { toast('Firebase 미연결'); return; }
+  try {
+    await db.collection('usawon_folders').add({
+      name,
+      created_at: firebase.firestore.Timestamp.now(),
+      created_by: currentUserEmail
+    });
+    hideCreateFolderModal();
+    toast('폴더가 만들어졌습니다!');
+    loadUsawonFolders();
+  } catch(e) { toast('오류: ' + e.message); }
+}
+
+async function loadUsawonFolders() {
+  if (!db) return;
+  const list = document.getElementById('usawon-folder-list');
+  list.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:20px;font-size:.85rem">불러오는 중...</div>';
+  try {
+    const snap = await db.collection('usawon_folders').orderBy('created_at','desc').get();
+    if (snap.empty) {
+      list.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem">폴더가 없습니다</div>';
+      return;
+    }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const el = document.createElement('div');
+      el.style.cssText = 'background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(156,39,176,.1);cursor:pointer;border:1.5px solid #f3e5f5';
+      el.innerHTML = `
+        <div style="font-size:2rem;flex-shrink:0">📁</div>
+        <div style="flex:1;min-width:0" onclick="openUsawonFolder('${doc.id}','${d.name.replace(/'/g,"\\'")}')">
+          <div style="font-size:.92rem;font-weight:700;color:#4a148c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</div>
+          <div style="font-size:.72rem;color:#bdbdbd;margin-top:2px">${d.created_by || ''}</div>
+        </div>
+        <button onclick="event.stopPropagation();deleteUsawonFolder('${doc.id}','${d.name.replace(/'/g,"\\'")}')"
+          style="background:#fce4ec;border:none;color:#e91e63;width:32px;height:32px;border-radius:50%;font-size:.85rem;cursor:pointer;flex-shrink:0">🗑</button>
+      `;
+      list.appendChild(el);
+    });
+  } catch(e) { list.innerHTML = '<div style="color:red;padding:16px">오류: ' + e.message + '</div>'; }
+}
+
+async function deleteUsawonFolder(folderId, folderName) {
+  if (!confirm(`"${folderName}" 폴더와 안의 사진을 모두 삭제할까요?`)) return;
+  try {
+    // 사진 Firestore 문서 삭제
+    const photos = await db.collection('usawon_photos').where('folder_id','==',folderId).get();
+    const storage = firebase.storage();
+    const batch = db.batch();
+    for (const p of photos.docs) {
+      batch.delete(p.ref);
+      try { await storage.refFromURL(p.data().url).delete(); } catch(_) {}
+    }
+    await batch.commit();
+    // 폴더 문서 삭제
+    await db.collection('usawon_folders').doc(folderId).delete();
+    toast('폴더가 삭제됐습니다.');
+    loadUsawonFolders();
+  } catch(e) { toast('삭제 오류: ' + e.message); }
+}
+
+function openUsawonFolder(folderId, folderName) {
+  usawonCurrentFolderId = folderId;
+  usawonCurrentFolderName = folderName;
+  document.getElementById('usawon-folder-view').style.display = 'none';
+  document.getElementById('usawon-photo-view').style.display = 'block';
+  document.getElementById('usawon-current-folder-name').textContent = '📁 ' + folderName;
+  loadUsawonPhotos(folderId);
+}
+
+function backToUsawonFolders() {
+  usawonCurrentFolderId = null;
+  document.getElementById('usawon-photo-view').style.display = 'none';
+  document.getElementById('usawon-folder-view').style.display = 'block';
+}
+
+async function uploadUsawonPhotos(input) {
+  if (!input.files.length || !usawonCurrentFolderId) return;
+  if (!firebase.storage) { toast('Storage 미연결'); return; }
+  const storage = firebase.storage();
+  toast('업로드 중...');
+  let count = 0;
+  for (const file of input.files) {
+    try {
+      const ref = storage.ref(`usawon/${usawonCurrentFolderId}/${Date.now()}_${file.name}`);
+      const snap = await ref.put(file);
+      const url = await snap.ref.getDownloadURL();
+      await db.collection('usawon_photos').add({
+        folder_id: usawonCurrentFolderId,
+        url,
+        filename: file.name,
+        uploaded_at: firebase.firestore.Timestamp.now(),
+        uploaded_by: currentUserEmail
+      });
+      count++;
+    } catch(e) { toast('업로드 실패: ' + e.message); }
+  }
+  input.value = '';
+  if (count > 0) { toast(`${count}장 업로드 완료!`); loadUsawonPhotos(usawonCurrentFolderId); }
+}
+
+async function loadUsawonPhotos(folderId) {
+  const grid = document.getElementById('usawon-photo-grid');
+  grid.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">불러오는 중...</div>';
+  try {
+    const snap = await db.collection('usawon_photos').where('folder_id','==',folderId).orderBy('uploaded_at','desc').get();
+    if (snap.empty) {
+      grid.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">사진이 없습니다<br><span style="font-size:.75rem">+ 사진 버튼으로 추가하세요</span></div>';
+      return;
+    }
+    grid.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const el = document.createElement('div');
+      el.style.cssText = 'position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;background:#f3e5f5';
+      el.innerHTML = `
+        <img src="${d.url}" style="width:100%;height:100%;object-fit:cover" onclick="openPhotoModal('${d.url}')">
+        <button onclick="event.stopPropagation();deleteUsawonPhoto('${doc.id}','${d.url}')"
+          style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:.7rem;cursor:pointer;line-height:1">✕</button>
+      `;
+      grid.appendChild(el);
+    });
+  } catch(e) { grid.innerHTML = '<div style="color:red;padding:16px;grid-column:1/-1">오류: ' + e.message + '</div>'; }
+}
+
+async function deleteUsawonPhoto(photoId, photoUrl) {
+  if (!confirm('이 사진을 삭제할까요?')) return;
+  try {
+    await db.collection('usawon_photos').doc(photoId).delete();
+    try { await firebase.storage().refFromURL(photoUrl).delete(); } catch(_) {}
+    toast('사진이 삭제됐습니다.');
+    loadUsawonPhotos(usawonCurrentFolderId);
+  } catch(e) { toast('삭제 오류: ' + e.message); }
+}
+
+function openPhotoModal(url) {
+  const m = document.getElementById('usawon-photo-modal');
+  document.getElementById('usawon-photo-modal-img').src = url;
+  m.style.display = 'flex';
+}
+function closePhotoModal() {
+  document.getElementById('usawon-photo-modal').style.display = 'none';
+  document.getElementById('usawon-photo-modal-img').src = '';
 }
 
 // ── 생산수불 백업 ─────────────────────────────────────────
