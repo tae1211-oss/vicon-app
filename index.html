@@ -4973,13 +4973,15 @@ async function loadUsawonPhotos(folderId) {
   const grid = document.getElementById('usawon-photo-grid');
   grid.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">불러오는 중...</div>';
   try {
-    const snap = await db.collection('usawon_photos').where('folder_id','==',folderId).orderBy('uploaded_at','desc').get();
+    const snap = await db.collection('usawon_photos').where('folder_id','==',folderId).get();
     if (snap.empty) {
       grid.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">사진이 없습니다<br><span style="font-size:.75rem">+ 사진 버튼으로 추가하세요</span></div>';
       return;
     }
+    // 업로드 시간 내림차순 정렬 (JS에서 처리)
+    const docs = snap.docs.sort((a,b) => (b.data().uploaded_at?.seconds||0) - (a.data().uploaded_at?.seconds||0));
     grid.innerHTML = '';
-    snap.forEach(doc => {
+    docs.forEach(doc => {
       const d = doc.data();
       const el = document.createElement('div');
       el.style.cssText = 'position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;background:#f3e5f5';
