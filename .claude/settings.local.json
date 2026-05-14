@@ -1,0 +1,80 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/user/Desktop/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)",
+      "Bash(where python *)",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import pdfplumber; print\\('pdfplumber OK'\\)\" 2>&1)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(python -c \"import openpyxl; print\\('ok'\\)\")",
+      "Bash(where python3 *)",
+      "Bash(where py *)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(py add_auth.py)",
+      "Bash(python3 -)",
+      "Bash(python3)",
+      "Bash(python3 -c \"import pandas; print\\('pandas ok'\\)\")",
+      "Bash(python3 -c \"import openpyxl; print\\('openpyxl ok'\\)\")",
+      "Bash(python3 -c \"import zipfile; print\\('zipfile ok'\\)\")",
+      "Read(//usr/**)",
+      "Read(//usr/local/**)",
+      "PowerShell($p = Get-Command python -ErrorAction SilentlyContinue; $p.Source; python -c \"print\\('hello'\\)\")",
+      "PowerShell($pyexe = \"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe\"; & $pyexe --version; & $pyexe -c \"import pandas; print\\('pandas ok'\\)\" 2>&1; & $pyexe -c \"import openpyxl; print\\('openpyxl ok'\\)\" 2>&1; & $pyexe -c \"import zipfile; print\\('zipfile ok'\\)\" 2>&1)",
+      "Bash(dir \"C:\\\\Users\\\\user\\\\Desktop\" /B)",
+      "Bash(findstr /i \"txt\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\user\\\\Desktop\" | Where-Object { $_.Name -match \"===\" } | Select-Object Name, FullName)",
+      "Bash(py -c ' *)",
+      "Bash(pip install *)",
+      "Bash(py add_prod_delete.py)",
+      "Bash(python \"C:\\\\Users\\\\user\\\\Desktop\\\\클로드\\\\check.py\")",
+      "Bash(python3 -c \"import os; print\\(os.listdir\\('C:/Users/user/Desktop/클로드'\\)\\)\")",
+      "Bash(py fix_all.py)",
+      "Bash(py fix_dup.py)",
+      "Bash(copy \"index.html.html\" \"index.html\")",
+      "Bash(py fix_circle_allbtn.py)",
+      "Bash(py fix_backup.py)",
+      "Bash(py fix_backup_all.py)",
+      "Bash(py fix_tabs_edit.py)",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__navigate",
+      "Bash(Get-Item \"C:/Users/user/Desktop/클로드/QR_작업지시서.bas\")",
+      "Bash(Select-Object Name, Length, LastWriteTime)",
+      "Bash(py fix_dup_modal_summary.py)",
+      "Bash(py fix_dup2.py)",
+      "Bash(py fix_dup3.py)",
+      "Bash(python fix_summary_table.py)",
+      "Bash(python fix_login_syntax.py)",
+      "PowerShell(cd \"C:\\\\Users\\\\user\\\\Desktop\\\\클로드\"; python -c \"import py_compile; py_compile.compile\\('fix_login_syntax.py', doraise=True\\)\" 2>&1; echo \"exit: $LASTEXITCODE\")",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__select_browser",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:vicon-app.vercel.app)",
+      "Bash(mv *.py 비콘_개발파일/)",
+      "Bash(mv *.bas 비콘_개발파일/)",
+      "Bash(mv *.png 비콘_개발파일/)",
+      "Bash(mv *.txt 비콘_개발파일/)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\user\\AppData\\Local\\Python\\bin\\python.exe\" \"C:\\Users\\user\\Desktop\\클로드\\비콘_개발파일\\auto_push.py\"",
+            "shell": "powershell",
+            "statusMessage": "GitHub 자동 업로드 중...",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
