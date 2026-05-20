@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -456,21 +456,29 @@ function showProdMonth(year, month) {
     grandTotal += v;
   });
 
+  // 다운로드용 전역 저장
+  window._currentMonthData = { year, month, records, pivot, _macs, _dates, _shifts, colTot, grandTotal };
+
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.68rem;font-weight:600;padding:3px 4px;text-align:center">' + m + '</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:' + (sh===_shifts[0]?'#e65100':'#e65100') + ';padding:5px 2px;text-align:center">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
-  let sumHtml = '<div style="overflow-x:auto;margin-bottom:16px">'
-    + '<table class="prod-stat-table" style="font-size:.75rem;border-collapse:collapse;width:100%"><thead>'
-    + '<tr><th rowspan="2" style="min-width:72px;background:#fbe9e7;vertical-align:middle;text-align:center">'
+  const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
+    + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
+    + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
+    + '</div>';
+
+  let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
+    + '<table class="prod-stat-table" style="font-size:.78rem;border-collapse:collapse;min-width:max-content"><thead>'
+    + '<tr><th rowspan="2" style="min-width:76px;background:#fbe9e7;vertical-align:middle;text-align:center;padding:6px 8px">'
     + '생산일자</th>' + thShifts
-    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center">'
+    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center;white-space:nowrap;padding:6px 8px">'
     + '총합계</th></tr>'
     + '<tr>' + thMacs + '</tr>'
     + '</thead><tbody>';
@@ -478,15 +486,15 @@ function showProdMonth(year, month) {
   _dates.forEach(date => {
     const _d = new Date(date+'T12:00:00');
     const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
-    sumHtml += '<tr><td style="font-size:.72rem;white-space:nowrap;text-align:center">' + _dl + '</td>';
+    sumHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 8px">' + _dl + '</td>';
     _shifts.forEach(sh => {
       _macs.forEach(m => {
         const v = pivot[date+'|'+sh+'|'+m] || 0;
-        sumHtml += '<td style="color:' + (v?'#bf360c':'#ccc') + ';text-align:center">' + (v ? v.toFixed(1) : '-') + '</td>';
+        sumHtml += '<td style="color:' + (v?'#bf360c':'#bbb') + ';text-align:center;padding:5px 10px;font-size:.78rem">' + (v ? v.toFixed(1) : '-') + '</td>';
       });
     });
     const rt = rowTot[date]||0;
-    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
+    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center;padding:5px 10px">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
   });
   sumHtml += '<tr class="month-total"><td style="text-align:center">합계</td>';
   _shifts.forEach(sh => _macs.forEach(m => {
@@ -1054,21 +1062,29 @@ function showProdMonth(year, month) {
     grandTotal += v;
   });
 
+  // 다운로드용 전역 저장
+  window._currentMonthData = { year, month, records, pivot, _macs, _dates, _shifts, colTot, grandTotal };
+
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.68rem;font-weight:600;padding:3px 4px;text-align:center">' + m + '</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:' + (sh===_shifts[0]?'#e65100':'#e65100') + ';padding:5px 2px;text-align:center">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
-  let sumHtml = '<div style="overflow-x:auto;margin-bottom:16px">'
-    + '<table class="prod-stat-table" style="font-size:.75rem;border-collapse:collapse;width:100%"><thead>'
-    + '<tr><th rowspan="2" style="min-width:72px;background:#fbe9e7;vertical-align:middle;text-align:center">'
+  const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
+    + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
+    + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
+    + '</div>';
+
+  let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
+    + '<table class="prod-stat-table" style="font-size:.78rem;border-collapse:collapse;min-width:max-content"><thead>'
+    + '<tr><th rowspan="2" style="min-width:76px;background:#fbe9e7;vertical-align:middle;text-align:center;padding:6px 8px">'
     + '생산일자</th>' + thShifts
-    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center">'
+    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center;white-space:nowrap;padding:6px 8px">'
     + '총합계</th></tr>'
     + '<tr>' + thMacs + '</tr>'
     + '</thead><tbody>';
@@ -1076,15 +1092,15 @@ function showProdMonth(year, month) {
   _dates.forEach(date => {
     const _d = new Date(date+'T12:00:00');
     const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
-    sumHtml += '<tr><td style="font-size:.72rem;white-space:nowrap;text-align:center">' + _dl + '</td>';
+    sumHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 8px">' + _dl + '</td>';
     _shifts.forEach(sh => {
       _macs.forEach(m => {
         const v = pivot[date+'|'+sh+'|'+m] || 0;
-        sumHtml += '<td style="color:' + (v?'#bf360c':'#ccc') + ';text-align:center">' + (v ? v.toFixed(1) : '-') + '</td>';
+        sumHtml += '<td style="color:' + (v?'#bf360c':'#bbb') + ';text-align:center;padding:5px 10px;font-size:.78rem">' + (v ? v.toFixed(1) : '-') + '</td>';
       });
     });
     const rt = rowTot[date]||0;
-    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
+    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center;padding:5px 10px">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
   });
   sumHtml += '<tr class="month-total"><td style="text-align:center">합계</td>';
   _shifts.forEach(sh => _macs.forEach(m => {
@@ -1635,21 +1651,29 @@ function showProdMonth(year, month) {
     grandTotal += v;
   });
 
+  // 다운로드용 전역 저장
+  window._currentMonthData = { year, month, records, pivot, _macs, _dates, _shifts, colTot, grandTotal };
+
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.68rem;font-weight:600;padding:3px 4px;text-align:center">' + m + '</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:' + (sh===_shifts[0]?'#e65100':'#e65100') + ';padding:5px 2px;text-align:center">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
-  let sumHtml = '<div style="overflow-x:auto;margin-bottom:16px">'
-    + '<table class="prod-stat-table" style="font-size:.75rem;border-collapse:collapse;width:100%"><thead>'
-    + '<tr><th rowspan="2" style="min-width:72px;background:#fbe9e7;vertical-align:middle;text-align:center">'
+  const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
+    + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
+    + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
+    + '</div>';
+
+  let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
+    + '<table class="prod-stat-table" style="font-size:.78rem;border-collapse:collapse;min-width:max-content"><thead>'
+    + '<tr><th rowspan="2" style="min-width:76px;background:#fbe9e7;vertical-align:middle;text-align:center;padding:6px 8px">'
     + '생산일자</th>' + thShifts
-    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center">'
+    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center;white-space:nowrap;padding:6px 8px">'
     + '총합계</th></tr>'
     + '<tr>' + thMacs + '</tr>'
     + '</thead><tbody>';
@@ -1657,15 +1681,15 @@ function showProdMonth(year, month) {
   _dates.forEach(date => {
     const _d = new Date(date+'T12:00:00');
     const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
-    sumHtml += '<tr><td style="font-size:.72rem;white-space:nowrap;text-align:center">' + _dl + '</td>';
+    sumHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 8px">' + _dl + '</td>';
     _shifts.forEach(sh => {
       _macs.forEach(m => {
         const v = pivot[date+'|'+sh+'|'+m] || 0;
-        sumHtml += '<td style="color:' + (v?'#bf360c':'#ccc') + ';text-align:center">' + (v ? v.toFixed(1) : '-') + '</td>';
+        sumHtml += '<td style="color:' + (v?'#bf360c':'#bbb') + ';text-align:center;padding:5px 10px;font-size:.78rem">' + (v ? v.toFixed(1) : '-') + '</td>';
       });
     });
     const rt = rowTot[date]||0;
-    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
+    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center;padding:5px 10px">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
   });
   sumHtml += '<tr class="month-total"><td style="text-align:center">합계</td>';
   _shifts.forEach(sh => _macs.forEach(m => {
@@ -2215,21 +2239,29 @@ function showProdMonth(year, month) {
     grandTotal += v;
   });
 
+  // 다운로드용 전역 저장
+  window._currentMonthData = { year, month, records, pivot, _macs, _dates, _shifts, colTot, grandTotal };
+
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.68rem;font-weight:600;padding:3px 4px;text-align:center">' + m + '</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:' + (sh===_shifts[0]?'#e65100':'#e65100') + ';padding:5px 2px;text-align:center">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
-  let sumHtml = '<div style="overflow-x:auto;margin-bottom:16px">'
-    + '<table class="prod-stat-table" style="font-size:.75rem;border-collapse:collapse;width:100%"><thead>'
-    + '<tr><th rowspan="2" style="min-width:72px;background:#fbe9e7;vertical-align:middle;text-align:center">'
+  const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
+    + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
+    + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
+    + '</div>';
+
+  let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
+    + '<table class="prod-stat-table" style="font-size:.78rem;border-collapse:collapse;min-width:max-content"><thead>'
+    + '<tr><th rowspan="2" style="min-width:76px;background:#fbe9e7;vertical-align:middle;text-align:center;padding:6px 8px">'
     + '생산일자</th>' + thShifts
-    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center">'
+    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center;white-space:nowrap;padding:6px 8px">'
     + '총합계</th></tr>'
     + '<tr>' + thMacs + '</tr>'
     + '</thead><tbody>';
@@ -2237,15 +2269,15 @@ function showProdMonth(year, month) {
   _dates.forEach(date => {
     const _d = new Date(date+'T12:00:00');
     const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
-    sumHtml += '<tr><td style="font-size:.72rem;white-space:nowrap;text-align:center">' + _dl + '</td>';
+    sumHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 8px">' + _dl + '</td>';
     _shifts.forEach(sh => {
       _macs.forEach(m => {
         const v = pivot[date+'|'+sh+'|'+m] || 0;
-        sumHtml += '<td style="color:' + (v?'#bf360c':'#ccc') + ';text-align:center">' + (v ? v.toFixed(1) : '-') + '</td>';
+        sumHtml += '<td style="color:' + (v?'#bf360c':'#bbb') + ';text-align:center;padding:5px 10px;font-size:.78rem">' + (v ? v.toFixed(1) : '-') + '</td>';
       });
     });
     const rt = rowTot[date]||0;
-    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
+    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center;padding:5px 10px">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
   });
   sumHtml += '<tr class="month-total"><td style="text-align:center">합계</td>';
   _shifts.forEach(sh => _macs.forEach(m => {
@@ -2544,6 +2576,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
 </style>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -2736,16 +2769,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn btn-primary" id="btn-ib-start">📷 영상 스캔</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <button class="btn btn-primary" id="btn-ib-start">📷 영상</button>
       <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('inbound')">🔍 네이티브</button>
-      <label class="btn" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
-        📸 사진 스캔
-        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'inbound')">
-      </label>
       <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('inbound')">📱 ZXing</button>
     </div>
-    <button class="btn btn-full" style="background:#37474f;color:#fff;margin-top:8px" onclick="openManualInput('inbound')">⌨️ 직접 입력</button>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
@@ -2764,16 +2792,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn btn-warning" id="btn-ob-start">📷 영상 스캔</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <button class="btn btn-warning" id="btn-ob-start">📷 영상</button>
       <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('outbound')">🔍 네이티브</button>
-      <label class="btn" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
-        📸 사진 스캔
-        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'outbound')">
-      </label>
       <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('outbound')">📱 ZXing</button>
     </div>
-    <button class="btn btn-full" style="background:#37474f;color:#fff;margin-top:8px" onclick="openManualInput('outbound')">⌨️ 직접 입력</button>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('outbound')">■ 스캔 중지</button>
@@ -3036,16 +3059,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <button class="btn btn-primary" id="btn-prod-scan" onclick="startProdScan()">📷 영상 스캔</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <button class="btn btn-primary" id="btn-prod-scan" onclick="startProdScan()">📷 영상</button>
           <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('production')">🔍 네이티브</button>
-          <label class="btn" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
-            📸 사진 스캔
-            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'production')">
-          </label>
           <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('production')">📱 ZXing</button>
         </div>
-        <button class="btn btn-full" style="background:#37474f;color:#fff;margin-top:8px" onclick="openManualInput('production')">⌨️ 직접 입력</button>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
@@ -4464,6 +4482,11 @@ async function submitProdEntry() {
       });
       const dupPacks = sel.filter(n => registeredPacks.includes(n));
       if (dupPacks.length > 0) {
+        // 덮어쓰기 컨텍스트 저장
+        window._pendingOverwriteCtx = {
+          selPacks, date, machine, shift,
+          company: pendingProd.company||'', site: pendingProd.site||'', req_code: pendingProd.req_code||''
+        };
         showDupWarning(dupPacks, dupRecordMap);
         return;
       }
@@ -4594,21 +4617,29 @@ function showProdMonth(year, month) {
     grandTotal += v;
   });
 
+  // 다운로드용 전역 저장
+  window._currentMonthData = { year, month, records, pivot, _macs, _dates, _shifts, colTot, grandTotal };
+
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.68rem;font-weight:600;padding:3px 4px;text-align:center">' + m + '</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:' + (sh===_shifts[0]?'#e65100':'#e65100') + ';padding:5px 2px;text-align:center">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
-  let sumHtml = '<div style="overflow-x:auto;margin-bottom:16px">'
-    + '<table class="prod-stat-table" style="font-size:.75rem;border-collapse:collapse;width:100%"><thead>'
-    + '<tr><th rowspan="2" style="min-width:72px;background:#fbe9e7;vertical-align:middle;text-align:center">'
+  const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
+    + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
+    + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
+    + '</div>';
+
+  let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
+    + '<table class="prod-stat-table" style="font-size:.78rem;border-collapse:collapse;min-width:max-content"><thead>'
+    + '<tr><th rowspan="2" style="min-width:76px;background:#fbe9e7;vertical-align:middle;text-align:center;padding:6px 8px">'
     + '생산일자</th>' + thShifts
-    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center">'
+    + '<th rowspan="2" style="background:#e8f5e9;color:#1b5e20;vertical-align:middle;text-align:center;white-space:nowrap;padding:6px 8px">'
     + '총합계</th></tr>'
     + '<tr>' + thMacs + '</tr>'
     + '</thead><tbody>';
@@ -4616,15 +4647,15 @@ function showProdMonth(year, month) {
   _dates.forEach(date => {
     const _d = new Date(date+'T12:00:00');
     const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
-    sumHtml += '<tr><td style="font-size:.72rem;white-space:nowrap;text-align:center">' + _dl + '</td>';
+    sumHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 8px">' + _dl + '</td>';
     _shifts.forEach(sh => {
       _macs.forEach(m => {
         const v = pivot[date+'|'+sh+'|'+m] || 0;
-        sumHtml += '<td style="color:' + (v?'#bf360c':'#ccc') + ';text-align:center">' + (v ? v.toFixed(1) : '-') + '</td>';
+        sumHtml += '<td style="color:' + (v?'#bf360c':'#bbb') + ';text-align:center;padding:5px 10px;font-size:.78rem">' + (v ? v.toFixed(1) : '-') + '</td>';
       });
     });
     const rt = rowTot[date]||0;
-    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
+    sumHtml += '<td style="font-weight:700;color:#2e7d32;text-align:center;padding:5px 10px">' + (rt ? rt.toFixed(1) : '-') + '</td></tr>';
   });
   sumHtml += '<tr class="month-total"><td style="text-align:center">합계</td>';
   _shifts.forEach(sh => _macs.forEach(m => {
@@ -4684,6 +4715,67 @@ function showProdMonth(year, month) {
   bodyEl.innerHTML = sumHtml + detailHtml;
 }
 
+
+// ── 월현황 사진 다운로드 ─────────────────────────────────
+async function downloadProdMonthImg() {
+  const d = window._currentMonthData;
+  const el = document.getElementById('prod-month-table-wrap');
+  if (!el || !d) return;
+  try {
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+    const a = document.createElement('a');
+    a.download = '생산수불_' + d.year + '_' + (+d.month) + '월.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  } catch(e) { toast('사진 저장 실패: ' + e.message); }
+}
+
+// ── 월현황 엑셀 다운로드 ─────────────────────────────────
+function downloadProdMonthExcel() {
+  const d = window._currentMonthData;
+  if (!d) return;
+  const { year, month, pivot, _macs, _dates, _shifts, colTot, grandTotal } = d;
+  const _dw = '일월화수목금토';
+
+  const wsData = [];
+  const h1 = ['날짜'];
+  _shifts.forEach(sh => { _macs.forEach((m,i) => h1.push(i===0 ? sh : '')); });
+  h1.push('총합계');
+  const h2 = ['날짜'];
+  _shifts.forEach(sh => { _macs.forEach(m => h2.push(m + '호기')); });
+  h2.push('');
+  wsData.push(h1, h2);
+
+  _dates.forEach(date => {
+    const _d = new Date(date + 'T12:00:00');
+    const lbl = (_d.getMonth()+1) + '/' + _d.getDate() + '(' + _dw[_d.getDay()] + ')';
+    const row = [lbl];
+    let rt = 0;
+    _shifts.forEach(sh => {
+      _macs.forEach(m => {
+        const v = pivot[date+'|'+sh+'|'+m] || 0;
+        row.push(v || null);
+        rt += v;
+      });
+    });
+    row.push(rt || null);
+    wsData.push(row);
+  });
+
+  const totRow = [year + '년 ' + (+month) + '월 합계'];
+  _shifts.forEach(sh => { _macs.forEach(m => totRow.push(colTot[sh+'|'+m]||null)); });
+  totRow.push(grandTotal||null);
+  wsData.push(totRow);
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const colW = [{ wch: 14 }];
+  _shifts.forEach(() => _macs.forEach(() => colW.push({ wch: 10 })));
+  colW.push({ wch: 10 });
+  ws['!cols'] = colW;
+  XLSX.utils.book_append_sheet(wb, ws, year + '.' + (+month) + '월');
+  XLSX.writeFile(wb, '생산수불_' + year + '_' + (+month) + '월.xlsx');
+}
 // ── 생산기록 삭제 ─────────────────────────────────────────
 async function openDeleteProd() {
   if (!db) { toast('Firebase 미연결'); return; }
@@ -5333,22 +5425,21 @@ function showDupWarning(dupPacks, dupRecordMap) {
     byRecord[key].packs.push(pn);
   });
 
-  let html = '';
+  let html = '<div style="font-size:.85rem;color:#c62828;font-weight:700;margin-bottom:10px">⚠️ 이미 등록된 패킹번호가 있습니다</div>';
+  html += '<div style="font-size:.82rem;color:#333;margin-bottom:12px">기존 데이터를 지우고 지금 데이터로 덮어쓰겠습니까?</div>';
   Object.values(byRecord).forEach(rec => {
-    const yr = (rec.date||'').slice(0,4);
-    const mo = (rec.date||'').slice(5,7);
     html += `<div style="background:#fff3e0;border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:4px solid #f57c00">
       <div style="font-size:.85rem;color:#222222;font-weight:700">📦 ${rec.packs.join(', ')}번 패킹</div>
       <div style="font-size:.82rem;color:#555;margin-top:5px;line-height:1.7">
         📅 등록일: <strong>${rec.date}</strong><br>
         🕐 구분: <strong>${rec.shift}</strong> &nbsp; 🏭 호기: <strong>${rec.machine}호기</strong>
       </div>
-      <button onclick="closeDupWarn();openEditProd('${rec.docId}','${yr}','${mo}')"
-        style="margin-top:9px;padding:7px 16px;background:#f57c00;color:#000;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">
-        ✏️ 이 기록 수정하러 가기
-      </button>
     </div>`;
   });
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">'
+    + '<button onclick="confirmOverwrite()" style="padding:11px;background:#e53935;color:#fff;border:none;border-radius:8px;font-size:.88rem;cursor:pointer;font-family:inherit;font-weight:700">✅ 예, 덮어쓰기</button>'
+    + '<button onclick="closeDupWarn()" style="padding:11px;background:#546e7a;color:#fff;border:none;border-radius:8px;font-size:.88rem;cursor:pointer;font-family:inherit">❌ 아니오</button>'
+    + '</div>';
 
   document.getElementById('dup-warn-body').innerHTML = html;
   document.getElementById('dup-warn-modal').style.display = 'flex';
@@ -5356,6 +5447,30 @@ function showDupWarning(dupPacks, dupRecordMap) {
 
 function closeDupWarn() {
   document.getElementById('dup-warn-modal').style.display = 'none';
+}
+
+async function confirmOverwrite() {
+  closeDupWarn();
+  const ctx = window._pendingOverwriteCtx;
+  if (!ctx || !db) return;
+  window._pendingOverwriteCtx = null;
+  const { selPacks, date, machine, shift, company, site, req_code } = ctx;
+  const hasDetail = selPacks.some(p => p.sheets !== null);
+  const totSheets = hasDetail ? selPacks.reduce((s,p) => s+(+p.sheets||0), 0) : null;
+  const totArea   = hasDetail ? +selPacks.reduce((s,p) => s+(+p.area||0), 0).toFixed(2) : null;
+  const rec = {
+    type:'deck', date, shift, machine, company, site, req_code,
+    packs: selPacks, pack_count: selPacks.length,
+    total_sheets: totSheets, total_area: totArea,
+    recorded_at: firebase.firestore.Timestamp.now(), recorded_by: currentUser
+  };
+  try {
+    await db.collection('production_deck').add(rec);
+    document.getElementById('prod-entry-card').style.display = 'none';
+    pendingProd = null;
+    toast('✅ 생산 등록 완료! (덮어쓰기)');
+    if (window._prodRecords) window._prodRecords.push({...rec, id:'ow_' + Date.now()});
+  } catch(e) { toast('저장 실패: ' + e.message); }
 }
 
 function setAllPackCb(checked) {
@@ -5411,7 +5526,7 @@ function openDailyReport(date, machine, shift) {
     r.date === date &&
     String(r.machine||'') === String(machine||'') &&
     (!shift || r.shift === shift)
-  ).sort((a,b) => 0);
+  ).sort((a,b) => (a.recorded_at?.seconds||0) - (b.recorded_at?.seconds||0));
 
   if (!allRecs.length) { toast('해당 일자/호기/시간대 기록 없음'); return; }
 
