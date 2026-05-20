@@ -2993,32 +2993,6 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 </div>
 
 <div id="toast"></div>
-<!-- 사진 QR 처리용 숨김 div -->
-<div id="photo-qr-reader" style="display:none"></div>
-
-<!-- BarcodeDetector / ZXing 공용 스캔 모달 -->
-<div id="native-scan-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(0,0,0,.7)">
-    <div id="native-scan-label" style="color:#fff;font-size:.88rem;font-weight:700">🔍 QR 스캔 중...</div>
-    <button onclick="stopNativeScan()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:.82rem;cursor:pointer">✕ 닫기</button>
-  </div>
-  <video id="native-scan-video" style="width:100%;flex:1;object-fit:cover" autoplay muted playsinline></video>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250px;height:250px;border:3px solid #fb8c00;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none"></div>
-  <div style="padding:16px;text-align:center;background:rgba(0,0,0,.7);color:#ccc;font-size:.78rem">QR코드를 네모 안에 맞춰주세요</div>
-</div>
-
-<!-- 직접 입력 모달 -->
-<div id="manual-input-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:24px;width:85%;max-width:360px">
-    <div style="font-size:.95rem;font-weight:700;margin-bottom:8px">⌨️ QR 데이터 직접 입력</div>
-    <div style="font-size:.75rem;color:#78909c;margin-bottom:12px">QR코드 스캔이 안 될 때, QR 내용(JSON)을 붙여넣으세요.</div>
-    <textarea id="manual-qr-input" rows="5" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px;font-size:.8rem;box-sizing:border-box;font-family:monospace;resize:none" placeholder='{"type":"job_order","id":"..."}'></textarea>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button onclick="closeManualInput()" style="flex:1;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;font-size:.85rem;cursor:pointer">취소</button>
-      <button onclick="submitManualInput()" style="flex:1;padding:10px;border:none;border-radius:10px;background:#f57c00;color:#fff;font-size:.85rem;cursor:pointer;font-weight:700">확인</button>
-    </div>
-  </div>
-</div>
 
 </div><!-- /screen-inventory -->
 
@@ -5024,20 +4998,18 @@ async function startZXingScan(type) {
   document.getElementById('native-scan-label').textContent = '📱 ZXing 스캔 중...';
   document.getElementById('native-scan-modal').style.display = 'flex';
   try {
-    const hints = new Map();
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    zxingReader = new ZXing.BrowserQRCodeReader(hints);
+    zxingReader = new ZXing.BrowserQRCodeReader();
     const video = document.getElementById('native-scan-video');
     await zxingReader.decodeFromConstraints(
       { video: { facingMode:'environment', width:{ideal:1920}, height:{ideal:1080} } },
       video,
-      (result) => {
+      (result, err) => {
         if (result) { stopNativeScan(); processQRResult(type, result.getText()); }
       }
     );
   } catch(e) {
     stopNativeScan();
-    if (!e.message?.includes('reset')) toast('ZXing 오류: ' + e.message);
+    if (e && !String(e.message).includes('reset')) toast('ZXing 오류: ' + e.message);
   }
 }
 
@@ -5588,6 +5560,33 @@ async function downloadDailyReport() {
       </div>
     </div>
     <div id="dr-body"></div>
+  </div>
+</div>
+
+<!-- 사진 QR 처리용 숨김 div (전역) -->
+<div id="photo-qr-reader" style="display:none"></div>
+
+<!-- BarcodeDetector / ZXing 공용 스캔 모달 (전역 - 어느 화면에서도 동작) -->
+<div id="native-scan-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(0,0,0,.7)">
+    <div id="native-scan-label" style="color:#fff;font-size:.88rem;font-weight:700">🔍 QR 스캔 중...</div>
+    <button onclick="stopNativeScan()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:.82rem;cursor:pointer">✕ 닫기</button>
+  </div>
+  <video id="native-scan-video" style="width:100%;flex:1;object-fit:cover" autoplay muted playsinline></video>
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250px;height:250px;border:3px solid #fb8c00;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none"></div>
+  <div style="padding:16px;text-align:center;background:rgba(0,0,0,.7);color:#ccc;font-size:.78rem">QR코드를 네모 안에 맞춰주세요</div>
+</div>
+
+<!-- 직접 입력 모달 (전역) -->
+<div id="manual-input-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:85%;max-width:360px">
+    <div style="font-size:.95rem;font-weight:700;margin-bottom:8px">⌨️ QR 데이터 직접 입력</div>
+    <div style="font-size:.75rem;color:#78909c;margin-bottom:12px">QR코드 스캔이 안 될 때, QR 내용(JSON)을 붙여넣으세요.</div>
+    <textarea id="manual-qr-input" rows="5" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px;font-size:.8rem;box-sizing:border-box;font-family:monospace;resize:none" placeholder='{"type":"job_order","id":"..."}'></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="closeManualInput()" style="flex:1;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;font-size:.85rem;cursor:pointer">취소</button>
+      <button onclick="submitManualInput()" style="flex:1;padding:10px;border:none;border-radius:10px;background:#f57c00;color:#fff;font-size:.85rem;cursor:pointer;font-weight:700">확인</button>
+    </div>
   </div>
 </div>
 
