@@ -1182,6 +1182,7 @@ async function deleteProdRecord(docId, btn) {
 }
 
 </script>
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
 // ─────────────────────────────────────────────────────────
 //  APP NAVIGATION
@@ -2735,13 +2736,16 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-primary btn-full" id="btn-ib-start">📷 영상 스캔</button>
-      <label class="btn btn-full" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-primary" id="btn-ib-start">📷 영상 스캔</button>
+      <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('inbound')">🔍 네이티브</button>
+      <label class="btn" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
         📸 사진 스캔
         <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'inbound')">
       </label>
+      <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('inbound')">📱 ZXing</button>
     </div>
+    <button class="btn btn-full" style="background:#37474f;color:#fff;margin-top:8px" onclick="openManualInput('inbound')">⌨️ 직접 입력</button>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
@@ -2760,13 +2764,16 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-warning btn-full" id="btn-ob-start">📷 영상 스캔</button>
-      <label class="btn btn-full" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-warning" id="btn-ob-start">📷 영상 스캔</button>
+      <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('outbound')">🔍 네이티브</button>
+      <label class="btn" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
         📸 사진 스캔
         <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'outbound')">
       </label>
+      <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('outbound')">📱 ZXing</button>
     </div>
+    <button class="btn btn-full" style="background:#37474f;color:#fff;margin-top:8px" onclick="openManualInput('outbound')">⌨️ 직접 입력</button>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('outbound')">■ 스캔 중지</button>
@@ -2989,6 +2996,30 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 <!-- 사진 QR 처리용 숨김 div -->
 <div id="photo-qr-reader" style="display:none"></div>
 
+<!-- BarcodeDetector / ZXing 공용 스캔 모달 -->
+<div id="native-scan-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(0,0,0,.7)">
+    <div id="native-scan-label" style="color:#fff;font-size:.88rem;font-weight:700">🔍 QR 스캔 중...</div>
+    <button onclick="stopNativeScan()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:.82rem;cursor:pointer">✕ 닫기</button>
+  </div>
+  <video id="native-scan-video" style="width:100%;flex:1;object-fit:cover" autoplay muted playsinline></video>
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250px;height:250px;border:3px solid #fb8c00;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none"></div>
+  <div style="padding:16px;text-align:center;background:rgba(0,0,0,.7);color:#ccc;font-size:.78rem">QR코드를 네모 안에 맞춰주세요</div>
+</div>
+
+<!-- 직접 입력 모달 -->
+<div id="manual-input-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:85%;max-width:360px">
+    <div style="font-size:.95rem;font-weight:700;margin-bottom:8px">⌨️ QR 데이터 직접 입력</div>
+    <div style="font-size:.75rem;color:#78909c;margin-bottom:12px">QR코드 스캔이 안 될 때, QR 내용(JSON)을 붙여넣으세요.</div>
+    <textarea id="manual-qr-input" rows="5" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px;font-size:.8rem;box-sizing:border-box;font-family:monospace;resize:none" placeholder='{"type":"job_order","id":"..."}'></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="closeManualInput()" style="flex:1;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;font-size:.85rem;cursor:pointer">취소</button>
+      <button onclick="submitManualInput()" style="flex:1;padding:10px;border:none;border-radius:10px;background:#f57c00;color:#fff;font-size:.85rem;cursor:pointer;font-weight:700">확인</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /screen-inventory -->
 
 <!-- ════════════════════ PRODUCTION APP ════════════════════ -->
@@ -3031,13 +3062,16 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary btn-full" id="btn-prod-scan" onclick="startProdScan()">📷 영상 스캔</button>
-          <label class="btn btn-full" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn btn-primary" id="btn-prod-scan" onclick="startProdScan()">📷 영상 스캔</button>
+          <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('production')">🔍 네이티브</button>
+          <label class="btn" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
             📸 사진 스캔
             <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'production')">
           </label>
+          <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('production')">📱 ZXing</button>
         </div>
+        <button class="btn btn-full" style="background:#37474f;color:#fff;margin-top:8px" onclick="openManualInput('production')">⌨️ 직접 입력</button>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
@@ -4915,6 +4949,130 @@ async function _backupEngine(cfg) {
   } finally {
     btn.disabled = false; btn.textContent = origLabel;
   }
+}
+
+// ─────────────────────────────────────────────────────────
+//  QR 스캔 공용 결과 처리
+// ─────────────────────────────────────────────────────────
+function processQRResult(type, raw) {
+  let data;
+  try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; }
+  catch(_) { toast('QR 데이터 형식 오류'); return; }
+  if (type === 'inbound')         handleInbound(data);
+  else if (type === 'outbound')   handleOutbound(data);
+  else if (type === 'production') { try { handleProdQR(data); } catch(_) {} }
+}
+
+// ─────────────────────────────────────────────────────────
+//  BarcodeDetector (네이티브 스캔)
+// ─────────────────────────────────────────────────────────
+let nativeScanStream = null;
+let nativeScanTimer  = null;
+let nativeScanType   = null;
+
+async function startNativeScan(type) {
+  if (!('BarcodeDetector' in window)) {
+    toast('이 기기/브라우저는 네이티브 스캔을 지원하지 않습니다.\n다른 방법을 이용하세요.');
+    return;
+  }
+  nativeScanType = type;
+  const modal = document.getElementById('native-scan-modal');
+  document.getElementById('native-scan-label').textContent =
+    type === 'inbound' ? '🔍 입고 QR 스캔' :
+    type === 'outbound' ? '🔍 출고 QR 스캔' : '🔍 생산 QR 스캔';
+  modal.style.display = 'flex';
+
+  try {
+    nativeScanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:'environment', width:{ideal:1920}, height:{ideal:1080} }
+    });
+    const video = document.getElementById('native-scan-video');
+    video.srcObject = nativeScanStream;
+    await video.play();
+
+    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+    const scan = async () => {
+      if (!nativeScanStream) return;
+      try {
+        const results = await detector.detect(video);
+        if (results.length > 0) {
+          stopNativeScan();
+          processQRResult(type, results[0].rawValue);
+          return;
+        }
+      } catch(_) {}
+      nativeScanTimer = requestAnimationFrame(scan);
+    };
+    nativeScanTimer = requestAnimationFrame(scan);
+  } catch(e) {
+    stopNativeScan();
+    toast('카메라 오류: ' + e.message);
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  ZXing 스캔
+// ─────────────────────────────────────────────────────────
+let zxingReader = null;
+
+async function startZXingScan(type) {
+  if (typeof ZXing === 'undefined') {
+    toast('ZXing 라이브러리 로딩 중... 잠시 후 다시 시도하세요.');
+    return;
+  }
+  nativeScanType = type;
+  document.getElementById('native-scan-label').textContent = '📱 ZXing 스캔 중...';
+  document.getElementById('native-scan-modal').style.display = 'flex';
+  try {
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    zxingReader = new ZXing.BrowserQRCodeReader(hints);
+    const video = document.getElementById('native-scan-video');
+    await zxingReader.decodeFromConstraints(
+      { video: { facingMode:'environment', width:{ideal:1920}, height:{ideal:1080} } },
+      video,
+      (result) => {
+        if (result) { stopNativeScan(); processQRResult(type, result.getText()); }
+      }
+    );
+  } catch(e) {
+    stopNativeScan();
+    if (!e.message?.includes('reset')) toast('ZXing 오류: ' + e.message);
+  }
+}
+
+// 공용 종료 함수 (BarcodeDetector + ZXing 모두 처리)
+function stopNativeScan() {
+  if (nativeScanTimer)  { cancelAnimationFrame(nativeScanTimer); nativeScanTimer = null; }
+  if (nativeScanStream) { nativeScanStream.getTracks().forEach(t => t.stop()); nativeScanStream = null; }
+  if (zxingReader)      { try { zxingReader.reset(); } catch(_) {} zxingReader = null; }
+  const video = document.getElementById('native-scan-video');
+  if (video) video.srcObject = null;
+  document.getElementById('native-scan-modal').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────────────────
+//  직접 입력
+// ─────────────────────────────────────────────────────────
+let manualInputType = null;
+
+function openManualInput(type) {
+  manualInputType = type;
+  document.getElementById('manual-qr-input').value = '';
+  document.getElementById('manual-input-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('manual-qr-input').focus(), 100);
+}
+
+function closeManualInput() {
+  document.getElementById('manual-input-modal').style.display = 'none';
+  manualInputType = null;
+}
+
+function submitManualInput() {
+  const raw = document.getElementById('manual-qr-input').value.trim();
+  if (!raw) { toast('내용을 입력하세요.'); return; }
+  closeManualInput();
+  processQRResult(manualInputType, raw);
 }
 
 // ─────────────────────────────────────────────────────────
