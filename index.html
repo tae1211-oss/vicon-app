@@ -104,7 +104,15 @@ function startProdScan() {
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
     {facingMode: 'environment'},
-    {fps: 10, qrbox: {width: 250, height: 250}},
+    {
+      fps: 15,
+      qrbox: {width: 280, height: 280},
+      videoConstraints: {
+        facingMode: 'environment',
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480}
+      }
+    },
     raw => {
       try {
         const data = JSON.parse(raw);
@@ -694,7 +702,15 @@ function startProdScan() {
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
     {facingMode: 'environment'},
-    {fps: 10, qrbox: {width: 250, height: 250}},
+    {
+      fps: 15,
+      qrbox: {width: 280, height: 280},
+      videoConstraints: {
+        facingMode: 'environment',
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480}
+      }
+    },
     raw => {
       try {
         const data = JSON.parse(raw);
@@ -1266,7 +1282,15 @@ function startProdScan() {
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
     {facingMode: 'environment'},
-    {fps: 10, qrbox: {width: 250, height: 250}},
+    {
+      fps: 15,
+      qrbox: {width: 280, height: 280},
+      videoConstraints: {
+        facingMode: 'environment',
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480}
+      }
+    },
     raw => {
       try {
         const data = JSON.parse(raw);
@@ -1838,7 +1862,15 @@ function startProdScan() {
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
     {facingMode: 'environment'},
-    {fps: 10, qrbox: {width: 250, height: 250}},
+    {
+      fps: 15,
+      qrbox: {width: 280, height: 280},
+      videoConstraints: {
+        facingMode: 'environment',
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480}
+      }
+    },
     raw => {
       try {
         const data = JSON.parse(raw);
@@ -3381,7 +3413,15 @@ function startScanner(elemId, key, cb) {
   scanners[key] = sc;
   sc.start(
     {facingMode: 'environment'},
-    {fps: 10, qrbox: {width: 240, height: 240}},
+    {
+      fps: 15,
+      qrbox: {width: 280, height: 280},
+      videoConstraints: {
+        facingMode: 'environment',
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480}
+      }
+    },
     decoded => {
       try {
         const data = JSON.parse(decoded);
@@ -4174,7 +4214,15 @@ function startProdScan() {
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
     {facingMode: 'environment'},
-    {fps: 10, qrbox: {width: 250, height: 250}},
+    {
+      fps: 15,
+      qrbox: {width: 280, height: 280},
+      videoConstraints: {
+        facingMode: 'environment',
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480}
+      }
+    },
     raw => {
       try {
         const data = JSON.parse(raw);
