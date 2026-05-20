@@ -5101,16 +5101,23 @@ let nativeScanStream = null;
 let nativeScanTimer  = null;
 let nativeScanType   = null;
 
+let _torchOn = false;
+
 async function startNativeScan(type) {
+  // BarcodeDetector 미지원(아이폰/구형 브라우저) → ZXing 자동 전환
   if (!('BarcodeDetector' in window)) {
-    toast('이 기기/브라우저는 네이티브 스캔을 지원하지 않습니다.\n다른 방법을 이용하세요.');
+    toast('이 브라우저는 네이티브 스캔 미지원\n→ ZXing으로 자동 전환합니다.');
+    startZXingScan(type);
     return;
   }
+  _torchOn = false;
   nativeScanType = type;
   const modal = document.getElementById('native-scan-modal');
   document.getElementById('native-scan-label').textContent =
     type === 'inbound' ? '🔍 입고 QR 스캔' :
     type === 'outbound' ? '🔍 출고 QR 스캔' : '🔍 생산 QR 스캔';
+  const torchBtn = document.getElementById('torch-btn');
+  if (torchBtn) torchBtn.style.display = 'none';
   modal.style.display = 'flex';
 
   try {
@@ -5121,24 +5128,66 @@ async function startNativeScan(type) {
     video.srcObject = nativeScanStream;
     await video.play();
 
+    // 손전등 지원 여부 확인
+    const track = nativeScanStream.getVideoTracks()[0];
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (caps.torch && torchBtn) torchBtn.style.display = 'inline-block';
+
+    // 캔버스 전처리 설정 (대비 강화로 고밀도 QR 인식 개선)
+    const canvas = document.getElementById('native-scan-canvas');
+    const ctx = canvas.getContext('2d');
     const detector = new BarcodeDetector({ formats: ['qr_code'] });
+
+    let _scanning = true;
     const scan = async () => {
-      if (!nativeScanStream) return;
+      if (!nativeScanStream || !_scanning) return;
+      if (video.readyState < 2) { nativeScanTimer = setTimeout(scan, 150); return; }
       try {
-        const results = await detector.detect(video);
+        // 1차: 원본 비디오 그대로 시도 (빠름)
+        let results = await detector.detect(video);
         if (results.length > 0) {
+          _scanning = false;
+          stopNativeScan();
+          processQRResult(type, results[0].rawValue);
+          return;
+        }
+        // 2차: 캔버스 전처리(대비+흑백) 후 재시도 (복잡한 QR 대응)
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.filter = 'grayscale(1) contrast(1.6) brightness(1.1)';
+        ctx.drawImage(video, 0, 0);
+        ctx.filter = 'none';
+        results = await detector.detect(canvas);
+        if (results.length > 0) {
+          _scanning = false;
           stopNativeScan();
           processQRResult(type, results[0].rawValue);
           return;
         }
       } catch(_) {}
-      nativeScanTimer = requestAnimationFrame(scan);
+      nativeScanTimer = setTimeout(scan, 300); // 300ms 간격 (CPU 안정화)
     };
-    nativeScanTimer = requestAnimationFrame(scan);
+    nativeScanTimer = setTimeout(scan, 300);
   } catch(e) {
     stopNativeScan();
     toast('카메라 오류: ' + e.message);
   }
+}
+
+// 손전등 토글
+async function toggleTorch() {
+  if (!nativeScanStream) return;
+  const track = nativeScanStream.getVideoTracks()[0];
+  if (!track) return;
+  try {
+    _torchOn = !_torchOn;
+    await track.applyConstraints({ advanced: [{ torch: _torchOn }] });
+    const btn = document.getElementById('torch-btn');
+    if (btn) {
+      btn.textContent = _torchOn ? '🔦 ON' : '🔦 손전등';
+      btn.style.background = _torchOn ? 'rgba(255,220,0,.6)' : 'rgba(255,220,0,.25)';
+    }
+  } catch(e) { toast('손전등 미지원 기기입니다.'); }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -5153,9 +5202,16 @@ async function startZXingScan(type) {
   }
   nativeScanType = type;
   document.getElementById('native-scan-label').textContent = '📱 ZXing 스캔 중...';
+  const torchBtn = document.getElementById('torch-btn');
+  if (torchBtn) torchBtn.style.display = 'none';
   document.getElementById('native-scan-modal').style.display = 'flex';
   try {
-    zxingReader = new ZXing.BrowserQRCodeReader();
+    // TRY_HARDER: 복잡/고밀도 QR 인식률 향상
+    const hints = new Map();
+    if (ZXing.DecodeHintType) {
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    }
+    zxingReader = new ZXing.BrowserQRCodeReader(hints);
     const video = document.getElementById('native-scan-video');
     await zxingReader.decodeFromConstraints(
       { video: { facingMode:'environment', width:{ideal:1920}, height:{ideal:1080} } },
@@ -5164,6 +5220,27 @@ async function startZXingScan(type) {
         if (result) { stopNativeScan(); processQRResult(type, result.getText()); }
       }
     );
+    // ZXing 카메라 스트림 확인 후 손전등 지원 표시
+    setTimeout(() => {
+      if (!nativeScanStream) {
+        // ZXing이 내부 스트림 관리하므로 video.srcObject에서 가져옴
+        const v = document.getElementById('native-scan-video');
+        if (v && v.srcObject) {
+          const track = v.srcObject.getVideoTracks()[0];
+          const caps = track && track.getCapabilities ? track.getCapabilities() : {};
+          if (caps.torch && torchBtn) {
+            // ZXing 사용 중엔 torch를 직접 관리
+            torchBtn.style.display = 'inline-block';
+            torchBtn.onclick = async () => {
+              _torchOn = !_torchOn;
+              try { await track.applyConstraints({ advanced: [{ torch: _torchOn }] }); } catch(_) {}
+              torchBtn.textContent = _torchOn ? '🔦 ON' : '🔦 손전등';
+              torchBtn.style.background = _torchOn ? 'rgba(255,220,0,.6)' : 'rgba(255,220,0,.25)';
+            };
+          }
+        }
+      }
+    }, 1500);
   } catch(e) {
     stopNativeScan();
     if (e && !String(e.message).includes('reset')) toast('ZXing 오류: ' + e.message);
@@ -5172,11 +5249,22 @@ async function startZXingScan(type) {
 
 // 공용 종료 함수 (BarcodeDetector + ZXing 모두 처리)
 function stopNativeScan() {
-  if (nativeScanTimer)  { cancelAnimationFrame(nativeScanTimer); nativeScanTimer = null; }
-  if (nativeScanStream) { nativeScanStream.getTracks().forEach(t => t.stop()); nativeScanStream = null; }
-  if (zxingReader)      { try { zxingReader.reset(); } catch(_) {} zxingReader = null; }
+  if (nativeScanTimer)  { clearTimeout(nativeScanTimer); cancelAnimationFrame(nativeScanTimer); nativeScanTimer = null; }
+  if (nativeScanStream) {
+    // 손전등 끄고 트랙 종료
+    try {
+      const track = nativeScanStream.getVideoTracks()[0];
+      if (track && _torchOn) track.applyConstraints({ advanced: [{ torch: false }] }).catch(()=>{});
+    } catch(_) {}
+    nativeScanStream.getTracks().forEach(t => t.stop());
+    nativeScanStream = null;
+  }
+  if (zxingReader) { try { zxingReader.reset(); } catch(_) {} zxingReader = null; }
+  _torchOn = false;
   const video = document.getElementById('native-scan-video');
   if (video) video.srcObject = null;
+  const torchBtn = document.getElementById('torch-btn');
+  if (torchBtn) { torchBtn.style.display = 'none'; torchBtn.textContent = '🔦 손전등'; }
   document.getElementById('native-scan-modal').style.display = 'none';
 }
 
@@ -5750,11 +5838,17 @@ async function downloadDailyReport() {
 <div id="native-scan-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(0,0,0,.7)">
     <div id="native-scan-label" style="color:#fff;font-size:.88rem;font-weight:700">🔍 QR 스캔 중...</div>
-    <button onclick="stopNativeScan()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:.82rem;cursor:pointer">✕ 닫기</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="torch-btn" onclick="toggleTorch()" style="display:none;background:rgba(255,220,0,.25);border:1px solid rgba(255,220,0,.5);color:#ffd700;padding:6px 12px;border-radius:20px;font-size:.82rem;cursor:pointer">🔦 손전등</button>
+      <button onclick="stopNativeScan()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:.82rem;cursor:pointer">✕ 닫기</button>
+    </div>
   </div>
   <video id="native-scan-video" style="width:100%;flex:1;object-fit:cover" autoplay muted playsinline></video>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250px;height:250px;border:3px solid #fb8c00;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none"></div>
-  <div style="padding:16px;text-align:center;background:rgba(0,0,0,.7);color:#ccc;font-size:.78rem">QR코드를 네모 안에 맞춰주세요</div>
+  <canvas id="native-scan-canvas" style="display:none"></canvas>
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:260px;border:3px solid #fb8c00;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none"></div>
+  <div style="padding:14px 16px;background:rgba(0,0,0,.7);color:#ccc;font-size:.78rem;text-align:center">
+    QR코드를 네모 안에 맞춰주세요 &nbsp;·&nbsp; 복잡한 QR은 📱 ZXing 권장
+  </div>
 </div>
 
 <!-- 직접 입력 모달 (전역) -->
