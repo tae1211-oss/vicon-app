@@ -2735,7 +2735,13 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <button class="btn btn-primary btn-full" id="btn-ib-start">📷 QR 스캔 시작</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-full" id="btn-ib-start">📷 영상 스캔</button>
+      <label class="btn btn-full" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
+        📸 사진 스캔
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'inbound')">
+      </label>
+    </div>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
@@ -2754,7 +2760,13 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <button class="btn btn-warning btn-full" id="btn-ob-start">📷 QR 스캔 시작</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-warning btn-full" id="btn-ob-start">📷 영상 스캔</button>
+      <label class="btn btn-full" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
+        📸 사진 스캔
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'outbound')">
+      </label>
+    </div>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('outbound')">■ 스캔 중지</button>
@@ -2974,6 +2986,8 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 </div>
 
 <div id="toast"></div>
+<!-- 사진 QR 처리용 숨김 div -->
+<div id="photo-qr-reader" style="display:none"></div>
 
 </div><!-- /screen-inventory -->
 
@@ -3017,7 +3031,13 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
-        <button class="btn btn-primary btn-full" id="btn-prod-scan" onclick="startProdScan()">📷 QR 스캔 시작</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-full" id="btn-prod-scan" onclick="startProdScan()">📷 영상 스캔</button>
+          <label class="btn btn-full" style="background:#546e7a;color:#fff;text-align:center;cursor:pointer;margin:0">
+            📸 사진 스캔
+            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRFromPhoto(this,'production')">
+          </label>
+        </div>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
@@ -4894,6 +4914,32 @@ async function _backupEngine(cfg) {
     toast('백업 실패: ' + e.message);
   } finally {
     btn.disabled = false; btn.textContent = origLabel;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  사진으로 QR 스캔 (영상 스캔 안 될 때 대안)
+// ─────────────────────────────────────────────────────────
+async function scanQRFromPhoto(input, type) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  input.value = '';
+  toast('사진에서 QR 인식 중...');
+
+  try {
+    const reader = new Html5Qrcode('photo-qr-reader');
+    const decoded = await reader.scanFile(file, false);
+
+    let data;
+    try { data = JSON.parse(decoded); } catch(_) { data = decoded; }
+
+    if (type === 'inbound')    { handleInbound(data); }
+    else if (type === 'outbound')  { handleOutbound(data); }
+    else if (type === 'production') {
+      try { handleProdQR(data); } catch(_) { toast('QR 인식 성공: ' + decoded); }
+    }
+  } catch(e) {
+    toast('QR을 찾지 못했습니다. 더 가깝고 선명하게 찍어보세요.');
   }
 }
 
