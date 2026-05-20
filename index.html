@@ -462,7 +462,7 @@ function showProdMonth(year, month) {
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
@@ -1068,7 +1068,7 @@ function showProdMonth(year, month) {
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
@@ -1657,7 +1657,7 @@ function showProdMonth(year, month) {
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
@@ -2245,7 +2245,7 @@ function showProdMonth(year, month) {
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
@@ -4498,7 +4498,7 @@ async function submitProdEntry() {
   const totArea    = hasDetail ? +selPacks.reduce((s,p) => s + (p.area||0), 0).toFixed(2) : null;
 
   const rec = {
-    type: 'deck', date, shift, machine,
+    type: currentProdType, date, shift, machine,
     company:      pendingProd.company  || '',
     site:         pendingProd.site     || '',
     req_code:     pendingProd.req_code || '',
@@ -4520,18 +4520,28 @@ async function submitProdEntry() {
 }
 
 // ── 현황 ─────────────────────────────────────────────────
+let _prodStatLastFetch = 0;
+let _prodStatLastType  = '';
 async function loadProdStat() {
   if (!db) return;
   const bodyEl = document.getElementById('prod-stat-body');
   const navEl  = document.getElementById('prod-stat-nav');
   if (!bodyEl) return;
+  // 같은 타입 5초 이내 재호출 방지
+  const now = Date.now();
+  if (window._prodRecords?.length && currentProdType === _prodStatLastType && now - _prodStatLastFetch < 5000) {
+    showProdYear((window._prodRecords[0]?.date||'').slice(0,4) || new Date().getFullYear().toString());
+    return;
+  }
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await db.collection('production_deck').get();
+    const snap = await db.collection('production_deck').where('type','==',currentProdType).get();
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
+    _prodStatLastFetch = Date.now();
+    _prodStatLastType  = currentProdType;
 
     if (!records.length) {
       bodyEl.innerHTML = '<div class="alert alert-info">생산 기록이 없습니다.</div>'; return;
@@ -4623,7 +4633,7 @@ function showProdMonth(year, month) {
   // header
   let thMacs = '';
   _shifts.forEach(sh => _macs.forEach(m => {
-    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '호기</th>';
+    thMacs += '<th style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;white-space:nowrap">' + m + '</th>';
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
@@ -4721,60 +4731,115 @@ async function downloadProdMonthImg() {
   const d = window._currentMonthData;
   const el = document.getElementById('prod-month-table-wrap');
   if (!el || !d) return;
+  // 모바일에서 overflow 잘림 방지: 전체 width로 임시 확장
+  const origOverflow = el.style.overflowX;
+  const origWidth = el.style.width;
+  const fullW = el.scrollWidth;
+  el.style.overflowX = 'visible';
+  el.style.width = fullW + 'px';
   try {
-    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+    const canvas = await html2canvas(el, {
+      scale: 2, backgroundColor: '#ffffff', useCORS: true,
+      scrollX: 0, scrollY: 0,
+      width: fullW, height: el.scrollHeight
+    });
     const a = document.createElement('a');
     a.download = '생산수불_' + d.year + '_' + (+d.month) + '월.png';
     a.href = canvas.toDataURL('image/png');
     a.click();
   } catch(e) { toast('사진 저장 실패: ' + e.message); }
+  finally {
+    el.style.overflowX = origOverflow;
+    el.style.width = origWidth;
+  }
 }
 
-// ── 월현황 엑셀 다운로드 ─────────────────────────────────
+// ── 월현황 엑셀 다운로드 (스타일 포함 HTML XLS) ──────────
 function downloadProdMonthExcel() {
   const d = window._currentMonthData;
   if (!d) return;
   const { year, month, pivot, _macs, _dates, _shifts, colTot, grandTotal } = d;
   const _dw = '일월화수목금토';
 
-  const wsData = [];
-  const h1 = ['날짜'];
-  _shifts.forEach(sh => { _macs.forEach((m,i) => h1.push(i===0 ? sh : '')); });
-  h1.push('총합계');
-  const h2 = ['날짜'];
-  _shifts.forEach(sh => { _macs.forEach(m => h2.push(m + '호기')); });
-  h2.push('');
-  wsData.push(h1, h2);
+  const border = 'border:1px solid #ccc';
+  const cellBase = 'style="' + border + ';text-align:center;padding:5px 8px;font-size:12px;font-family:Arial"';
+  const headerBase = (bg, color) => 'style="' + border + ';background:' + bg + ';color:' + color + ';text-align:center;padding:6px 8px;font-size:12px;font-weight:bold;font-family:Arial"';
 
-  _dates.forEach(date => {
+  let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+    + '<head><meta charset="utf-8">'
+    + '<xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>'
+    + '<x:Name>' + year + '년 ' + (+month) + '월</x:Name>'
+    + '<x:WorksheetOptions><x:Selected/></x:WorksheetOptions>'
+    + '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>'
+    + '</head><body>';
+
+  html += '<table cellspacing="0">';
+  // 제목 행
+  const totalCols = _shifts.length * _macs.length + 1;
+  html += '<tr><td colspan="' + (totalCols + 1) + '" style="background:#e8eaf6;font-size:14px;font-weight:bold;font-family:Arial;padding:8px 12px;border:1px solid #ccc">'
+    + year + '년 ' + (+month) + '월 생산수불 현황 (데크)</td></tr>';
+
+  // 헤더 1행: 날짜 | 야간 (macs) | 주간 (macs) | 총합계
+  html += '<tr>';
+  html += '<td rowspan="2" ' + headerBase('#fbe9e7','#c62828') + ' valign="middle">생산일자</td>';
+  _shifts.forEach(sh => {
+    const bg = sh === '야간' ? '#fff3e0' : '#fff8e1';
+    html += '<td colspan="' + _macs.length + '" ' + headerBase(bg,'#e65100') + '>' + sh + '</td>';
+  });
+  html += '<td rowspan="2" ' + headerBase('#e8f5e9','#1b5e20') + ' valign="middle">총합계</td>';
+  html += '</tr>';
+
+  // 헤더 2행: 호기별
+  html += '<tr>';
+  _shifts.forEach(sh => {
+    const bg = sh === '야간' ? '#fff3e0' : '#fff8e1';
+    _macs.forEach(m => {
+      html += '<td ' + headerBase(bg,'#555') + '>' + m + '</td>';
+    });
+  });
+  html += '</tr>';
+
+  // 데이터 행
+  _dates.forEach((date, idx) => {
     const _d = new Date(date + 'T12:00:00');
     const lbl = (_d.getMonth()+1) + '/' + _d.getDate() + '(' + _dw[_d.getDay()] + ')';
-    const row = [lbl];
+    const rowBg = idx % 2 === 0 ? '#ffffff' : '#fafafa';
+    html += '<tr>';
+    html += '<td style="' + border + ';background:' + rowBg + ';text-align:center;padding:5px 8px;font-size:12px;font-family:Arial;white-space:nowrap">' + lbl + '</td>';
     let rt = 0;
     _shifts.forEach(sh => {
       _macs.forEach(m => {
         const v = pivot[date+'|'+sh+'|'+m] || 0;
-        row.push(v || null);
+        const color = v ? '#bf360c' : '#bbb';
+        html += '<td style="' + border + ';background:' + rowBg + ';text-align:center;padding:5px 8px;font-size:12px;font-family:Arial;color:' + color + '">' + (v ? v.toFixed(1) : '-') + '</td>';
         rt += v;
       });
     });
-    row.push(rt || null);
-    wsData.push(row);
+    html += '<td style="' + border + ';background:' + rowBg + ';text-align:center;padding:5px 8px;font-size:12px;font-family:Arial;font-weight:bold;color:#2e7d32">' + (rt ? rt.toFixed(1) : '-') + '</td>';
+    html += '</tr>';
   });
 
-  const totRow = [year + '년 ' + (+month) + '월 합계'];
-  _shifts.forEach(sh => { _macs.forEach(m => totRow.push(colTot[sh+'|'+m]||null)); });
-  totRow.push(grandTotal||null);
-  wsData.push(totRow);
+  // 합계 행
+  html += '<tr>';
+  html += '<td ' + headerBase('#e8f5e9','#1b5e20') + '>합 계</td>';
+  _shifts.forEach(sh => {
+    _macs.forEach(m => {
+      const v = colTot[sh+'|'+m] || 0;
+      html += '<td style="' + border + ';background:#e8f5e9;text-align:center;padding:5px 8px;font-size:12px;font-family:Arial;font-weight:bold;color:#1b5e20">' + (v ? v.toFixed(1) : '-') + '</td>';
+    });
+  });
+  html += '<td style="' + border + ';background:#c8e6c9;text-align:center;padding:5px 8px;font-size:12px;font-family:Arial;font-weight:bold;color:#1b5e20">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td>';
+  html += '</tr>';
 
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  const colW = [{ wch: 14 }];
-  _shifts.forEach(() => _macs.forEach(() => colW.push({ wch: 10 })));
-  colW.push({ wch: 10 });
-  ws['!cols'] = colW;
-  XLSX.utils.book_append_sheet(wb, ws, year + '.' + (+month) + '월');
-  XLSX.writeFile(wb, '생산수불_' + year + '_' + (+month) + '월.xlsx');
+  html += '</table></body></html>';
+
+  const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '생산수불_' + year + '_' + (+month) + '월.xls';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 // ── 생산기록 삭제 ─────────────────────────────────────────
 async function openDeleteProd() {
@@ -5393,7 +5458,7 @@ async function openEditProd(docId, year, month) {
     `<div><span style="color:#78909c;font-size:.75rem">업체명</span><br><strong>${esc(r.company||'-')}</strong></div>
      <div style="margin-top:6px"><span style="color:#78909c;font-size:.75rem">현장명</span><br><strong>${esc(r.site||'-')}</strong></div>
      <div style="margin-top:6px"><span style="color:#78909c;font-size:.75rem">의뢰번호</span><br><strong>${esc(r.req_code||'-')}</strong></div>
-     <div style="margin-top:8px;font-size:.75rem;color:#90a4ae">${r.date||''} &nbsp;·&nbsp; ${r.shift||''} &nbsp;·&nbsp; ${r.machine||''}호기</div>`;
+     <div style="margin-top:8px;font-size:.75rem;color:#90a4ae">${r.date||''} &nbsp;·&nbsp; ${r.shift||''} &nbsp;·&nbsp; ${r.machine||''}</div>`;
 
   // 패킹 체크박스
   const packs = r.packs || [];
@@ -5432,7 +5497,7 @@ function showDupWarning(dupPacks, dupRecordMap) {
       <div style="font-size:.85rem;color:#222222;font-weight:700">📦 ${rec.packs.join(', ')}번 패킹</div>
       <div style="font-size:.82rem;color:#555;margin-top:5px;line-height:1.7">
         📅 등록일: <strong>${rec.date}</strong><br>
-        🕐 구분: <strong>${rec.shift}</strong> &nbsp; 🏭 호기: <strong>${rec.machine}호기</strong>
+        🕐 구분: <strong>${rec.shift}</strong> &nbsp; 🏭 호기: <strong>${rec.machine}</strong>
       </div>
     </div>`;
   });
@@ -5459,7 +5524,7 @@ async function confirmOverwrite() {
   const totSheets = hasDetail ? selPacks.reduce((s,p) => s+(+p.sheets||0), 0) : null;
   const totArea   = hasDetail ? +selPacks.reduce((s,p) => s+(+p.area||0), 0).toFixed(2) : null;
   const rec = {
-    type:'deck', date, shift, machine, company, site, req_code,
+    type: currentProdType, date, shift, machine, company, site, req_code,
     packs: selPacks, pack_count: selPacks.length,
     total_sheets: totSheets, total_area: totArea,
     recorded_at: firebase.firestore.Timestamp.now(), recorded_by: currentUser
@@ -5577,7 +5642,7 @@ function openDailyReport(date, machine, shift) {
     ${pi>0?'<div class="dr-page-gap"></div>':''}
     <div class="dr-page">
       <div class="dr-hrow">
-        <div class="dr-title">(${esc(String(machine))})호기 데크반 작업일보</div>
+        <div class="dr-title">(${esc(String(machine))}) 데크반 작업일보</div>
         <table class="dr-stbl"><tr><th>작&nbsp;성</th><th>조 / 반장</th><th>확&nbsp;인</th></tr>
           <tr><td style="height:60px"></td><td></td><td></td></tr></table>
       </div>
@@ -5621,7 +5686,7 @@ async function downloadDailyReport() {
     toast('이미지 생성 중...');
     const canvas = await html2canvas(body, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false});
     const a = document.createElement('a');
-    a.download = `작업일보_${window._drMachine}호기_${window._drDate}.png`;
+    a.download = `작업일보_${window._drMachine}_${window._drDate}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
   } catch(e) { toast('이미지 저장 실패: '+e.message); }
