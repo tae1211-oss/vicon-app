@@ -2429,7 +2429,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 /* ─── PACK GRID ─── */
 .pack-controls{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .pack-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-height:260px;overflow-y:auto;padding:4px;border:1px solid #eceff1;border-radius:8px}
-.pack-item{display:flex;align-items:center;gap:3px;background:#f5f7fa;border-radius:6px;padding:6px 4px;font-size:.75rem;cursor:pointer;transition:background .1s}
+.pack-item{display:flex;align-items:center;gap:3px;background:#f5f7fa;border-radius:6px;padding:6px 4px;font-size:1.5rem;cursor:pointer;transition:background .1s}
 .pack-item.checked{background:#fff3e0}
 .pack-item.missing{background:#fff3e0}
 .pack-item.shipped{background:#f5f5f5;opacity:.5}
@@ -2446,6 +2446,17 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
 /* ─── SVG MAP ─── */
 #map-wrap{border-radius:10px;border:1px solid #e0e0e0;overflow:auto;background:#fff;-webkit-overflow-scrolling:touch}
+#zone-list-wrap{display:grid;grid-template-columns:1fr;gap:6px;margin-top:4px}
+.zone-list-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;transition:background 0.15s,border-color 0.15s;-webkit-tap-highlight-color:transparent}
+.zone-list-item:active{background:#f0f4f8}
+.zone-list-item.zli-has{border-color:#a5d6a7;background:#f1f8f2}
+.zone-list-item.zli-empty{border-color:#e0e0e0;background:#fafafa}
+.zli-badge{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;flex-shrink:0}
+.zli-info{flex:1;min-width:0}
+.zli-info-name{font-size:.82rem;font-weight:700;color:#37474f}
+.zli-info-cnt{font-size:.75rem;color:#78909c;margin-top:1px}
+.zli-info-site{font-size:.72rem;color:#546e7a;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zli-arrow{font-size:.85rem;color:#b0bec5;flex-shrink:0}
 .zone-clickable{cursor:pointer;transition:filter .15s}
 .zone-clickable:hover{filter:brightness(.92)}
 .zone-clickable:active{filter:brightness(.85)}
@@ -2759,8 +2770,9 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     <div class="card-title">🗺️ 야적장 현황</div>
     <div id="map-wrap"></div>
   </div>
-  <div class="card" style="padding:10px 16px">
-    <div style="font-size:.75rem;color:#90a4ae;text-align:center">구역을 탭하면 상세 현황을 볼 수 있습니다</div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px">📍 구역별 현황</div>
+    <div id="zone-list-wrap"><div class="loading"><span class="spinner"></span>로딩 중…</div></div>
   </div>
 </div>
 
@@ -3356,29 +3368,34 @@ function renderYardMap(stats) {
   let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:62vh;display:block">`;
   s += `<image href="${IMG}" x="0" y="0" width="${W}" height="${H}"/>`;
 
-  // zone overlays
-  for (const [zone, r] of Object.entries(ZONE_RECTS)) {
-    const st = stats[zone] || {total: 0, sites: []};
-    const fill = zoneColor(st.total);
-    s += `<g class="zone-clickable" onclick="onZoneClick('${zone}')">`;
-    s += `<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="4" fill="${fill}" fill-opacity="0.55" stroke="#f57c00" stroke-width="1.5"/>`;
-    const cx = r.x + r.w/2, cy = r.y + r.h/2;
-    const minSide = Math.min(r.w, r.h);
-    const fzLetter = minSide < 52 ? 13 : 16;
-    const hasData = st.total > 0;
-    s += `<text x="${cx}" y="${cy - (hasData ? Math.round(fzLetter*0.45) : 0)}" text-anchor="middle" dominant-baseline="middle" font-size="${fzLetter}" font-weight="800" fill="#e65100" stroke="#fff" stroke-width="2.5" paint-order="stroke">${zone}</text>`;
-    if (hasData) {
-      s += `<text x="${cx}" y="${cy + Math.round(fzLetter*0.7)}" text-anchor="middle" font-size="8" fill="#bf360c" stroke="#fff" stroke-width="2" paint-order="stroke">${st.total}패킹</text>`;
-      if (st.sites.length > 0 && r.h >= 60) {
-        const lbl = st.sites[0].length > 8 ? st.sites[0].slice(0, 7) + '...' : st.sites[0];
-        s += `<text x="${cx}" y="${cy + Math.round(fzLetter*0.7) + 10}" text-anchor="middle" font-size="7" fill="#bf360c" stroke="#fff" stroke-width="1.5" paint-order="stroke">${lbl}${st.sites.length > 1 ? ' 외'+(st.sites.length-1) : ''}</text>`;
-      }
-    }
-    s += `</g>`;
-  }
 
   s += `</svg>`;
   document.getElementById('map-wrap').innerHTML = s;
+
+  // ── 구역 목록 렌더 ────────────────────────────────────────
+  const listWrap = document.getElementById('zone-list-wrap');
+  if (listWrap) {
+    const zoneOrder = Object.keys(ZONE_RECTS).sort();
+    listWrap.innerHTML = zoneOrder.map(zone => {
+      const st = stats[zone] || {total: 0, sites: []};
+      const cnt = st.total || 0;
+      const bgColor = cnt === 0 ? '#eceff1' : cnt <= 5 ? '#fff9c4' : cnt <= 15 ? '#ffe082' : '#ef9a9a';
+      const textColor = cnt === 0 ? '#78909c' : '#37474f';
+      const hasCls = cnt > 0 ? 'zli-has' : 'zli-empty';
+      const siteText = st.sites && st.sites.length > 0
+        ? st.sites[0] + (st.sites.length > 1 ? ' 외 ' + (st.sites.length - 1) : '')
+        : '';
+      return `<div class="zone-list-item ${hasCls}" onclick="onZoneClick('${zone}')">
+        <div class="zli-badge" style="background:${bgColor};color:${textColor}">${zone}</div>
+        <div class="zli-info">
+          <div class="zli-info-name">구역 ${zone}</div>
+          <div class="zli-info-cnt">${cnt > 0 ? cnt + '패킹' : '비어있음'}</div>
+          ${siteText ? `<div class="zli-info-site">${siteText}</div>` : ''}
+        </div>
+        <div class="zli-arrow">›</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 async function refreshMap() {
@@ -3676,28 +3693,49 @@ async function handleOutbound(data) {
     const missing = data.packs.filter(p => !inStock.has(p));
     pendingOB = {...data, selPacks: [...data.packs], missingPacks: missing};
 
-    let html = `<div style="font-size:.83rem;margin-bottom:10px;line-height:1.6">
+    let html = `<div style="font-size:1.66rem;margin-bottom:10px;line-height:1.6">
       <strong>${esc(data.site)}</strong><br>
       <span style="color:#546e7a">${esc(data.company)}</span>
     </div>`;
 
     // 구역별 현황 요약
-    const byZone = {};
+    const byZone = {'미등록': []};
     data.packs.forEach(p => {
       const z = zoneMap[p] || (missing.includes(p) ? '미등록' : '?');
       if (!byZone[z]) byZone[z] = [];
       byZone[z].push(p);
     });
+    const zoneEntries = Object.entries(byZone)
+      .filter(([z]) => z !== '미등록')
+      .sort((a,b) => a[0].localeCompare(b[0]));
+    zoneEntries.push(['미등록', byZone['미등록']]);
     html += `<div style="background:#f5f7fa;border-radius:10px;padding:10px 12px;margin-bottom:10px">
-      <div style="font-weight:700;font-size:.8rem;margin-bottom:6px;color:#222222">📦 구역별 현황</div>`;
-    Object.entries(byZone).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([z,packs])=>{
-      const isUnreg = z==='미등록';
-      html += `<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
-        <span class="zone-pill${isUnreg?' missing':''}" style="min-width:46px;text-align:center">${z}</span>
-        <span style="font-size:.75rem;color:#37474f">${packs.sort((a,b)=>a-b).join(', ')} (${packs.length}개)</span>
-      </div>`;
+      <div style="font-weight:700;font-size:1.6rem;margin-bottom:8px;color:#222222">📦 구역별 현황</div>
+      <table style="width:100%;border-collapse:collapse;font-size:1.5rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:4px 8px;border-bottom:2px solid #cfd8dc;white-space:nowrap">구역</th>
+            <th style="text-align:left;padding:4px 8px;border-bottom:2px solid #cfd8dc">패킹번호</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #cfd8dc;white-space:nowrap">수량</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    zoneEntries.forEach(([z, packs]) => {
+      const isUnreg = z === '미등록';
+      const sortedPacks = [...packs].sort((a,b) => a-b);
+      html += `<tr>
+          <td style="padding:5px 8px;vertical-align:top;white-space:nowrap">
+            <span class="zone-pill${isUnreg?' missing':''}" style="font-size:1.3rem;padding:2px 10px">${z}</span>
+          </td>
+          <td style="padding:5px 8px;color:#37474f;word-break:break-word">
+            ${sortedPacks.length ? sortedPacks.join(', ') : '<span style="color:#b0bec5">없음</span>'}
+          </td>
+          <td style="padding:5px 8px;text-align:right;white-space:nowrap;color:#546e7a">${sortedPacks.length}개</td>
+        </tr>`;
     });
-    html += `</div>`;
+    html += `        </tbody>
+      </table>
+    </div>`;
 
     if (missing.length > 0) {
       html += `<div class="alert alert-warning">⚠️ 재고 미등록 패킹 ${missing.length}개 포함<br>
