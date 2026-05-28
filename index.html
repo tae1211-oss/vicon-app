@@ -2963,6 +2963,16 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   </div>
 </div>
 
+<!-- Shipped Packs Detail -->
+<div class="overlay" id="ov-shipped-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📤 출고 패킹 현황</div>
+    <div id="shipped-body"></div>
+    <button class="btn btn-secondary btn-full" style="margin-top:14px" onclick="closeOv('ov-shipped-detail')">닫기</button>
+  </div>
+</div>
+
 <!-- Inventory Detail -->
 <div class="overlay" id="ov-inv-detail">
   <div class="modal">
@@ -3841,7 +3851,54 @@ function renderInvStats() {
   statsEl.innerHTML = `
     <div class="stat-card"><div class="stat-num">${sites}</div><div class="stat-lbl">현장수</div></div>
     <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">재고패킹</div></div>
-    <div class="stat-card"><div class="stat-num">${shipped}</div><div class="stat-lbl">출고패킹</div></div>`;
+    <div class="stat-card" onclick="showShippedDetail()" style="cursor:pointer"><div class="stat-num" style="color:#e65100">${shipped}</div><div class="stat-lbl">출고패킹 ▶</div></div>`;
+}
+
+function showShippedDetail() {
+  const bodyEl = document.getElementById('shipped-body');
+  openOv('ov-shipped-detail');
+
+  // allInv에서 출고된 패킹 수집 → 업체/현장별 그룹
+  const groups = [];
+  allInv.forEach(d => {
+    const sp = (d.packs||[]).filter(p => p.shipped).map(p => p.pack_no).sort((a,b) => a-b);
+    if (sp.length) groups.push({company: d.company||'', site: d.site||'', packs: sp});
+  });
+
+  if (!groups.length) {
+    bodyEl.innerHTML = '<div class="alert alert-info">출고된 패킹이 없습니다.</div>';
+    return;
+  }
+
+  // 업체명 → 현장명 순 정렬
+  groups.sort((a,b) => {
+    const cc = a.company.localeCompare(b.company);
+    return cc !== 0 ? cc : a.site.localeCompare(b.site);
+  });
+
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:.82rem">
+    <thead>
+      <tr style="border-bottom:2px solid #90a4ae">
+        <th style="text-align:left;padding:4px 6px">업체</th>
+        <th style="text-align:left;padding:4px 6px">현장</th>
+        <th style="text-align:left;padding:4px 6px">패킹번호</th>
+        <th style="text-align:right;padding:4px 6px">수량</th>
+      </tr>
+    </thead><tbody>`;
+  groups.forEach(g => {
+    html += `<tr style="border-bottom:1px solid #eceff1">
+      <td style="padding:5px 6px;color:#546e7a;white-space:nowrap">${esc(g.company)}</td>
+      <td style="padding:5px 6px;white-space:nowrap">${esc(g.site)}</td>
+      <td style="padding:5px 6px;color:#37474f">${g.packs.join(', ')}</td>
+      <td style="padding:5px 6px;text-align:right;white-space:nowrap">${g.packs.length}개</td>
+    </tr>`;
+  });
+  const total = groups.reduce((s,g) => s + g.packs.length, 0);
+  html += `<tr style="border-top:2px solid #90a4ae;font-weight:700">
+    <td colspan="3" style="padding:5px 6px">합계</td>
+    <td style="padding:5px 6px;text-align:right">${total}개</td>
+  </tr></tbody></table>`;
+  bodyEl.innerHTML = html;
 }
 
 function filterInv() {
