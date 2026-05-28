@@ -3550,25 +3550,31 @@ async function handleInbound(data) {
     const packs = [];
     for (let i = data.pack_from; i <= data.pack_to; i++) packs.push(i);
 
-    // ── 현재 재고에서 이미 입고된 팩 조회 ──────────────────
+    // ── 현재 재고에서 이미 입고된 팩 / 이미 출고된 팩 조회 ──
     bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>재고 확인 중…</div>';
     const stockSet = new Set();
     const stockZone = {};
+    const shippedSet = new Set(); // 이미 출고 처리된 팩
     if (db) {
       try {
         const docId = makeDocId(data.company, data.site);
         const doc = await db.collection('inventory').doc(docId).get();
         if (doc.exists) {
-          (doc.data().packs || []).filter(p => !p.shipped).forEach(p => {
-            stockSet.add(p.pack_no);
-            stockZone[p.pack_no] = p.zone || '';
+          (doc.data().packs || []).forEach(p => {
+            if (p.shipped) {
+              shippedSet.add(p.pack_no);
+            } else {
+              stockSet.add(p.pack_no);
+              stockZone[p.pack_no] = p.zone || '';
+            }
           });
         }
       } catch(e) {}
     }
 
-    const alreadyIn = packs.filter(p => stockSet.has(p));
-    const newPacks  = packs.filter(p => !stockSet.has(p));
+    const alreadyIn  = packs.filter(p => stockSet.has(p));
+    const alreadyOut = packs.filter(p => shippedSet.has(p));
+    const newPacks   = packs.filter(p => !stockSet.has(p) && !shippedSet.has(p));
     pendingIB = {...data, selPacks: [...newPacks]};
 
     let html = '<div style="font-size:.83rem;margin-bottom:10px;line-height:1.6">'
@@ -3597,14 +3603,30 @@ async function handleInbound(data) {
       + '</div>'
       + '<div class="pack-grid" id="ib-pack-grid">';
 
+    if (alreadyOut.length > 0) {
+      html += '<div style="background:#fce4ec;border:1px solid #e57373;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.78rem">'
+        + '<div style="font-weight:700;color:#c62828;margin-bottom:4px">📤 이미 출고된 패킹 (' + alreadyOut.length + '개) — 입고 불가</div>'
+        + '<div style="color:#555">' + alreadyOut.join(', ') + '</div>'
+        + '</div>';
+    }
+
     packs.forEach(p => {
-      const inStock = stockSet.has(p);
+      const inStock   = stockSet.has(p);
+      const isShipped = shippedSet.has(p);
       const zone = stockZone[p];
-      html += '<label class="pack-item' + (inStock ? '' : ' checked') + '" style="' + (inStock ? 'opacity:.5' : '') + '">'
-        + '<input type="checkbox" class="ib-cb" value="' + p + '" '
-        + (inStock ? '' : 'checked ') + 'onchange="syncSel(\'ib\')">'
-        + '<span>' + p + (inStock && zone ? '<small style="opacity:.7;font-size:.65em;display:block">' + zone + '</small>' : '') + (inStock ? '📦' : '') + '</span>'
-        + '</label>';
+      if (isShipped) {
+        // 이미 출고된 패킹: 선택 불가로 표시
+        html += '<label class="pack-item shipped" style="opacity:.4;cursor:default">'
+          + '<input type="checkbox" class="ib-cb" value="' + p + '" disabled>'
+          + '<span>' + p + '<small style="opacity:.8;font-size:.65em;display:block">출고됨</small></span>'
+          + '</label>';
+      } else {
+        html += '<label class="pack-item' + (inStock ? '' : ' checked') + '" style="' + (inStock ? 'opacity:.5' : '') + '">'
+          + '<input type="checkbox" class="ib-cb" value="' + p + '" '
+          + (inStock ? '' : 'checked ') + 'onchange="syncSel(\'ib\')">'
+          + '<span>' + p + (inStock && zone ? '<small style="opacity:.7;font-size:.65em;display:block">' + zone + '</small>' : '') + (inStock ? '📦' : '') + '</span>'
+          + '</label>';
+      }
     });
 
     html += '</div>'
@@ -3664,7 +3686,10 @@ async function doInbound(zone) {
       pack_no: n, zone, stacked_at: now, stacked_by: currentUser, shipped: false
     }));
     if (doc.exists) {
-      const existing = (doc.data().packs || []).filter(p => !data.selPacks.includes(p.pack_no));
+      // 이미 출고된 패킹은 유지, 그 외 selPacks 해당 항목만 교체
+      const existing = (doc.data().packs || []).filter(p =>
+        p.shipped || !data.selPacks.includes(p.pack_no)
+      );
       await ref.update({packs: [...existing, ...newPacks]});
     } else {
       await ref.set({company: data.company, site: data.site, packs: newPacks});
