@@ -2791,6 +2791,24 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
     </div>
   </div>
+  <!-- 수동 입력 -->
+  <div class="card" style="margin-top:10px">
+    <div class="card-title" style="cursor:pointer;user-select:none" onclick="toggleManualIB()">
+      ✏️ 직접 입력 <span id="manual-ib-arrow" style="font-size:.8rem;color:#90a4ae">▼ 펼치기</span>
+    </div>
+    <div id="manual-ib-form" style="display:none;margin-top:10px">
+      <div style="display:grid;gap:8px">
+        <input id="mib-company" type="text" placeholder="업체명" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
+        <input id="mib-site" type="text" placeholder="현장명" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input id="mib-from" type="number" placeholder="패킹 시작번호" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
+          <input id="mib-to" type="number" placeholder="패킹 끝번호" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
+        </div>
+        <button class="btn btn-success btn-full" onclick="submitManualIB()">📥 입고 확인</button>
+      </div>
+    </div>
+  </div>
+
   <div id="ib-result-card" style="display:none">
     <div class="card">
       <div class="card-title" id="ib-result-title">스캔 결과</div>
@@ -3514,6 +3532,32 @@ function startScanner(elemId, key, cb) {
 function stopScan(key) {
   if (scanners[key]) scanners[key].stop().catch(()=>{});
   document.getElementById(key === 'inbound' ? 'ib-scan-wrap' : 'ob-scan-wrap').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────────────────
+//  INBOUND MANUAL INPUT
+// ─────────────────────────────────────────────────────────
+function toggleManualIB() {
+  const form = document.getElementById('manual-ib-form');
+  const arrow = document.getElementById('manual-ib-arrow');
+  const open = form.style.display === 'none';
+  form.style.display = open ? 'block' : 'none';
+  arrow.textContent = open ? '▲ 접기' : '▼ 펼치기';
+}
+
+function submitManualIB() {
+  const company = document.getElementById('mib-company').value.trim();
+  const site    = document.getElementById('mib-site').value.trim();
+  const from    = parseInt(document.getElementById('mib-from').value);
+  const to      = parseInt(document.getElementById('mib-to').value);
+
+  if (!company) { toast('업체명을 입력하세요.'); return; }
+  if (!site)    { toast('현장명을 입력하세요.'); return; }
+  if (isNaN(from) || isNaN(to)) { toast('패킹 번호를 입력하세요.'); return; }
+  if (from > to) { toast('시작번호가 끝번호보다 클 수 없습니다.'); return; }
+  if (to - from > 200) { toast('한 번에 최대 200개까지 입력 가능합니다.'); return; }
+
+  handleInbound({ type: 'job_order', company, site, pack_from: from, pack_to: to });
 }
 
 // ─────────────────────────────────────────────────────────
