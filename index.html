@@ -3453,14 +3453,7 @@ function startSmartScan(type) {
 // ─────────────────────────────────────────────────────────
 //  QR SCANNER
 // ─────────────────────────────────────────────────────────
-document.getElementById('btn-ib-start').addEventListener('click', () => {
-  document.getElementById('ib-scan-wrap').style.display = 'block';
-  startScanner('inbound-qr-reader', 'inbound', handleInbound);
-});
-document.getElementById('btn-ob-start').addEventListener('click', () => {
-  document.getElementById('ob-scan-wrap').style.display = 'block';
-  startScanner('outbound-qr-reader', 'outbound', handleOutbound);
-});
+// btn-ib-start, btn-ob-start: onclick으로 처리 (중복 방지)
 
 function startScanner(elemId, key, cb) {
   if (scanners[key]) { try { scanners[key].stop(); } catch(_){} }
