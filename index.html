@@ -78,6 +78,10 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
+  if (name === 'psearch') {
+    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
+    else searchProdBySite();
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -358,6 +362,75 @@ async function submitProdEntry() {
   } catch(e) { toast('저장 실패: ' + e.message); }
 }
 
+
+// ── 검색 ─────────────────────────────────────────────────
+async function loadProdRecordsForSearch() {
+  if (!db) return;
+  try {
+    const snap = await db.collection('production_deck').get();
+    window._prodRecords = [];
+    snap.forEach(doc => window._prodRecords.push({id: doc.id, ...doc.data()}));
+    searchProdBySite();
+  } catch(e) {}
+}
+
+function searchProdBySite() {
+  const q = (document.getElementById('psearch-input')?.value || '').trim().toLowerCase();
+  const el = document.getElementById('psearch-result');
+  if (!el) return;
+  if (!q) {
+    el.innerHTML = '<div style="text-align:center;color:#90a4ae;padding:20px 0;font-size:.82rem">현장명을 입력하세요</div>';
+    return;
+  }
+  const records = (window._prodRecords || [])
+    .filter(r => (r.site || '').toLowerCase().includes(q))
+    .sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      if ((a.machine||'') !== (b.machine||'')) return (a.machine||'').localeCompare(b.machine||'');
+      return a.shift === '야간' ? 1 : -1;
+    });
+  if (!records.length) {
+    el.innerHTML = '<div class="alert alert-info">검색 결과가 없습니다.</div>';
+    return;
+  }
+  const bySite = {};
+  records.forEach(r => {
+    const key = (r.company||'') + '||' + (r.site||'');
+    if (!bySite[key]) bySite[key] = {company: r.company||'', site: r.site||'', recs: []};
+    bySite[key].recs.push(r);
+  });
+  const dw = '일월화수목금토';
+  let html = '';
+  Object.values(bySite).forEach(({company, site, recs}) => {
+    html += `<div style="margin-bottom:16px">
+      <div style="font-weight:700;font-size:.88rem;padding:4px 0;border-bottom:2px solid #e0e0e0;margin-bottom:6px">
+        ${esc(site)}<span style="font-size:.75rem;color:#90a4ae;margin-left:6px">${esc(company)}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+        <thead><tr style="border-bottom:1px solid #cfd8dc;color:#78909c">
+          <th style="text-align:left;padding:4px 6px">날짜</th>
+          <th style="text-align:center;padding:4px 6px">호기</th>
+          <th style="text-align:center;padding:4px 6px">주야</th>
+          <th style="text-align:left;padding:4px 6px">패킹번호</th>
+          <th style="text-align:right;padding:4px 6px">수량</th>
+        </tr></thead><tbody>`;
+    recs.forEach(r => {
+      const d = new Date((r.date||'') + 'T12:00:00');
+      const dl = (d.getMonth()+1) + '/' + d.getDate() + '(' + dw[d.getDay()] + ')';
+      const packNos = (r.packs||[]).map(p => p.pack_no).sort((a,b)=>a-b).join(', ');
+      html += `<tr style="border-bottom:1px solid #f5f5f5">
+        <td style="padding:5px 6px;white-space:nowrap">${dl}</td>
+        <td style="padding:5px 6px;text-align:center">${esc(String(r.machine||''))}</td>
+        <td style="padding:5px 6px;text-align:center;color:${r.shift==='야간'?'#1565c0':'#e65100'}">${r.shift||''}</td>
+        <td style="padding:5px 6px;color:#37474f;word-break:break-all">${packNos||'-'}</td>
+        <td style="padding:5px 6px;text-align:right;white-space:nowrap">${r.pack_count||0}개</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  });
+  el.innerHTML = html;
+}
+
 // ── 현황 ─────────────────────────────────────────────────
 async function loadProdStat() {
   if (!db) return;
@@ -504,52 +577,31 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // detail records (collapsible)
-  const hasDetail = records.some(r => r.total_sheets);
+  // 상세 기록: 날짜/호기/주야/버튼만
   let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
     + '📋 상세 기록 보기 ▾</summary>'
     + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>주/야</th><th>호기</th><th>현장</th><th>패킹</th>'
-    + (hasDetail ? '<th>장수</th><th>㎡</th>' : '')
-    + '<th style="width:60px"></th>'
+    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
   const byDay = {};
   records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
 
-  let mPacks = 0, mSheets = 0, mArea = 0;
   Object.entries(byDay).sort().forEach(([date, recs]) => {
-    const dPacks  = recs.reduce((s,r) => s+(r.pack_count||0), 0);
-    const dSheets = recs.reduce((s,r) => s+(r.total_sheets||0), 0);
-    const dArea   = recs.reduce((s,r) => s+(r.total_area||0), 0);
-    mPacks += dPacks; mSheets += dSheets; mArea += dArea;
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
     recs.forEach((r, idx) => {
-      const siteShort = (r.site||'').length > 8 ? (r.site||'').slice(0,7)+'...' : (r.site||'-');
       detailHtml += '<tr>'
         + '<td>' + (idx===0 ? dayLbl : '') + '</td>'
-        + '<td>' + (r.shift||'') + '</td>'
-        + '<td>' + (r.machine||'') + '</td>'
-        + '<td style="text-align:left">' + esc(siteShort) + '</td>'
-        + '<td>' + (r.pack_count||0) + '</td>'
-        + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
+        + '<td style="text-align:center">' + (r.machine||'') + '</td>'
+        + '<td style="text-align:center">' + (r.shift||'') + '</td>'
         + '<td style="white-space:nowrap">'
-        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
+        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
         + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
-    detailHtml += '<tr class="day-total">'
-      + '<td colspan="4" style="text-align:right;font-size:.72rem">' + dayLbl + ' 계</td>'
-      + '<td>' + dPacks + '</td>'
-      + (hasDetail ? '<td>' + (dSheets||'-') + '</td><td>' + (dArea?dArea.toFixed(1):'-') + '</td>' : '')
-      + '<td></td></tr>';
   });
-  detailHtml += '<tr class="month-total">'
-    + '<td colspan="4" style="text-align:right">' + (+month) + '월 합계</td>'
-    + '<td>' + mPacks + '</td>'
-    + (hasDetail ? '<td>' + (mSheets||'-') + '</td><td>' + (mArea?mArea.toFixed(1):'-') + '</td>' : '')
-    + '<td></td></tr></tbody></table></div></details>';
+  detailHtml += '</tbody></table></div></details>';
 
   bodyEl.innerHTML = sumHtml + detailHtml;
 }
@@ -684,6 +736,10 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
+  if (name === 'psearch') {
+    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
+    else searchProdBySite();
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -1110,52 +1166,31 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // detail records (collapsible)
-  const hasDetail = records.some(r => r.total_sheets);
+  // 상세 기록: 날짜/호기/주야/버튼만
   let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
     + '📋 상세 기록 보기 ▾</summary>'
     + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>주/야</th><th>호기</th><th>현장</th><th>패킹</th>'
-    + (hasDetail ? '<th>장수</th><th>㎡</th>' : '')
-    + '<th style="width:60px"></th>'
+    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
   const byDay = {};
   records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
 
-  let mPacks = 0, mSheets = 0, mArea = 0;
   Object.entries(byDay).sort().forEach(([date, recs]) => {
-    const dPacks  = recs.reduce((s,r) => s+(r.pack_count||0), 0);
-    const dSheets = recs.reduce((s,r) => s+(r.total_sheets||0), 0);
-    const dArea   = recs.reduce((s,r) => s+(r.total_area||0), 0);
-    mPacks += dPacks; mSheets += dSheets; mArea += dArea;
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
     recs.forEach((r, idx) => {
-      const siteShort = (r.site||'').length > 8 ? (r.site||'').slice(0,7)+'...' : (r.site||'-');
       detailHtml += '<tr>'
         + '<td>' + (idx===0 ? dayLbl : '') + '</td>'
-        + '<td>' + (r.shift||'') + '</td>'
-        + '<td>' + (r.machine||'') + '</td>'
-        + '<td style="text-align:left">' + esc(siteShort) + '</td>'
-        + '<td>' + (r.pack_count||0) + '</td>'
-        + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
+        + '<td style="text-align:center">' + (r.machine||'') + '</td>'
+        + '<td style="text-align:center">' + (r.shift||'') + '</td>'
         + '<td style="white-space:nowrap">'
-        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
+        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
         + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
-    detailHtml += '<tr class="day-total">'
-      + '<td colspan="4" style="text-align:right;font-size:.72rem">' + dayLbl + ' 계</td>'
-      + '<td>' + dPacks + '</td>'
-      + (hasDetail ? '<td>' + (dSheets||'-') + '</td><td>' + (dArea?dArea.toFixed(1):'-') + '</td>' : '')
-      + '<td></td></tr>';
   });
-  detailHtml += '<tr class="month-total">'
-    + '<td colspan="4" style="text-align:right">' + (+month) + '월 합계</td>'
-    + '<td>' + mPacks + '</td>'
-    + (hasDetail ? '<td>' + (mSheets||'-') + '</td><td>' + (mArea?mArea.toFixed(1):'-') + '</td>' : '')
-    + '<td></td></tr></tbody></table></div></details>';
+  detailHtml += '</tbody></table></div></details>';
 
   bodyEl.innerHTML = sumHtml + detailHtml;
 }
@@ -1273,6 +1308,10 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
+  if (name === 'psearch') {
+    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
+    else searchProdBySite();
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -1699,52 +1738,31 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // detail records (collapsible)
-  const hasDetail = records.some(r => r.total_sheets);
+  // 상세 기록: 날짜/호기/주야/버튼만
   let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
     + '📋 상세 기록 보기 ▾</summary>'
     + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>주/야</th><th>호기</th><th>현장</th><th>패킹</th>'
-    + (hasDetail ? '<th>장수</th><th>㎡</th>' : '')
-    + '<th style="width:60px"></th>'
+    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
   const byDay = {};
   records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
 
-  let mPacks = 0, mSheets = 0, mArea = 0;
   Object.entries(byDay).sort().forEach(([date, recs]) => {
-    const dPacks  = recs.reduce((s,r) => s+(r.pack_count||0), 0);
-    const dSheets = recs.reduce((s,r) => s+(r.total_sheets||0), 0);
-    const dArea   = recs.reduce((s,r) => s+(r.total_area||0), 0);
-    mPacks += dPacks; mSheets += dSheets; mArea += dArea;
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
     recs.forEach((r, idx) => {
-      const siteShort = (r.site||'').length > 8 ? (r.site||'').slice(0,7)+'...' : (r.site||'-');
       detailHtml += '<tr>'
         + '<td>' + (idx===0 ? dayLbl : '') + '</td>'
-        + '<td>' + (r.shift||'') + '</td>'
-        + '<td>' + (r.machine||'') + '</td>'
-        + '<td style="text-align:left">' + esc(siteShort) + '</td>'
-        + '<td>' + (r.pack_count||0) + '</td>'
-        + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
+        + '<td style="text-align:center">' + (r.machine||'') + '</td>'
+        + '<td style="text-align:center">' + (r.shift||'') + '</td>'
         + '<td style="white-space:nowrap">'
-        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
+        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
         + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
-    detailHtml += '<tr class="day-total">'
-      + '<td colspan="4" style="text-align:right;font-size:.72rem">' + dayLbl + ' 계</td>'
-      + '<td>' + dPacks + '</td>'
-      + (hasDetail ? '<td>' + (dSheets||'-') + '</td><td>' + (dArea?dArea.toFixed(1):'-') + '</td>' : '')
-      + '<td></td></tr>';
   });
-  detailHtml += '<tr class="month-total">'
-    + '<td colspan="4" style="text-align:right">' + (+month) + '월 합계</td>'
-    + '<td>' + mPacks + '</td>'
-    + (hasDetail ? '<td>' + (mSheets||'-') + '</td><td>' + (mArea?mArea.toFixed(1):'-') + '</td>' : '')
-    + '<td></td></tr></tbody></table></div></details>';
+  detailHtml += '</tbody></table></div></details>';
 
   bodyEl.innerHTML = sumHtml + detailHtml;
 }
@@ -1861,6 +1879,10 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
+  if (name === 'psearch') {
+    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
+    else searchProdBySite();
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -2287,52 +2309,31 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // detail records (collapsible)
-  const hasDetail = records.some(r => r.total_sheets);
+  // 상세 기록: 날짜/호기/주야/버튼만
   let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
     + '📋 상세 기록 보기 ▾</summary>'
     + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>주/야</th><th>호기</th><th>현장</th><th>패킹</th>'
-    + (hasDetail ? '<th>장수</th><th>㎡</th>' : '')
-    + '<th style="width:60px"></th>'
+    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
   const byDay = {};
   records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
 
-  let mPacks = 0, mSheets = 0, mArea = 0;
   Object.entries(byDay).sort().forEach(([date, recs]) => {
-    const dPacks  = recs.reduce((s,r) => s+(r.pack_count||0), 0);
-    const dSheets = recs.reduce((s,r) => s+(r.total_sheets||0), 0);
-    const dArea   = recs.reduce((s,r) => s+(r.total_area||0), 0);
-    mPacks += dPacks; mSheets += dSheets; mArea += dArea;
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
     recs.forEach((r, idx) => {
-      const siteShort = (r.site||'').length > 8 ? (r.site||'').slice(0,7)+'...' : (r.site||'-');
       detailHtml += '<tr>'
         + '<td>' + (idx===0 ? dayLbl : '') + '</td>'
-        + '<td>' + (r.shift||'') + '</td>'
-        + '<td>' + (r.machine||'') + '</td>'
-        + '<td style="text-align:left">' + esc(siteShort) + '</td>'
-        + '<td>' + (r.pack_count||0) + '</td>'
-        + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
+        + '<td style="text-align:center">' + (r.machine||'') + '</td>'
+        + '<td style="text-align:center">' + (r.shift||'') + '</td>'
         + '<td style="white-space:nowrap">'
-        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
+        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
         + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
-    detailHtml += '<tr class="day-total">'
-      + '<td colspan="4" style="text-align:right;font-size:.72rem">' + dayLbl + ' 계</td>'
-      + '<td>' + dPacks + '</td>'
-      + (hasDetail ? '<td>' + (dSheets||'-') + '</td><td>' + (dArea?dArea.toFixed(1):'-') + '</td>' : '')
-      + '<td></td></tr>';
   });
-  detailHtml += '<tr class="month-total">'
-    + '<td colspan="4" style="text-align:right">' + (+month) + '월 합계</td>'
-    + '<td>' + mPacks + '</td>'
-    + (hasDetail ? '<td>' + (mSheets||'-') + '</td><td>' + (mArea?mArea.toFixed(1):'-') + '</td>' : '')
-    + '<td></td></tr></tbody></table></div></details>';
+  detailHtml += '</tbody></table></div></details>';
 
   bodyEl.innerHTML = sumHtml + detailHtml;
 }
@@ -3078,6 +3079,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="tabs prod-tabs-sticky">
     <div class="tab active" id="ptab-stat"      onclick="showPTab('stat')"><span class="tab-icon">📊</span>현황</div>
     <div class="tab"        id="ptab-entry"     onclick="showPTab('entry')"><span class="tab-icon">✏️</span>생산입력</div>
+    <div class="tab"        id="ptab-psearch"   onclick="showPTab('psearch')"><span class="tab-icon">🔍</span>검색</div>
     <div class="tab"        id="ptab-psettings" onclick="showPTab('psettings')"><span class="tab-icon">⚙️</span>설정</div>
   </div>
 
@@ -3123,6 +3125,20 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         <div style="font-weight:700;font-size:1rem;margin-bottom:6px">준비 중</div>
         <div style="font-size:.78rem;color:#78909c">추후 지원 예정입니다.</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── 검색 ── -->
+  <div class="page" id="ppage-psearch">
+    <div class="card">
+      <div class="card-title">🔍 현장별 생산 검색</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="psearch-input" type="text" placeholder="현장명 입력 (부분 검색 가능)"
+          style="flex:1;border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem"
+          oninput="searchProdBySite()">
+        <button class="btn btn-secondary" onclick="document.getElementById('psearch-input').value='';searchProdBySite()">✕</button>
+      </div>
+      <div id="psearch-result"></div>
     </div>
   </div>
 
@@ -4406,6 +4422,10 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
+  if (name === 'psearch') {
+    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
+    else searchProdBySite();
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -4847,52 +4867,31 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // detail records (collapsible)
-  const hasDetail = records.some(r => r.total_sheets);
+  // 상세 기록: 날짜/호기/주야/버튼만
   let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
     + '📋 상세 기록 보기 ▾</summary>'
     + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>주/야</th><th>호기</th><th>현장</th><th>패킹</th>'
-    + (hasDetail ? '<th>장수</th><th>㎡</th>' : '')
-    + '<th style="width:60px"></th>'
+    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
   const byDay = {};
   records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
 
-  let mPacks = 0, mSheets = 0, mArea = 0;
   Object.entries(byDay).sort().forEach(([date, recs]) => {
-    const dPacks  = recs.reduce((s,r) => s+(r.pack_count||0), 0);
-    const dSheets = recs.reduce((s,r) => s+(r.total_sheets||0), 0);
-    const dArea   = recs.reduce((s,r) => s+(r.total_area||0), 0);
-    mPacks += dPacks; mSheets += dSheets; mArea += dArea;
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
     recs.forEach((r, idx) => {
-      const siteShort = (r.site||'').length > 8 ? (r.site||'').slice(0,7)+'...' : (r.site||'-');
       detailHtml += '<tr>'
         + '<td>' + (idx===0 ? dayLbl : '') + '</td>'
-        + '<td>' + (r.shift||'') + '</td>'
-        + '<td>' + (r.machine||'') + '</td>'
-        + '<td style="text-align:left">' + esc(siteShort) + '</td>'
-        + '<td>' + (r.pack_count||0) + '</td>'
-        + (hasDetail ? '<td>' + (r.total_sheets!=null?r.total_sheets:'-') + '</td><td>' + (r.total_area!=null?r.total_area.toFixed(1):'-') + '</td>' : '')
+        + '<td style="text-align:center">' + (r.machine||'') + '</td>'
+        + '<td style="text-align:center">' + (r.shift||'') + '</td>'
         + '<td style="white-space:nowrap">'
-        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정/취소">&#x270F;&#xFE0F;</button>'
+        + '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 4px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
         + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 4px;line-height:1" title="작업일보">&#x1F4CB;</button>'
         + '</td></tr>';
     });
-    detailHtml += '<tr class="day-total">'
-      + '<td colspan="4" style="text-align:right;font-size:.72rem">' + dayLbl + ' 계</td>'
-      + '<td>' + dPacks + '</td>'
-      + (hasDetail ? '<td>' + (dSheets||'-') + '</td><td>' + (dArea?dArea.toFixed(1):'-') + '</td>' : '')
-      + '<td></td></tr>';
   });
-  detailHtml += '<tr class="month-total">'
-    + '<td colspan="4" style="text-align:right">' + (+month) + '월 합계</td>'
-    + '<td>' + mPacks + '</td>'
-    + (hasDetail ? '<td>' + (mSheets||'-') + '</td><td>' + (mArea?mArea.toFixed(1):'-') + '</td>' : '')
-    + '<td></td></tr></tbody></table></div></details>';
+  detailHtml += '</tbody></table></div></details>';
 
   bodyEl.innerHTML = sumHtml + detailHtml;
 }
