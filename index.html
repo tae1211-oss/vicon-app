@@ -2731,10 +2731,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <button class="btn btn-primary" id="btn-ib-start">📷 영상</button>
-      <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('inbound')">🔍 네이티브</button>
-      <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('inbound')">📱 ZXing</button>
+    <button class="btn btn-primary btn-full" onclick="startSmartScan('inbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" id="btn-ib-start">영상</button>
+      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startNativeScan('inbound')">네이티브</button>
+      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startZXingScan('inbound')">ZXing</button>
     </div>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
@@ -2772,10 +2773,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <button class="btn btn-warning" id="btn-ob-start">📷 영상</button>
-      <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('outbound')">🔍 네이티브</button>
-      <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('outbound')">📱 ZXing</button>
+    <button class="btn btn-warning btn-full" onclick="startSmartScan('outbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" id="btn-ob-start">영상</button>
+      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startNativeScan('outbound')">네이티브</button>
+      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startZXingScan('outbound')">ZXing</button>
     </div>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
@@ -3050,10 +3052,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <button class="btn btn-primary" id="btn-prod-scan" onclick="startProdScan()">📷 영상</button>
-          <button class="btn" style="background:#1565c0;color:#fff" onclick="startNativeScan('production')">🔍 네이티브</button>
-          <button class="btn" style="background:#6a1b9a;color:#fff" onclick="startZXingScan('production')">📱 ZXing</button>
+        <button class="btn btn-primary btn-full" onclick="startSmartScan('production')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" id="btn-prod-scan" onclick="startProdScan()">영상</button>
+          <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startNativeScan('production')">네이티브</button>
+          <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startZXingScan('production')">ZXing</button>
         </div>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
@@ -3438,6 +3441,27 @@ async function showZoneDetail(zone) {
     document.getElementById('zd-body').innerHTML = html;
   } catch(e) {
     document.getElementById('zd-body').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  스마트 스캔: 기기 자동 감지 → 최적 스캐너 실행
+// ─────────────────────────────────────────────────────────
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function startSmartScan(type) {
+  if (isIOS()) {
+    // 아이폰 → ZXing (TRY_HARDER 모드, 인식률 최고)
+    startZXingScan(type);
+  } else if ('BarcodeDetector' in window) {
+    // 안드로이드 Chrome 등 → 네이티브 BarcodeDetector
+    startNativeScan(type);
+  } else {
+    // 그 외 → ZXing fallback
+    startZXingScan(type);
   }
 }
 
