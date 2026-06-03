@@ -1175,7 +1175,8 @@ async function deleteProdRecord(docId, btn) {
 
 </script>
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
 // ─────────────────────────────────────────────────────────
 //  APP NAVIGATION
 // ─────────────────────────────────────────────────────────
@@ -3444,9 +3445,20 @@ function startSmartScan(type) {
   } else if ('BarcodeDetector' in window) {
     // 안드로이드 Chrome 등 → 네이티브 BarcodeDetector
     startNativeScan(type);
-  } else {
-    // 그 외 → ZXing fallback
+  } else if (typeof ZXing !== 'undefined') {
+    // BarcodeDetector 없지만 ZXing 있으면
     startZXingScan(type);
+  } else {
+    // 최후 fallback → Html5Qrcode 인라인 스캐너
+    if (type === 'inbound') {
+      document.getElementById('ib-scan-wrap').style.display = 'block';
+      startScanner('inbound-qr-reader', 'inbound', handleInbound);
+    } else if (type === 'outbound') {
+      document.getElementById('ob-scan-wrap').style.display = 'block';
+      startScanner('outbound-qr-reader', 'outbound', handleOutbound);
+    } else {
+      startProdScan();
+    }
   }
 }
 
@@ -5365,7 +5377,16 @@ let zxingReader = null;
 
 async function startZXingScan(type) {
   if (typeof ZXing === 'undefined') {
-    toast('ZXing 라이브러리 로딩 중... 잠시 후 다시 시도하세요.');
+    // ZXing 미로딩 → Html5Qrcode로 fallback
+    if (type === 'inbound') {
+      document.getElementById('ib-scan-wrap').style.display = 'block';
+      startScanner('inbound-qr-reader', 'inbound', handleInbound);
+    } else if (type === 'outbound') {
+      document.getElementById('ob-scan-wrap').style.display = 'block';
+      startScanner('outbound-qr-reader', 'outbound', handleOutbound);
+    } else {
+      startProdScan();
+    }
     return;
   }
   nativeScanType = type;
