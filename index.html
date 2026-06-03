@@ -103,7 +103,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  document.getElementById('btn-prod-scan').style.display  = 'none';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -134,9 +134,8 @@ function stopProdScan() {
     scanners.production = null;
   }
   const wrap = document.getElementById('prod-scan-wrap');
-  const btn  = document.getElementById('btn-prod-scan');
   if (wrap) wrap.style.display = 'none';
-  if (btn)  btn.style.display  = 'block';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -442,7 +441,7 @@ function showProdMonth(year, month) {
     return a.localeCompare(b);
   });
   const _dates = [...new Set(records.map(r => r.date))].sort();
-  const _shifts = ['야간','주간'];
+  const _shifts = ['주간','야간'];
   const _dw = '일월화수목금토';
 
   // pivot: date|shift|machine -> total_area
@@ -474,7 +473,7 @@ function showProdMonth(year, month) {
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
@@ -512,14 +511,7 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // 상세 기록: 날짜당 1행 (호기/주야 합산)
-  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
-    + '📋 상세 기록 보기 ▾</summary>'
-    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
-    + '</tr></thead><tbody>';
-
-  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  // 상세 기록: 날짜×호기×주야 피벗 테이블 (수정/작업일보 버튼)
   const byKey = {};
   records.forEach(r => {
     const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
@@ -527,19 +519,39 @@ function showProdMonth(year, month) {
     byKey[k].recs.push(r);
   });
 
-  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
-    const d = new Date(date + 'T12:00:00');
-    const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const btns = recs.map(r =>
-      '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
-    ).join('');
-    detailHtml += '<tr>'
-      + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + esc(machine) + '</td>'
-      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
-      + '<td style="white-space:nowrap">' + btns + '</td>'
-      + '</tr>';
+  // 피벗 헤더: 주간/야간 × 호기
+  let dtShifts = '', dtMacs = '';
+  _shifts.forEach(sh => {
+    dtShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:5px 2px;text-align:center;font-size:.75rem">' + sh + '</th>';
+    _macs.forEach(m => { dtMacs += '<th style="padding:4px 6px;font-size:.72rem;text-align:center">' + esc(m) + '</th>'; });
+  });
+
+  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
+    + '📋 상세 기록 보기 ▾</summary>'
+    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead>'
+    + '<tr><th rowspan="2" style="min-width:60px">날짜</th>' + dtShifts + '</tr>'
+    + '<tr>' + dtMacs + '</tr></thead><tbody>';
+
+  _dates.forEach(date => {
+    const _d = new Date(date+'T12:00:00');
+    const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
+    detailHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 6px">' + _dl + '</td>';
+    _shifts.forEach(sh => {
+      _macs.forEach(m => {
+        const k2 = date + '|' + m + '|' + sh;
+        const grp = byKey[k2];
+        if (grp && grp.recs.length > 0) {
+          const r0 = grp.recs[0];
+          detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
+            + '</td>';
+        } else {
+          detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
+        }
+      });
+    });
+    detailHtml += '</tr>';
   });
   detailHtml += '</tbody></table></div></details>';
 
@@ -698,7 +710,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  document.getElementById('btn-prod-scan').style.display  = 'none';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -729,9 +741,8 @@ function stopProdScan() {
     scanners.production = null;
   }
   const wrap = document.getElementById('prod-scan-wrap');
-  const btn  = document.getElementById('btn-prod-scan');
   if (wrap) wrap.style.display = 'none';
-  if (btn)  btn.style.display  = 'block';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -1035,7 +1046,7 @@ function showProdMonth(year, month) {
     return a.localeCompare(b);
   });
   const _dates = [...new Set(records.map(r => r.date))].sort();
-  const _shifts = ['야간','주간'];
+  const _shifts = ['주간','야간'];
   const _dw = '일월화수목금토';
 
   // pivot: date|shift|machine -> total_area
@@ -1067,7 +1078,7 @@ function showProdMonth(year, month) {
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
@@ -1105,14 +1116,7 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // 상세 기록: 날짜당 1행 (호기/주야 합산)
-  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
-    + '📋 상세 기록 보기 ▾</summary>'
-    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
-    + '</tr></thead><tbody>';
-
-  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  // 상세 기록: 날짜×호기×주야 피벗 테이블 (수정/작업일보 버튼)
   const byKey = {};
   records.forEach(r => {
     const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
@@ -1120,19 +1124,39 @@ function showProdMonth(year, month) {
     byKey[k].recs.push(r);
   });
 
-  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
-    const d = new Date(date + 'T12:00:00');
-    const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const btns = recs.map(r =>
-      '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
-    ).join('');
-    detailHtml += '<tr>'
-      + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + esc(machine) + '</td>'
-      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
-      + '<td style="white-space:nowrap">' + btns + '</td>'
-      + '</tr>';
+  // 피벗 헤더: 주간/야간 × 호기
+  let dtShifts = '', dtMacs = '';
+  _shifts.forEach(sh => {
+    dtShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:5px 2px;text-align:center;font-size:.75rem">' + sh + '</th>';
+    _macs.forEach(m => { dtMacs += '<th style="padding:4px 6px;font-size:.72rem;text-align:center">' + esc(m) + '</th>'; });
+  });
+
+  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
+    + '📋 상세 기록 보기 ▾</summary>'
+    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead>'
+    + '<tr><th rowspan="2" style="min-width:60px">날짜</th>' + dtShifts + '</tr>'
+    + '<tr>' + dtMacs + '</tr></thead><tbody>';
+
+  _dates.forEach(date => {
+    const _d = new Date(date+'T12:00:00');
+    const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
+    detailHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 6px">' + _dl + '</td>';
+    _shifts.forEach(sh => {
+      _macs.forEach(m => {
+        const k2 = date + '|' + m + '|' + sh;
+        const grp = byKey[k2];
+        if (grp && grp.recs.length > 0) {
+          const r0 = grp.recs[0];
+          detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
+            + '</td>';
+        } else {
+          detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
+        }
+      });
+    });
+    detailHtml += '</tr>';
   });
   detailHtml += '</tbody></table></div></details>';
 
@@ -1274,7 +1298,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  document.getElementById('btn-prod-scan').style.display  = 'none';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -1305,9 +1329,8 @@ function stopProdScan() {
     scanners.production = null;
   }
   const wrap = document.getElementById('prod-scan-wrap');
-  const btn  = document.getElementById('btn-prod-scan');
   if (wrap) wrap.style.display = 'none';
-  if (btn)  btn.style.display  = 'block';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -1611,7 +1634,7 @@ function showProdMonth(year, month) {
     return a.localeCompare(b);
   });
   const _dates = [...new Set(records.map(r => r.date))].sort();
-  const _shifts = ['야간','주간'];
+  const _shifts = ['주간','야간'];
   const _dw = '일월화수목금토';
 
   // pivot: date|shift|machine -> total_area
@@ -1643,7 +1666,7 @@ function showProdMonth(year, month) {
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
@@ -1681,14 +1704,7 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // 상세 기록: 날짜당 1행 (호기/주야 합산)
-  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
-    + '📋 상세 기록 보기 ▾</summary>'
-    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
-    + '</tr></thead><tbody>';
-
-  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  // 상세 기록: 날짜×호기×주야 피벗 테이블 (수정/작업일보 버튼)
   const byKey = {};
   records.forEach(r => {
     const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
@@ -1696,19 +1712,39 @@ function showProdMonth(year, month) {
     byKey[k].recs.push(r);
   });
 
-  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
-    const d = new Date(date + 'T12:00:00');
-    const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const btns = recs.map(r =>
-      '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
-    ).join('');
-    detailHtml += '<tr>'
-      + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + esc(machine) + '</td>'
-      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
-      + '<td style="white-space:nowrap">' + btns + '</td>'
-      + '</tr>';
+  // 피벗 헤더: 주간/야간 × 호기
+  let dtShifts = '', dtMacs = '';
+  _shifts.forEach(sh => {
+    dtShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:5px 2px;text-align:center;font-size:.75rem">' + sh + '</th>';
+    _macs.forEach(m => { dtMacs += '<th style="padding:4px 6px;font-size:.72rem;text-align:center">' + esc(m) + '</th>'; });
+  });
+
+  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
+    + '📋 상세 기록 보기 ▾</summary>'
+    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead>'
+    + '<tr><th rowspan="2" style="min-width:60px">날짜</th>' + dtShifts + '</tr>'
+    + '<tr>' + dtMacs + '</tr></thead><tbody>';
+
+  _dates.forEach(date => {
+    const _d = new Date(date+'T12:00:00');
+    const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
+    detailHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 6px">' + _dl + '</td>';
+    _shifts.forEach(sh => {
+      _macs.forEach(m => {
+        const k2 = date + '|' + m + '|' + sh;
+        const grp = byKey[k2];
+        if (grp && grp.recs.length > 0) {
+          const r0 = grp.recs[0];
+          detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
+            + '</td>';
+        } else {
+          detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
+        }
+      });
+    });
+    detailHtml += '</tr>';
   });
   detailHtml += '</tbody></table></div></details>';
 
@@ -1849,7 +1885,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  document.getElementById('btn-prod-scan').style.display  = 'none';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -1880,9 +1916,8 @@ function stopProdScan() {
     scanners.production = null;
   }
   const wrap = document.getElementById('prod-scan-wrap');
-  const btn  = document.getElementById('btn-prod-scan');
   if (wrap) wrap.style.display = 'none';
-  if (btn)  btn.style.display  = 'block';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -2186,7 +2221,7 @@ function showProdMonth(year, month) {
     return a.localeCompare(b);
   });
   const _dates = [...new Set(records.map(r => r.date))].sort();
-  const _shifts = ['야간','주간'];
+  const _shifts = ['주간','야간'];
   const _dw = '일월화수목금토';
 
   // pivot: date|shift|machine -> total_area
@@ -2218,7 +2253,7 @@ function showProdMonth(year, month) {
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
@@ -2256,14 +2291,7 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // 상세 기록: 날짜당 1행 (호기/주야 합산)
-  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
-    + '📋 상세 기록 보기 ▾</summary>'
-    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
-    + '</tr></thead><tbody>';
-
-  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  // 상세 기록: 날짜×호기×주야 피벗 테이블 (수정/작업일보 버튼)
   const byKey = {};
   records.forEach(r => {
     const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
@@ -2271,19 +2299,39 @@ function showProdMonth(year, month) {
     byKey[k].recs.push(r);
   });
 
-  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
-    const d = new Date(date + 'T12:00:00');
-    const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const btns = recs.map(r =>
-      '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
-    ).join('');
-    detailHtml += '<tr>'
-      + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + esc(machine) + '</td>'
-      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
-      + '<td style="white-space:nowrap">' + btns + '</td>'
-      + '</tr>';
+  // 피벗 헤더: 주간/야간 × 호기
+  let dtShifts = '', dtMacs = '';
+  _shifts.forEach(sh => {
+    dtShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:5px 2px;text-align:center;font-size:.75rem">' + sh + '</th>';
+    _macs.forEach(m => { dtMacs += '<th style="padding:4px 6px;font-size:.72rem;text-align:center">' + esc(m) + '</th>'; });
+  });
+
+  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
+    + '📋 상세 기록 보기 ▾</summary>'
+    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead>'
+    + '<tr><th rowspan="2" style="min-width:60px">날짜</th>' + dtShifts + '</tr>'
+    + '<tr>' + dtMacs + '</tr></thead><tbody>';
+
+  _dates.forEach(date => {
+    const _d = new Date(date+'T12:00:00');
+    const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
+    detailHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 6px">' + _dl + '</td>';
+    _shifts.forEach(sh => {
+      _macs.forEach(m => {
+        const k2 = date + '|' + m + '|' + sh;
+        const grp = byKey[k2];
+        if (grp && grp.recs.length > 0) {
+          const r0 = grp.recs[0];
+          detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
+            + '</td>';
+        } else {
+          detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
+        }
+      });
+    });
+    detailHtml += '</tr>';
   });
   detailHtml += '</tbody></table></div></details>';
 
@@ -2734,7 +2782,10 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <button class="btn btn-primary btn-full" id="btn-ib-start" onclick="startSmartScan('inbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-primary btn-full" id="btn-ib-native" onclick="startNativeScan('inbound')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
+      <button class="btn btn-primary btn-full" id="btn-ib-zxing" onclick="startZXingScan('inbound')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
+    </div>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
@@ -2771,7 +2822,10 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <button class="btn btn-warning btn-full" id="btn-ob-start" onclick="startSmartScan('outbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-warning btn-full" id="btn-ob-native" onclick="startNativeScan('outbound')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
+      <button class="btn btn-warning btn-full" id="btn-ob-zxing" onclick="startZXingScan('outbound')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
+    </div>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('outbound')">■ 스캔 중지</button>
@@ -3045,7 +3099,10 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
-        <button class="btn btn-primary btn-full" id="btn-prod-scan" onclick="startSmartScan('production')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn btn-primary btn-full" id="btn-prod-native" onclick="startNativeScan('production')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
+          <button class="btn btn-primary btn-full" id="btn-prod-zxing" onclick="startZXingScan('production')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
+        </div>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
@@ -4385,7 +4442,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  document.getElementById('btn-prod-scan').style.display  = 'none';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -4416,9 +4473,8 @@ function stopProdScan() {
     scanners.production = null;
   }
   const wrap = document.getElementById('prod-scan-wrap');
-  const btn  = document.getElementById('btn-prod-scan');
   if (wrap) wrap.style.display = 'none';
-  if (btn)  btn.style.display  = 'block';
+  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -4737,7 +4793,7 @@ function showProdMonth(year, month) {
     return a.localeCompare(b);
   });
   const _dates = [...new Set(records.map(r => r.date))].sort();
-  const _shifts = ['야간','주간'];
+  const _shifts = ['주간','야간'];
   const _dw = '일월화수목금토';
 
   // pivot: date|shift|machine -> total_area
@@ -4769,7 +4825,7 @@ function showProdMonth(year, month) {
   }));
   let thShifts = '';
   _shifts.forEach(sh => {
-    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh===_shifts[0]?'#fff3e0':'#fff8e1') + ';color:#e65100;padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
+    thShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:6px 2px;text-align:center;font-size:.8rem">' + sh + '</th>';
   });
 
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
@@ -4807,14 +4863,7 @@ function showProdMonth(year, month) {
   sumHtml += '<td style="font-weight:700;text-align:center">' + (grandTotal ? grandTotal.toFixed(1) : '-') + '</td></tr>';
   sumHtml += '</tbody></table></div>';
 
-  // 상세 기록: 날짜당 1행 (호기/주야 합산)
-  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
-    + '📋 상세 기록 보기 ▾</summary>'
-    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead><tr>'
-    + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
-    + '</tr></thead><tbody>';
-
-  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  // 상세 기록: 날짜×호기×주야 피벗 테이블 (수정/작업일보 버튼)
   const byKey = {};
   records.forEach(r => {
     const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
@@ -4822,19 +4871,39 @@ function showProdMonth(year, month) {
     byKey[k].recs.push(r);
   });
 
-  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
-    const d = new Date(date + 'T12:00:00');
-    const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const btns = recs.map(r =>
-      '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
-    ).join('');
-    detailHtml += '<tr>'
-      + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + esc(machine) + '</td>'
-      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
-      + '<td style="white-space:nowrap">' + btns + '</td>'
-      + '</tr>';
+  // 피벗 헤더: 주간/야간 × 호기
+  let dtShifts = '', dtMacs = '';
+  _shifts.forEach(sh => {
+    dtShifts += '<th colspan="' + _macs.length + '" style="background:' + (sh==='주간'?'#fff3e0':'#e3f2fd') + ';color:' + (sh==='주간'?'#e65100':'#1565c0') + ';padding:5px 2px;text-align:center;font-size:.75rem">' + sh + '</th>';
+    _macs.forEach(m => { dtMacs += '<th style="padding:4px 6px;font-size:.72rem;text-align:center">' + esc(m) + '</th>'; });
+  });
+
+  let detailHtml = '<details style="margin-top:4px"><summary style="font-size:.78rem;font-weight:700;color:#546e7a;cursor:pointer;padding:6px 0;list-style:none;user-select:none">'
+    + '📋 상세 기록 보기 ▾</summary>'
+    + '<div style="overflow-x:auto;margin-top:8px"><table class="prod-stat-table"><thead>'
+    + '<tr><th rowspan="2" style="min-width:60px">날짜</th>' + dtShifts + '</tr>'
+    + '<tr>' + dtMacs + '</tr></thead><tbody>';
+
+  _dates.forEach(date => {
+    const _d = new Date(date+'T12:00:00');
+    const _dl = (_d.getMonth()+1)+'/'+_d.getDate()+'('+_dw[_d.getDay()]+')';
+    detailHtml += '<tr><td style="font-size:.75rem;white-space:nowrap;text-align:center;padding:5px 6px">' + _dl + '</td>';
+    _shifts.forEach(sh => {
+      _macs.forEach(m => {
+        const k2 = date + '|' + m + '|' + sh;
+        const grp = byKey[k2];
+        if (grp && grp.recs.length > 0) {
+          const r0 = grp.recs[0];
+          detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
+            + '</td>';
+        } else {
+          detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
+        }
+      });
+    });
+    detailHtml += '</tr>';
   });
   detailHtml += '</tbody></table></div></details>';
 
