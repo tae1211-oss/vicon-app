@@ -2731,12 +2731,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <button class="btn btn-primary btn-full" onclick="startSmartScan('inbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
-    <div style="display:flex;gap:6px;margin-top:6px">
-      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" id="btn-ib-start">영상</button>
-      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startNativeScan('inbound')">네이티브</button>
-      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startZXingScan('inbound')">ZXing</button>
-    </div>
+    <button class="btn btn-primary btn-full" id="btn-ib-start" onclick="startSmartScan('inbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
@@ -2773,12 +2768,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <button class="btn btn-warning btn-full" onclick="startSmartScan('outbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
-    <div style="display:flex;gap:6px;margin-top:6px">
-      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" id="btn-ob-start">영상</button>
-      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startNativeScan('outbound')">네이티브</button>
-      <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startZXingScan('outbound')">ZXing</button>
-    </div>
+    <button class="btn btn-warning btn-full" id="btn-ob-start" onclick="startSmartScan('outbound')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('outbound')">■ 스캔 중지</button>
@@ -3052,12 +3042,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
-        <button class="btn btn-primary btn-full" onclick="startSmartScan('production')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
-        <div style="display:flex;gap:6px;margin-top:6px">
-          <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" id="btn-prod-scan" onclick="startProdScan()">영상</button>
-          <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startNativeScan('production')">네이티브</button>
-          <button class="btn" style="flex:1;font-size:.75rem;background:#e0e0e0;color:#555" onclick="startZXingScan('production')">ZXing</button>
-        </div>
+        <button class="btn btn-primary btn-full" id="btn-prod-scan" onclick="startSmartScan('production')" style="font-size:1rem;padding:14px">📷 QR 스캔 시작</button>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
