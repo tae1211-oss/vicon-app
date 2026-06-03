@@ -184,7 +184,7 @@ async function renderDeckForm(data) {
           (d.packs || []).forEach(p => {
             donePacks.add(p.pack_no);
             if (!doneInfo[p.pack_no]) {
-              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'' };
+              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'', docId: doc.id };
             }
           });
         }
@@ -240,7 +240,8 @@ async function renderDeckForm(data) {
       + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c">✅ ' + esc(infoTxt) + '</span>';
+      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -859,7 +860,7 @@ async function renderDeckForm(data) {
           (d.packs || []).forEach(p => {
             donePacks.add(p.pack_no);
             if (!doneInfo[p.pack_no]) {
-              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'' };
+              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'', docId: doc.id };
             }
           });
         }
@@ -915,7 +916,8 @@ async function renderDeckForm(data) {
       + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c">✅ ' + esc(infoTxt) + '</span>';
+      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -1433,7 +1435,7 @@ async function renderDeckForm(data) {
           (d.packs || []).forEach(p => {
             donePacks.add(p.pack_no);
             if (!doneInfo[p.pack_no]) {
-              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'' };
+              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'', docId: doc.id };
             }
           });
         }
@@ -1489,7 +1491,8 @@ async function renderDeckForm(data) {
       + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c">✅ ' + esc(infoTxt) + '</span>';
+      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -2006,7 +2009,7 @@ async function renderDeckForm(data) {
           (d.packs || []).forEach(p => {
             donePacks.add(p.pack_no);
             if (!doneInfo[p.pack_no]) {
-              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'' };
+              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'', docId: doc.id };
             }
           });
         }
@@ -2062,7 +2065,8 @@ async function renderDeckForm(data) {
       + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c">✅ ' + esc(infoTxt) + '</span>';
+      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -4551,7 +4555,7 @@ async function renderDeckForm(data) {
           (d.packs || []).forEach(p => {
             donePacks.add(p.pack_no);
             if (!doneInfo[p.pack_no]) {
-              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'' };
+              doneInfo[p.pack_no] = { date: d.date||'', shift: d.shift||'', machine: d.machine||'', docId: doc.id };
             }
           });
         }
@@ -4607,7 +4611,8 @@ async function renderDeckForm(data) {
       + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c">✅ ' + esc(infoTxt) + '</span>';
+      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -5822,6 +5827,44 @@ async function confirmOverwrite() {
   } catch(e) { toast('저장 실패: ' + e.message); }
 }
 
+// ── 생산 QR 스캔 중 기존 기록 빠른 수정 ─────────────────
+function quickEditProdRecord(docId, date, machine, shift) {
+  if (!docId) { toast('기록 ID를 찾을 수 없습니다.'); return; }
+  const el = document.getElementById('qedit-prod-modal');
+  document.getElementById('qedit-prod-id').value = docId;
+  document.getElementById('qedit-prod-date').value = date;
+  // 호기 select
+  const mSel = document.getElementById('qedit-prod-machine');
+  Array.from(mSel.options).forEach(o => { o.selected = (o.value === machine); });
+  // 주야 radio
+  const radios = document.querySelectorAll('input[name="qedit-shift"]');
+  radios.forEach(r => { r.checked = (r.value === shift); });
+  el.style.display = 'flex';
+}
+
+function closeQuickEditProd() {
+  document.getElementById('qedit-prod-modal').style.display = 'none';
+}
+
+async function saveQuickEditProd() {
+  if (!db) { toast('Firebase 미연결'); return; }
+  const docId   = document.getElementById('qedit-prod-id').value;
+  const date    = document.getElementById('qedit-prod-date').value;
+  const machine = document.getElementById('qedit-prod-machine').value;
+  const shift   = document.querySelector('input[name="qedit-shift"]:checked')?.value;
+  if (!date || !machine || !shift) { toast('일자/호기/주야를 모두 입력하세요.'); return; }
+  try {
+    await db.collection('production_deck').doc(docId).update({ date, machine, shift });
+    // 캐시 업데이트
+    if (window._prodRecords) {
+      const rec = window._prodRecords.find(r => r.id === docId);
+      if (rec) { rec.date = date; rec.machine = machine; rec.shift = shift; }
+    }
+    toast('✅ 수정 완료!');
+    closeQuickEditProd();
+  } catch(e) { toast('수정 실패: ' + e.message); }
+}
+
 function setAllPackCb(checked) {
   document.querySelectorAll('input[name="edit-pack-cb"]').forEach(cb => cb.checked = checked);
 }
@@ -5979,6 +6022,40 @@ async function downloadDailyReport() {
 
 </script>
 
+
+<!-- ════════ QUICK EDIT PROD MODAL ════════ -->
+<div id="qedit-prod-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);z-index:10000;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div style="background:#fff;border-radius:16px;padding:20px;width:94%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 4px;font-size:1rem;color:#e65100">✏️ 생산 기록 수정</h3>
+    <p style="margin:0 0 16px;font-size:.78rem;color:#90a4ae">일자 / 호기 / 주야를 변경합니다</p>
+    <input type="hidden" id="qedit-prod-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div>
+        <label style="font-size:.78rem;color:#546e7a;font-weight:600">생산 일자</label>
+        <input type="date" id="qedit-prod-date" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;margin-top:4px">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:#546e7a;font-weight:600">호기</label>
+        <select id="qedit-prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit;margin-top:4px">
+          <option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:.78rem;color:#546e7a;font-weight:600">주간 / 야간</label>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem">
+          <input type="radio" name="qedit-shift" value="주간" checked> 🌤️ 주간</label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem">
+          <input type="radio" name="qedit-shift" value="야간"> 🌙 야간</label>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button onclick="closeQuickEditProd()" style="padding:11px;background:#90a4ae;color:#fff;border:none;border-radius:8px;font-size:.88rem;cursor:pointer;font-family:inherit">취소</button>
+      <button onclick="saveQuickEditProd()" style="padding:11px;background:#e65100;color:#fff;border:none;border-radius:8px;font-size:.88rem;cursor:pointer;font-family:inherit;font-weight:700">✅ 저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- ════════ DUP WARN MODAL ════════ -->
 <div id="dup-warn-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
