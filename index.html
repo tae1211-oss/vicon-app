@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>비콘㈜ 관리시스템</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
@@ -3438,26 +3441,15 @@ function isIOS() {
 }
 
 function startSmartScan(type) {
-  if (isIOS()) {
-    // 아이폰 → ZXing (TRY_HARDER 모드, 인식률 최고)
-    startZXingScan(type);
-  } else if ('BarcodeDetector' in window) {
-    // 안드로이드 Chrome 등 → 네이티브 BarcodeDetector
-    startNativeScan(type);
-  } else if (typeof ZXing !== 'undefined') {
-    // BarcodeDetector 없지만 ZXing 있으면
-    startZXingScan(type);
+  // 기본: 인라인 Html5Qrcode (모든 기기에서 안정적으로 작동)
+  if (type === 'inbound') {
+    document.getElementById('ib-scan-wrap').style.display = 'block';
+    startScanner('inbound-qr-reader', 'inbound', handleInbound);
+  } else if (type === 'outbound') {
+    document.getElementById('ob-scan-wrap').style.display = 'block';
+    startScanner('outbound-qr-reader', 'outbound', handleOutbound);
   } else {
-    // 최후 fallback → Html5Qrcode 인라인 스캐너
-    if (type === 'inbound') {
-      document.getElementById('ib-scan-wrap').style.display = 'block';
-      startScanner('inbound-qr-reader', 'inbound', handleInbound);
-    } else if (type === 'outbound') {
-      document.getElementById('ob-scan-wrap').style.display = 'block';
-      startScanner('outbound-qr-reader', 'outbound', handleOutbound);
-    } else {
-      startProdScan();
-    }
+    startProdScan();
   }
 }
 
