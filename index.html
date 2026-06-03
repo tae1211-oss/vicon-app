@@ -78,10 +78,7 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-  if (name === 'psearch') {
-    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
-    else searchProdBySite();
-  }
+
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -366,88 +363,6 @@ async function submitProdEntry() {
 
 
 // ── 검색 ─────────────────────────────────────────────────
-async function loadProdRecordsForSearch() {
-  const el = document.getElementById('psearch-result');
-  if (!db) { if (el) el.innerHTML = '<div class="alert alert-warning">Firebase 미연결</div>'; return; }
-  if (el) el.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
-  try {
-    const snap = await db.collection('production_deck').get();
-    window._prodRecords = [];
-    snap.forEach(doc => window._prodRecords.push({id: doc.id, ...doc.data()}));
-    searchProdBySite();
-  } catch(e) { if (el) el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
-
-function searchProdBySite() {
-  const q = (document.getElementById('psearch-input')?.value || '').trim().toLowerCase();
-  const el = document.getElementById('psearch-result');
-  if (!el) return;
-  if (!q) {
-    el.innerHTML = '<div style="text-align:center;color:#90a4ae;padding:20px 0;font-size:.82rem">현장명을 입력하세요</div>';
-    return;
-  }
-  if (!window._prodRecords) {
-    loadProdRecordsForSearch();
-    return;
-  }
-  const records = window._prodRecords
-    .filter(r => (r.site || '').toLowerCase().includes(q))
-    .sort((a, b) => {
-      if (a.date !== b.date) return b.date.localeCompare(a.date);
-      if ((a.machine||'') !== (b.machine||'')) return (a.machine||'').localeCompare(b.machine||'');
-      return a.shift === '야간' ? 1 : -1;
-    });
-  if (!records.length) {
-    el.innerHTML = '<div class="alert alert-info">검색 결과가 없습니다.</div>';
-    return;
-  }
-  // 현장별 → 날짜별로 그룹핑
-  const bySite = {};
-  records.forEach(r => {
-    const key = (r.company||'') + '||' + (r.site||'');
-    if (!bySite[key]) bySite[key] = {company: r.company||'', site: r.site||'', recs: []};
-    bySite[key].recs.push(r);
-  });
-  const dw = '일월화수목금토';
-  let html = '';
-  Object.values(bySite).forEach(({company, site, recs}) => {
-    // 날짜별로 묶기
-    const byDate = {};
-    recs.forEach(r => { (byDate[r.date] = byDate[r.date]||[]).push(r); });
-
-    html += `<div style="margin-bottom:16px">
-      <div style="font-weight:700;font-size:.88rem;padding:4px 0;border-bottom:2px solid #e0e0e0;margin-bottom:6px">
-        ${esc(site)}<span style="font-size:.75rem;color:#90a4ae;margin-left:6px">${esc(company)}</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <thead><tr style="border-bottom:1px solid #cfd8dc;color:#78909c">
-          <th style="text-align:left;padding:4px 6px">날짜</th>
-          <th style="text-align:center;padding:4px 6px">호기</th>
-          <th style="text-align:center;padding:4px 6px">주야</th>
-          <th style="text-align:left;padding:4px 6px">패킹번호</th>
-          <th style="text-align:right;padding:4px 6px">수량</th>
-        </tr></thead><tbody>`;
-    Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).forEach(([date, drecs]) => {
-      const d = new Date(date + 'T12:00:00');
-      const dl = (d.getMonth()+1) + '/' + d.getDate() + '(' + dw[d.getDay()] + ')';
-      const machines = [...new Set(drecs.map(r => String(r.machine||'')))].sort().join(', ');
-      const shifts   = [...new Set(drecs.map(r => r.shift||''))].join(', ');
-      const allPacks = drecs.flatMap(r => (r.packs||[]).map(p => p.pack_no)).sort((a,b)=>a-b);
-      const packNos  = allPacks.join(', ');
-      const total    = drecs.reduce((s,r) => s+(r.pack_count||0), 0);
-      html += `<tr style="border-bottom:1px solid #f5f5f5">
-        <td style="padding:5px 6px;white-space:nowrap">${dl}</td>
-        <td style="padding:5px 6px;text-align:center">${esc(machines)}</td>
-        <td style="padding:5px 6px;text-align:center">${esc(shifts)}</td>
-        <td style="padding:5px 6px;color:#37474f;word-break:break-all">${packNos||'-'}</td>
-        <td style="padding:5px 6px;text-align:right;white-space:nowrap">${total}개</td>
-      </tr>`;
-    });
-    html += '</tbody></table></div>';
-  });
-  el.innerHTML = html;
-}
-
 // ── 현황 ─────────────────────────────────────────────────
 async function loadProdStat() {
   if (!db) return;
@@ -601,22 +516,25 @@ function showProdMonth(year, month) {
     + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
-  const byDay = {};
-  records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
+  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  const byKey = {};
+  records.forEach(r => {
+    const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
+    if (!byKey[k]) byKey[k] = { date: r.date||'', machine: r.machine||'', shift: r.shift||'', recs: [] };
+    byKey[k].recs.push(r);
+  });
 
-  Object.entries(byDay).sort().forEach(([date, recs]) => {
+  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const machines = [...new Set(recs.map(r => String(r.machine||'')))].sort().join(', ');
-    const shifts   = [...new Set(recs.map(r => r.shift||''))].join(', ');
     const btns = recs.map(r =>
       '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
     ).join('');
     detailHtml += '<tr>'
       + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + machines + '</td>'
-      + '<td style="text-align:center">' + shifts + '</td>'
+      + '<td style="text-align:center">' + esc(machine) + '</td>'
+      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
       + '<td style="white-space:nowrap">' + btns + '</td>'
       + '</tr>';
   });
@@ -755,10 +673,7 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-  if (name === 'psearch') {
-    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
-    else searchProdBySite();
-  }
+
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -1194,22 +1109,25 @@ function showProdMonth(year, month) {
     + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
-  const byDay = {};
-  records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
+  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  const byKey = {};
+  records.forEach(r => {
+    const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
+    if (!byKey[k]) byKey[k] = { date: r.date||'', machine: r.machine||'', shift: r.shift||'', recs: [] };
+    byKey[k].recs.push(r);
+  });
 
-  Object.entries(byDay).sort().forEach(([date, recs]) => {
+  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const machines = [...new Set(recs.map(r => String(r.machine||'')))].sort().join(', ');
-    const shifts   = [...new Set(recs.map(r => r.shift||''))].join(', ');
     const btns = recs.map(r =>
       '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
     ).join('');
     detailHtml += '<tr>'
       + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + machines + '</td>'
-      + '<td style="text-align:center">' + shifts + '</td>'
+      + '<td style="text-align:center">' + esc(machine) + '</td>'
+      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
       + '<td style="white-space:nowrap">' + btns + '</td>'
       + '</tr>';
   });
@@ -1331,10 +1249,7 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-  if (name === 'psearch') {
-    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
-    else searchProdBySite();
-  }
+
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -1770,22 +1685,25 @@ function showProdMonth(year, month) {
     + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
-  const byDay = {};
-  records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
+  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  const byKey = {};
+  records.forEach(r => {
+    const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
+    if (!byKey[k]) byKey[k] = { date: r.date||'', machine: r.machine||'', shift: r.shift||'', recs: [] };
+    byKey[k].recs.push(r);
+  });
 
-  Object.entries(byDay).sort().forEach(([date, recs]) => {
+  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const machines = [...new Set(recs.map(r => String(r.machine||'')))].sort().join(', ');
-    const shifts   = [...new Set(recs.map(r => r.shift||''))].join(', ');
     const btns = recs.map(r =>
       '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
     ).join('');
     detailHtml += '<tr>'
       + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + machines + '</td>'
-      + '<td style="text-align:center">' + shifts + '</td>'
+      + '<td style="text-align:center">' + esc(machine) + '</td>'
+      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
       + '<td style="white-space:nowrap">' + btns + '</td>'
       + '</tr>';
   });
@@ -1906,10 +1824,7 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-  if (name === 'psearch') {
-    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
-    else searchProdBySite();
-  }
+
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -2345,22 +2260,25 @@ function showProdMonth(year, month) {
     + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
-  const byDay = {};
-  records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
+  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  const byKey = {};
+  records.forEach(r => {
+    const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
+    if (!byKey[k]) byKey[k] = { date: r.date||'', machine: r.machine||'', shift: r.shift||'', recs: [] };
+    byKey[k].recs.push(r);
+  });
 
-  Object.entries(byDay).sort().forEach(([date, recs]) => {
+  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const machines = [...new Set(recs.map(r => String(r.machine||'')))].sort().join(', ');
-    const shifts   = [...new Set(recs.map(r => r.shift||''))].join(', ');
     const btns = recs.map(r =>
       '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
     ).join('');
     detailHtml += '<tr>'
       + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + machines + '</td>'
-      + '<td style="text-align:center">' + shifts + '</td>'
+      + '<td style="text-align:center">' + esc(machine) + '</td>'
+      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
       + '<td style="white-space:nowrap">' + btns + '</td>'
       + '</tr>';
   });
@@ -3110,7 +3028,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="tabs prod-tabs-sticky">
     <div class="tab active" id="ptab-stat"      onclick="showPTab('stat')"><span class="tab-icon">📊</span>현황</div>
     <div class="tab"        id="ptab-entry"     onclick="showPTab('entry')"><span class="tab-icon">✏️</span>생산입력</div>
-    <div class="tab"        id="ptab-psearch"   onclick="showPTab('psearch')"><span class="tab-icon">🔍</span>검색</div>
+
     <div class="tab"        id="ptab-psettings" onclick="showPTab('psettings')"><span class="tab-icon">⚙️</span>설정</div>
   </div>
 
@@ -3156,20 +3074,6 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         <div style="font-weight:700;font-size:1rem;margin-bottom:6px">준비 중</div>
         <div style="font-size:.78rem;color:#78909c">추후 지원 예정입니다.</div>
       </div>
-    </div>
-  </div>
-
-  <!-- ── 검색 ── -->
-  <div class="page" id="ppage-psearch">
-    <div class="card">
-      <div class="card-title">🔍 현장별 생산 검색</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="psearch-input" type="text" placeholder="현장명 입력 (부분 검색 가능)"
-          style="flex:1;border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem"
-          oninput="searchProdBySite()">
-        <button class="btn btn-secondary" onclick="document.getElementById('psearch-input').value='';searchProdBySite()">✕</button>
-      </div>
-      <div id="psearch-result"></div>
     </div>
   </div>
 
@@ -4454,10 +4358,7 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-  if (name === 'psearch') {
-    if (!window._prodRecords || !window._prodRecords.length) loadProdRecordsForSearch();
-    else searchProdBySite();
-  }
+
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -4908,22 +4809,25 @@ function showProdMonth(year, month) {
     + '<th>날짜</th><th>호기</th><th>주/야</th><th style="width:64px"></th>'
     + '</tr></thead><tbody>';
 
-  const byDay = {};
-  records.forEach(r => { (byDay[r.date] = byDay[r.date]||[]).push(r); });
+  // 날짜+호기+주야 기준으로 그룹핑 (여러 QR 찍어도 1행)
+  const byKey = {};
+  records.forEach(r => {
+    const k = (r.date||'') + '|' + (r.machine||'') + '|' + (r.shift||'');
+    if (!byKey[k]) byKey[k] = { date: r.date||'', machine: r.machine||'', shift: r.shift||'', recs: [] };
+    byKey[k].recs.push(r);
+  });
 
-  Object.entries(byDay).sort().forEach(([date, recs]) => {
+  Object.entries(byKey).sort().forEach(([k, {date, machine, shift, recs}]) => {
     const d = new Date(date + 'T12:00:00');
     const dayLbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')';
-    const machines = [...new Set(recs.map(r => String(r.machine||'')))].sort().join(', ');
-    const shifts   = [...new Set(recs.map(r => r.shift||''))].join(', ');
     const btns = recs.map(r =>
       '<button onclick="openEditProd(\'' + r.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#2e7d32;padding:2px 3px;line-height:1" title="수정">&#x270F;&#xFE0F;</button>'
-      + '<button onclick="openDailyReport(\'' + r.date + '\',\'' + r.machine + '\',\'' + (r.shift||'') + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
+      + '<button onclick="openDailyReport(\'' + date + '\',\'' + machine + '\',\'' + shift + '\')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#222222;padding:2px 3px;line-height:1" title="작업일보">&#x1F4CB;</button>'
     ).join('');
     detailHtml += '<tr>'
       + '<td style="white-space:nowrap">' + dayLbl + '</td>'
-      + '<td style="text-align:center">' + machines + '</td>'
-      + '<td style="text-align:center">' + shifts + '</td>'
+      + '<td style="text-align:center">' + esc(machine) + '</td>'
+      + '<td style="text-align:center;color:' + (shift==='야간'?'#1565c0':'#e65100') + '">' + shift + '</td>'
       + '<td style="white-space:nowrap">' + btns + '</td>'
       + '</tr>';
   });
@@ -5390,24 +5294,50 @@ async function tapToFocus(e, videoEl) {
   if (!nativeScanStream) return;
   const track = nativeScanStream.getVideoTracks()[0];
   if (!track) return;
-  const caps = track.getCapabilities ? track.getCapabilities() : {};
-  // 탭 위치 시각 피드백
-  const hint = document.getElementById('tap-focus-hint');
-  if (hint) { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 1200); }
+  // 탭 위치 시각 피드백 (원형 링 표시)
+  showFocusRing(e.clientX, e.clientY);
   try {
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
     const rect = videoEl.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top)  / rect.height;
-    if (caps.focusMode?.includes('manual') && caps.pointOfInterest) {
+    // 1) pointOfInterest 지원 시 (일부 Android)
+    if (caps.pointOfInterest) {
       await track.applyConstraints({ advanced: [{ focusMode:'manual', pointOfInterest:{x, y} }] });
       setTimeout(async () => {
         try { await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] }); } catch(_){}
-      }, 800);
-    } else {
-      // 지원 안 하면 continuous 재적용으로 AF 트리거
-      await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] });
+      }, 1000);
+      return;
     }
+    // 2) single-shot AF 트리거 (Android Chrome 대부분 지원)
+    if (caps.focusMode?.includes?.('single-shot')) {
+      await track.applyConstraints({ advanced: [{ focusMode:'single-shot' }] });
+      setTimeout(async () => {
+        try { await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] }); } catch(_){}
+      }, 800);
+      return;
+    }
+    // 3) 그 외: continuous 재적용으로 AF 리셋 유도
+    await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] });
   } catch(_) {}
+}
+
+function showFocusRing(cx, cy) {
+  let ring = document.getElementById('focus-ring');
+  if (!ring) {
+    ring = document.createElement('div');
+    ring.id = 'focus-ring';
+    ring.style.cssText = 'position:fixed;width:60px;height:60px;border:3px solid #fb8c00;border-radius:50%;pointer-events:none;z-index:10001;transform:translate(-50%,-50%);transition:opacity .5s,transform .3s;box-shadow:0 0 0 2px rgba(0,0,0,.4)';
+    document.body.appendChild(ring);
+  }
+  ring.style.left = cx + 'px';
+  ring.style.top  = cy + 'px';
+  ring.style.opacity = '1';
+  ring.style.transform = 'translate(-50%,-50%) scale(1)';
+  setTimeout(() => {
+    ring.style.opacity = '0';
+    ring.style.transform = 'translate(-50%,-50%) scale(0.6)';
+  }, 600);
 }
 
 // 손전등 토글
