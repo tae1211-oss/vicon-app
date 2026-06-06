@@ -5972,7 +5972,7 @@ function backupInventory() {
     fromId:'inv-backup-from', toId:'inv-backup-to', btnId:'inv-backup-btn', statusId:'inv-backup-status' });
 }
 
-// ── 생산기록 그룹 수정 (여러 기록이면 업체/현장/의뢰번호 선택 먼저) ─
+// ── 생산기록 그룹 수정 (날짜/호기/주야 전체 팩을 한 화면에 표시) ─
 function openEditProdGroup(date, machine, shift, year, month) {
   const recs = (window._prodRecords||[]).filter(r =>
     r.date === date && String(r.machine||'') === String(machine||'') && r.shift === shift
@@ -5981,28 +5981,40 @@ function openEditProdGroup(date, machine, shift, year, month) {
   if (recs.length === 1) {
     openEditProd(recs[0].id, year, month); return;
   }
-  // 여러 기록 → 선택 화면
-  const modal = document.getElementById('edit-prod-modal');
-  document.getElementById('edit-prod-id').value    = '';
+  // 여러 기록 → 전체 팩 체크박스로 표시 (그룹 삭제 모드)
+  document.getElementById('edit-prod-id').value    = '__group__';
   document.getElementById('edit-prod-year').value  = year;
   document.getElementById('edit-prod-month').value = month;
-  const ctrlBar = document.getElementById('edit-pack-ctrl');
-  if (ctrlBar) ctrlBar.style.display = 'none';
   document.getElementById('edit-prod-header').innerHTML =
-    `<div style="font-size:.82rem;color:#546e7a">📋 ${date} · ${machine} · ${shift} — 아래에서 수정할 항목을 선택하세요</div>`;
-  document.getElementById('edit-prod-packs').innerHTML =
-    recs.map(r => {
-      const packNos = (r.packs||[]).map(p=>p.pack_no).join(', ');
-      const areaStr = r.total_area != null ? r.total_area.toFixed(1)+'㎡' : r.pack_count+'패킹';
-      return `<div onclick="openEditProd('${r.id}','${year}','${month}')"
-        style="padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s"
-        onmouseover="this.style.borderColor='#f57c00'" onmouseout="this.style.borderColor='#e0e0e0'">
-        <div style="font-weight:700;font-size:.88rem">${esc(r.site||r.company||'(현장명 없음)')}</div>
-        <div style="font-size:.76rem;color:#78909c;margin-top:3px">${esc(r.company||'')} · 의뢰: ${esc(r.req_code||'-')}</div>
-        <div style="font-size:.76rem;color:#2e7d32;margin-top:3px">팩: ${packNos} · ${areaStr}</div>
+    `<div style="font-weight:700;font-size:.88rem">${date} · ${esc(machine)} · ${shift}</div>
+     <div style="font-size:.76rem;color:#78909c;margin-top:4px">총 ${recs.length}건 기록 · 전체 팩 표시</div>`;
+
+  // 각 기록별로 팩 체크박스 그룹 렌더링 (value = "docId:pack_no")
+  let html = '<div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:.77rem;color:#e65100">'
+    + '🗑️ <strong>삭제할 패킹을 체크</strong>하고 저장하세요. 전체 체크 후 삭제하면 이 날짜/호기/주야 기록이 전부 삭제됩니다.</div>';
+  recs.forEach(r => {
+    const packs = r.packs || [];
+    html += `<div style="margin-bottom:10px">
+      <div style="font-size:.78rem;font-weight:700;color:#37474f;padding:5px 4px;border-bottom:2px solid #e0e0e0;margin-bottom:4px">
+        ${esc(r.site||r.company||'(현장명 없음)')}
+        <span style="font-weight:400;color:#90a4ae"> · 의뢰: ${esc(r.req_code||'-')}</span>
       </div>`;
-    }).join('');
-  modal.style.display = 'flex';
+    packs.forEach(p => {
+      const detail = (p.sheets!=null)
+        ? ` <span style="color:#90a4ae;font-size:.78rem">· ${p.sheets}장 · ${(+(p.area||0)).toFixed(1)}㎡</span>`
+        : '';
+      html += `<label style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #f5f5f5;cursor:pointer">
+        <input type="checkbox" name="edit-pack-cb" value="${r.id}:${p.pack_no}"
+               style="width:18px;height:18px;accent-color:#e53935;cursor:pointer;flex-shrink:0"/>
+        <div><strong>${p.pack_no}번 패킹</strong>${detail}</div>
+      </label>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('edit-prod-packs').innerHTML = html;
+  const ctrl = document.getElementById('edit-pack-ctrl');
+  if (ctrl) ctrl.style.display = 'flex';
+  document.getElementById('edit-prod-modal').style.display = 'flex';
 }
 
 // ── 생산기록 수정 (체크 = 삭제 방식) ────────────────────
@@ -6160,14 +6172,58 @@ async function saveEditProd() {
   const docId = document.getElementById('edit-prod-id').value;
   const year  = document.getElementById('edit-prod-year').value;
   const month = document.getElementById('edit-prod-month').value;
+
+  const checkedCbs = [...document.querySelectorAll('input[name="edit-pack-cb"]:checked')];
+  if (checkedCbs.length === 0) { toast('삭제할 패킹을 체크하세요.'); return; }
+
+  // ── 그룹 모드: value = "docId:packNo" ─────────────────────
+  if (docId === '__group__') {
+    // 체크된 항목을 docId별로 그룹핑
+    const byDoc = {};
+    checkedCbs.forEach(cb => {
+      const [did, pno] = cb.value.split(':');
+      if (!byDoc[did]) byDoc[did] = new Set();
+      byDoc[did].add(+pno);
+    });
+    const totalChecked = checkedCbs.length;
+    const totalAll = [...document.querySelectorAll('input[name="edit-pack-cb"]')].length;
+    const msg = totalChecked === totalAll
+      ? '이 날짜/호기/주야의 모든 기록을 삭제합니다.\n계속하시겠습니까?'
+      : `선택한 ${totalChecked}개 패킹을 삭제합니다.\n계속하시겠습니까?`;
+    if (!confirm(msg)) return;
+    try {
+      for (const [did, delNos] of Object.entries(byDoc)) {
+        const r = (window._prodRecords||[]).find(x => x.id === did);
+        if (!r) continue;
+        const newPacks = (r.packs||[]).filter(p => !delNos.has(+p.pack_no));
+        if (newPacks.length === 0) {
+          await db.collection('production_deck').doc(did).delete();
+          window._prodRecords = (window._prodRecords||[]).filter(x => x.id !== did);
+        } else {
+          const hasDetail = newPacks.some(p => p.sheets != null);
+          const updates = {
+            packs: newPacks, pack_count: newPacks.length,
+            total_sheets: hasDetail ? newPacks.reduce((s,p)=>s+(+p.sheets||0),0) : null,
+            total_area: hasDetail ? +newPacks.reduce((s,p)=>s+(+p.area||0),0).toFixed(2) : null
+          };
+          await db.collection('production_deck').doc(did).update(updates);
+          const idx = (window._prodRecords||[]).findIndex(x => x.id === did);
+          if (idx >= 0) Object.assign(window._prodRecords[idx], updates);
+        }
+      }
+      closeEditProd();
+      toast('✅ 삭제되었습니다.');
+      showProdMonth(year, month);
+    } catch(e) { toast('삭제 실패: ' + e.message); }
+    return;
+  }
+
+  // ── 단일 기록 모드 ─────────────────────────────────────────
   const r = (window._prodRecords||[]).find(r => r.id === docId);
   if (!r) { toast('기록을 찾을 수 없습니다.'); return; }
 
   // 체크된 패킹 = 삭제 대상 → 체크 안 된 것만 남김
-  const deleteNos = new Set(
-    [...document.querySelectorAll('input[name="edit-pack-cb"]:checked')].map(cb => +cb.value)
-  );
-  if (deleteNos.size === 0) { toast('삭제할 패킹을 체크하세요.'); return; }
+  const deleteNos = new Set(checkedCbs.map(cb => +cb.value));
   const newPacks = (r.packs||[]).filter(p => !deleteNos.has(+p.pack_no));
 
   if (newPacks.length === 0) {
