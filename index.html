@@ -4756,18 +4756,28 @@ function cancelProdEntry() {
   pendingProd = null;
 }
 
-function addToConfirmedList(rec, siteName) {
+function addToConfirmedList(rec, siteName, docId) {
   const wrap = document.getElementById('prod-confirmed-wrap');
   const body = document.getElementById('prod-confirmed-body');
   if (!wrap || !body) return;
   wrap.style.display = 'block';
-  const packNos = (rec.packs||[]).map(p=>p.pack_no).join(', ');
-  const areaStr = rec.total_area != null ? rec.total_area.toFixed(1) + '㎡' : rec.pack_count + '패킹';
+  const packNos  = (rec.packs||[]).map(p=>p.pack_no).join(', ');
+  const areaStr  = rec.total_area  != null ? rec.total_area.toFixed(1)  + '㎡'  : '-';
+  const cntStr   = rec.pack_count  != null ? rec.pack_count + '패킹' : '';
+  const year     = (rec.date||'').slice(0,4);
+  const month    = (rec.date||'').slice(5,7);
   const item = document.createElement('div');
-  item.style.cssText = 'padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:.8rem;color:#37474f';
-  item.innerHTML = '<span style="font-weight:700;color:#1b5e20">✅ ' + esc(siteName) + '</span>'
-    + ' <span style="color:#78909c">팩: ' + packNos + '</span>'
-    + ' <span style="float:right;color:#2e7d32;font-weight:700">' + areaStr + '</span>';
+  item.style.cssText = 'padding:10px 10px;border-bottom:1px solid #f0f0f0;font-size:.8rem;color:#37474f';
+  item.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">'
+    + '<span style="font-weight:700;color:#1b5e20;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✅ ' + esc(siteName) + '</span>'
+    + (docId ? '<button onclick="openEditProd(\'' + docId + '\',\'' + year + '\',\'' + month + '\')" style="flex-shrink:0;background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:6px;padding:3px 9px;font-size:.72rem;cursor:pointer;font-family:inherit">✏️ 수정</button>' : '')
+    + '</div>'
+    + '<div style="margin-top:4px;color:#546e7a;font-size:.76rem">'
+    + '팩번호: ' + packNos
+    + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + areaStr + '</strong>'
+    + (cntStr ? ' &nbsp;|&nbsp; ' + cntStr : '')
+    + '</div>';
   body.appendChild(item);
 }
 
@@ -4841,12 +4851,13 @@ async function submitProdEntry() {
   };
 
   try {
-    await db.collection('production_deck').add(rec);
+    const docRef = await db.collection('production_deck').add(rec);
+    const newDocId = docRef.id;
     const siteName = pendingProd.site || pendingProd.company || '';
     document.getElementById('prod-entry-card').style.display = 'none';
     pendingProd = null;
-    addToConfirmedList(rec, siteName);
-    if (window._prodRecords) window._prodRecords.push({...rec, id: 'new'});
+    addToConfirmedList(rec, siteName, newDocId);
+    if (window._prodRecords) window._prodRecords.push({...rec, id: newDocId});
     toast('✅ 확정 완료! 다음 QR을 스캔하세요.');
   } catch(e) { toast('저장 실패: ' + e.message); }
 }
