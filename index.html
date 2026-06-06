@@ -235,9 +235,11 @@ async function renderDeckForm(data) {
       + '</div>';
   }
 
-  html += '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체선택</button>'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체해제</button>'
+  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+    + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
+    + '<div class="pack-controls">'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -248,7 +250,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -554,7 +556,7 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
-            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
         } else {
@@ -853,9 +855,11 @@ async function renderDeckForm(data) {
       + '</div>';
   }
 
-  html += '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체선택</button>'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체해제</button>'
+  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+    + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
+    + '<div class="pack-controls">'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -866,7 +870,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -1170,7 +1174,7 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
-            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
         } else {
@@ -1452,9 +1456,11 @@ async function renderDeckForm(data) {
       + '</div>';
   }
 
-  html += '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체선택</button>'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체해제</button>'
+  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+    + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
+    + '<div class="pack-controls">'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -1465,7 +1471,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -1769,7 +1775,7 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
-            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
         } else {
@@ -2050,9 +2056,11 @@ async function renderDeckForm(data) {
       + '</div>';
   }
 
-  html += '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체선택</button>'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체해제</button>'
+  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+    + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
+    + '<div class="pack-controls">'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -2063,7 +2071,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -2367,7 +2375,7 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
-            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
         } else {
@@ -4686,9 +4694,11 @@ async function renderDeckForm(data) {
       + '</div>';
   }
 
-  html += '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체선택</button>'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체해제</button>'
+  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+    + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
+    + '<div class="pack-controls">'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -4699,7 +4709,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? '' : 'checked ') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -5050,7 +5060,7 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
-            + '<button onclick="openEditProd(\'' + r0.id + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+            + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
         } else {
@@ -5962,7 +5972,38 @@ function backupInventory() {
     fromId:'inv-backup-from', toId:'inv-backup-to', btnId:'inv-backup-btn', statusId:'inv-backup-status' });
 }
 
-// ── 생산기록 수정 (체크박스 방식) ───────────────────────
+// ── 생산기록 그룹 수정 (여러 기록이면 업체/현장/의뢰번호 선택 먼저) ─
+function openEditProdGroup(date, machine, shift, year, month) {
+  const recs = (window._prodRecords||[]).filter(r =>
+    r.date === date && String(r.machine||'') === String(machine||'') && r.shift === shift
+  );
+  if (!recs.length) { toast('수정할 기록이 없습니다.'); return; }
+  if (recs.length === 1) {
+    openEditProd(recs[0].id, year, month); return;
+  }
+  // 여러 기록 → 선택 화면
+  const modal = document.getElementById('edit-prod-modal');
+  document.getElementById('edit-prod-id').value    = '';
+  document.getElementById('edit-prod-year').value  = year;
+  document.getElementById('edit-prod-month').value = month;
+  document.getElementById('edit-prod-header').innerHTML =
+    `<div style="font-size:.82rem;color:#546e7a">📋 ${date} · ${machine} · ${shift} — 아래에서 수정할 항목을 선택하세요</div>`;
+  document.getElementById('edit-prod-packs').innerHTML =
+    recs.map(r => {
+      const packNos = (r.packs||[]).map(p=>p.pack_no).join(', ');
+      const areaStr = r.total_area != null ? r.total_area.toFixed(1)+'㎡' : r.pack_count+'패킹';
+      return `<div onclick="openEditProd('${r.id}','${year}','${month}')"
+        style="padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s"
+        onmouseover="this.style.borderColor='#f57c00'" onmouseout="this.style.borderColor='#e0e0e0'">
+        <div style="font-weight:700;font-size:.88rem">${esc(r.site||r.company||'(현장명 없음)')}</div>
+        <div style="font-size:.76rem;color:#78909c;margin-top:3px">${esc(r.company||'')} · 의뢰: ${esc(r.req_code||'-')}</div>
+        <div style="font-size:.76rem;color:#2e7d32;margin-top:3px">팩: ${packNos} · ${areaStr}</div>
+      </div>`;
+    }).join('');
+  modal.style.display = 'flex';
+}
+
+// ── 생산기록 수정 (체크 = 삭제 방식) ────────────────────
 async function openEditProd(docId, year, month) {
   let r = (window._prodRecords||[]).find(r => r.id === docId);
   if (!r) {
@@ -5977,29 +6018,31 @@ async function openEditProd(docId, year, month) {
   document.getElementById('edit-prod-year').value  = year;
   document.getElementById('edit-prod-month').value = month;
 
-  // 헤더 정보
   document.getElementById('edit-prod-header').innerHTML =
     `<div><span style="color:#78909c;font-size:.75rem">업체명</span><br><strong>${esc(r.company||'-')}</strong></div>
      <div style="margin-top:6px"><span style="color:#78909c;font-size:.75rem">현장명</span><br><strong>${esc(r.site||'-')}</strong></div>
      <div style="margin-top:6px"><span style="color:#78909c;font-size:.75rem">의뢰번호</span><br><strong>${esc(r.req_code||'-')}</strong></div>
      <div style="margin-top:8px;font-size:.75rem;color:#90a4ae">${r.date||''} &nbsp;·&nbsp; ${r.shift||''} &nbsp;·&nbsp; ${r.machine||''}</div>`;
 
-  // 패킹 체크박스
+  // 패킹 목록 — 체크 = 삭제 대상
   const packs = r.packs || [];
   const packsEl = document.getElementById('edit-prod-packs');
   if (!packs.length) {
     packsEl.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;padding:8px">패킹 정보 없음</div>';
   } else {
-    packsEl.innerHTML = packs.map(p => {
-      const detail = (p.sheets!=null)
-        ? ` <span style="color:#90a4ae;font-size:.78rem">· ${p.sheets}장 · ${(+(p.area||0)).toFixed(1)}㎡</span>`
-        : '';
-      return `<label style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #f5f5f5;cursor:pointer">
-        <input type="checkbox" name="edit-pack-cb" value="${p.pack_no}" checked
-               style="width:18px;height:18px;accent-color:#f57c00;cursor:pointer;flex-shrink:0"/>
-        <div><strong>${p.pack_no}번 패킹</strong>${detail}</div>
-      </label>`;
-    }).join('');
+    packsEl.innerHTML =
+      '<div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:.77rem;color:#e65100">'
+      + '🗑️ <strong>삭제할 패킹을 체크</strong>하고 저장하세요. 체크하지 않은 패킹은 그대로 유지됩니다.</div>'
+      + packs.map(p => {
+        const detail = (p.sheets!=null)
+          ? ` <span style="color:#90a4ae;font-size:.78rem">· ${p.sheets}장 · ${(+(p.area||0)).toFixed(1)}㎡</span>`
+          : '';
+        return `<label style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #f5f5f5;cursor:pointer">
+          <input type="checkbox" name="edit-pack-cb" value="${p.pack_no}"
+                 style="width:18px;height:18px;accent-color:#e53935;cursor:pointer;flex-shrink:0"/>
+          <div><strong>${p.pack_no}번 패킹</strong>${detail}</div>
+        </label>`;
+      }).join('');
   }
   document.getElementById('edit-prod-modal').style.display = 'flex';
 }
@@ -6116,13 +6159,15 @@ async function saveEditProd() {
   const r = (window._prodRecords||[]).find(r => r.id === docId);
   if (!r) { toast('기록을 찾을 수 없습니다.'); return; }
 
-  const checkedNos = new Set(
+  // 체크된 패킹 = 삭제 대상 → 체크 안 된 것만 남김
+  const deleteNos = new Set(
     [...document.querySelectorAll('input[name="edit-pack-cb"]:checked')].map(cb => +cb.value)
   );
-  const newPacks = (r.packs||[]).filter(p => checkedNos.has(+p.pack_no));
+  if (deleteNos.size === 0) { toast('삭제할 패킹을 체크하세요.'); return; }
+  const newPacks = (r.packs||[]).filter(p => !deleteNos.has(+p.pack_no));
 
   if (newPacks.length === 0) {
-    if (!confirm('모든 패킹이 취소됩니다.\n이 생산 기록 전체를 삭제하시겠습니까?')) return;
+    if (!confirm('모든 패킹을 삭제하면 이 생산 기록 전체가 삭제됩니다.\n계속하시겠습니까?')) return;
     try {
       await db.collection('production_deck').doc(docId).delete();
       window._prodRecords = (window._prodRecords||[]).filter(r => r.id !== docId);
@@ -6305,21 +6350,21 @@ async function downloadDailyReport() {
 <!-- ════════ EDIT PROD MODAL ════════ -->
 <div id="edit-prod-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9998;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
   <div style="background:#fff;border-radius:16px;padding:20px;width:94%;max-width:400px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.25)">
-    <h3 style="margin:0 0 12px;font-size:1rem">✏️ 생산 취소 / 수정</h3>
+    <h3 style="margin:0 0 12px;font-size:1rem">✏️ 생산 기록 수정</h3>
     <input type="hidden" id="edit-prod-id"/>
     <input type="hidden" id="edit-prod-year"/>
     <input type="hidden" id="edit-prod-month"/>
     <div id="edit-prod-header" style="background:#f5f7fa;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.85rem;line-height:1.7"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <div style="font-size:.78rem;font-weight:700;color:#546e7a">취소할 패킹번호 체크 해제</div>
+      <div style="font-size:.78rem;font-weight:700;color:#c62828">🗑️ 삭제할 패킹에 체크</div>
       <div style="display:flex;gap:6px">
-        <button onclick="setAllPackCb(true)"  style="font-size:.72rem;padding:3px 8px;background:#fff3e0;color:#222222;border:1px solid #ffcc80;border-radius:6px;cursor:pointer;font-family:inherit">일괄선택</button>
-        <button onclick="setAllPackCb(false)" style="font-size:.72rem;padding:3px 8px;background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;cursor:pointer;font-family:inherit">일괄취소</button>
+        <button onclick="setAllPackCb(true)"  style="font-size:.72rem;padding:3px 8px;background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;cursor:pointer;font-family:inherit">전체 체크</button>
+        <button onclick="setAllPackCb(false)" style="font-size:.72rem;padding:3px 8px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;cursor:pointer;font-family:inherit">전체 해제</button>
       </div>
     </div>
     <div id="edit-prod-packs" style="border:1px solid #e0e0e0;border-radius:8px;padding:4px 8px;max-height:300px;overflow-y:auto"></div>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="saveEditProd()" style="flex:1;padding:12px;background:#f57c00;color:#000;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">저장</button>
+      <button onclick="saveEditProd()" style="flex:1;padding:12px;background:#e53935;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">🗑️ 선택 패킹 삭제</button>
       <button onclick="closeEditProd()" style="flex:1;padding:12px;background:#90a4ae;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer;font-family:inherit">취소</button>
     </div>
   </div>
