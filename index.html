@@ -250,7 +250,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -870,7 +870,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -1471,7 +1471,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -2071,7 +2071,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -4709,7 +4709,7 @@ async function renderDeckForm(data) {
     html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
-      + (done ? 'disabled ' : '') + 'onchange="updateProdTotals()">'
+      + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
       html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
@@ -5986,6 +5986,8 @@ function openEditProdGroup(date, machine, shift, year, month) {
   document.getElementById('edit-prod-id').value    = '';
   document.getElementById('edit-prod-year').value  = year;
   document.getElementById('edit-prod-month').value = month;
+  const ctrlBar = document.getElementById('edit-pack-ctrl');
+  if (ctrlBar) ctrlBar.style.display = 'none';
   document.getElementById('edit-prod-header').innerHTML =
     `<div style="font-size:.82rem;color:#546e7a">📋 ${date} · ${machine} · ${shift} — 아래에서 수정할 항목을 선택하세요</div>`;
   document.getElementById('edit-prod-packs').innerHTML =
@@ -6044,6 +6046,8 @@ async function openEditProd(docId, year, month) {
         </label>`;
       }).join('');
   }
+  const ctrl = document.getElementById('edit-pack-ctrl');
+  if (ctrl) ctrl.style.display = packs.length ? 'flex' : 'none';
   document.getElementById('edit-prod-modal').style.display = 'flex';
 }
 
@@ -6355,11 +6359,11 @@ async function downloadDailyReport() {
     <input type="hidden" id="edit-prod-year"/>
     <input type="hidden" id="edit-prod-month"/>
     <div id="edit-prod-header" style="background:#f5f7fa;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.85rem;line-height:1.7"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <div id="edit-pack-ctrl" style="display:none;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="font-size:.78rem;font-weight:700;color:#c62828">🗑️ 삭제할 패킹에 체크</div>
       <div style="display:flex;gap:6px">
-        <button onclick="setAllPackCb(true)"  style="font-size:.72rem;padding:3px 8px;background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;cursor:pointer;font-family:inherit">전체 체크</button>
-        <button onclick="setAllPackCb(false)" style="font-size:.72rem;padding:3px 8px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;cursor:pointer;font-family:inherit">전체 해제</button>
+        <button type="button" onclick="setAllPackCb(true)"  style="font-size:.72rem;padding:3px 8px;background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;cursor:pointer;font-family:inherit">전체 체크</button>
+        <button type="button" onclick="setAllPackCb(false)" style="font-size:.72rem;padding:3px 8px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;cursor:pointer;font-family:inherit">전체 해제</button>
       </div>
     </div>
     <div id="edit-prod-packs" style="border:1px solid #e0e0e0;border-radius:8px;padding:4px 8px;max-height:300px;overflow-y:auto"></div>
