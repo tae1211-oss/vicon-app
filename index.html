@@ -81,7 +81,16 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-
+  if (name === 'entry') {
+    initProdSession();
+    const cw = document.getElementById('prod-confirmed-wrap');
+    const cb = document.getElementById('prod-confirmed-body');
+    if (cw) cw.style.display = 'none';
+    if (cb) cb.innerHTML = '';
+    const ec = document.getElementById('prod-entry-card');
+    if (ec) ec.style.display = 'none';
+    pendingProd = null;
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -125,7 +134,9 @@ function startProdScan() {
         handleProdQR(data);
       } catch(_) {}
     }, () => {}
-  ).catch(e => toast('카메라 오류: ' + e));
+  ).then(() => {
+    applyFocusToScanner('prod-qr-reader');
+  }).catch(e => toast('카메라 오류: ' + e));
 }
 
 function stopProdScan() {
@@ -688,7 +699,16 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-
+  if (name === 'entry') {
+    initProdSession();
+    const cw = document.getElementById('prod-confirmed-wrap');
+    const cb = document.getElementById('prod-confirmed-body');
+    if (cw) cw.style.display = 'none';
+    if (cb) cb.innerHTML = '';
+    const ec = document.getElementById('prod-entry-card');
+    if (ec) ec.style.display = 'none';
+    pendingProd = null;
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -732,7 +752,9 @@ function startProdScan() {
         handleProdQR(data);
       } catch(_) {}
     }, () => {}
-  ).catch(e => toast('카메라 오류: ' + e));
+  ).then(() => {
+    applyFocusToScanner('prod-qr-reader');
+  }).catch(e => toast('카메라 오류: ' + e));
 }
 
 function stopProdScan() {
@@ -1276,7 +1298,16 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-
+  if (name === 'entry') {
+    initProdSession();
+    const cw = document.getElementById('prod-confirmed-wrap');
+    const cb = document.getElementById('prod-confirmed-body');
+    if (cw) cw.style.display = 'none';
+    if (cb) cb.innerHTML = '';
+    const ec = document.getElementById('prod-entry-card');
+    if (ec) ec.style.display = 'none';
+    pendingProd = null;
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -1320,7 +1351,9 @@ function startProdScan() {
         handleProdQR(data);
       } catch(_) {}
     }, () => {}
-  ).catch(e => toast('카메라 오류: ' + e));
+  ).then(() => {
+    applyFocusToScanner('prod-qr-reader');
+  }).catch(e => toast('카메라 오류: ' + e));
 }
 
 function stopProdScan() {
@@ -1863,7 +1896,16 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-
+  if (name === 'entry') {
+    initProdSession();
+    const cw = document.getElementById('prod-confirmed-wrap');
+    const cb = document.getElementById('prod-confirmed-body');
+    if (cw) cw.style.display = 'none';
+    if (cb) cb.innerHTML = '';
+    const ec = document.getElementById('prod-entry-card');
+    if (ec) ec.style.display = 'none';
+    pendingProd = null;
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -1907,7 +1949,9 @@ function startProdScan() {
         handleProdQR(data);
       } catch(_) {}
     }, () => {}
-  ).catch(e => toast('카메라 오류: ' + e));
+  ).then(() => {
+    applyFocusToScanner('prod-qr-reader');
+  }).catch(e => toast('카메라 오류: ' + e));
 }
 
 function stopProdScan() {
@@ -3096,9 +3140,37 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="page" id="ppage-entry">
     <!-- 데크 -->
     <div id="pdeck-entry">
+      <!-- ① 세션 설정 (항상 표시) -->
+      <div class="card" id="prod-session-card">
+        <div class="card-title" style="margin-bottom:10px">📅 작업 세션 설정</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:.78rem;color:#546e7a;font-weight:600">생산 일자</label>
+            <input type="date" id="prod-date" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label style="font-size:.78rem;color:#546e7a;font-weight:600">호기</label>
+            <select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">
+              <option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:.78rem;color:#546e7a;font-weight:600">주간 / 야간</label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">
+              <input type="radio" name="prod-shift" value="주간" onchange="updateShiftUI()"> 🌤️ 주간
+            </label>
+            <label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">
+              <input type="radio" name="prod-shift" value="야간" onchange="updateShiftUI()"> 🌙 야간
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- ② QR 스캔 -->
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
-        <div class="alert alert-info" style="font-size:.78rem">작업지시서(job_order) QR을 스캔하세요.</div>
+        <div class="alert alert-info" style="font-size:.78rem">세션 설정 후 QR을 스캔하세요. 여러 QR 연속 스캔 가능.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button class="btn btn-primary btn-full" id="btn-prod-native" onclick="startNativeScan('production')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
           <button class="btn btn-primary btn-full" id="btn-prod-zxing" onclick="startZXingScan('production')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
@@ -3108,10 +3180,18 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
         </div>
       </div>
+      <!-- ③ QR 스캔 결과 (팩 체크) -->
       <div id="prod-entry-card" style="display:none">
         <div class="card">
           <div class="card-title" id="prod-entry-title">✏️ 생산 내역 입력</div>
           <div id="prod-entry-body"></div>
+        </div>
+      </div>
+      <!-- ④ 이번 세션 등록 완료 목록 -->
+      <div id="prod-confirmed-wrap" style="display:none">
+        <div class="card">
+          <div class="card-title">✅ 이번 세션 등록 목록</div>
+          <div id="prod-confirmed-body"></div>
         </div>
       </div>
     </div>
@@ -3515,6 +3595,33 @@ function startSmartScan(type) {
 // ─────────────────────────────────────────────────────────
 // btn-ib-start, btn-ob-start: onclick으로 처리 (중복 방지)
 
+// Html5Qrcode 시작 후 video 트랙에 강제로 연속 AF 적용
+function applyFocusToScanner(elemId) {
+  // 스캐너가 카메라를 열 시간을 준 뒤 트랙에 직접 접근
+  setTimeout(() => {
+    try {
+      const container = document.getElementById(elemId);
+      if (!container) return;
+      const video = container.querySelector('video');
+      if (!video || !video.srcObject) return;
+      const track = video.srcObject.getVideoTracks()[0];
+      if (!track) return;
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      // continuous AF 지원 시 강제 적용
+      if (caps.focusMode && caps.focusMode.includes('continuous')) {
+        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+      }
+      // 고해상도 요청도 추가 시도
+      if (caps.width && caps.width.max >= 1280) {
+        track.applyConstraints({
+          width: { ideal: Math.min(caps.width.max, 1920) },
+          height: { ideal: Math.min((caps.height?.max || 1080), 1080) }
+        }).catch(() => {});
+      }
+    } catch(_) {}
+  }, 1500);
+}
+
 function startScanner(elemId, key, cb) {
   if (scanners[key]) { try { scanners[key].stop(); } catch(_){} }
   const sc = new Html5Qrcode(elemId);
@@ -3526,8 +3633,8 @@ function startScanner(elemId, key, cb) {
       qrbox: {width: 260, height: 260},
       videoConstraints: {
         facingMode: 'environment',
-        width:  {ideal: 1280, min: 640},
-        height: {ideal: 720,  min: 480},
+        width:  {ideal: 1920, min: 640},
+        height: {ideal: 1080, min: 480},
         advanced: [{focusMode: 'continuous'}]
       }
     },
@@ -3540,7 +3647,9 @@ function startScanner(elemId, key, cb) {
       } catch(e) { toast('QR 데이터 오류: ' + e.message); }
     },
     () => {}
-  ).catch(e => toast('카메라 오류: ' + e));
+  ).then(() => {
+    applyFocusToScanner(elemId);
+  }).catch(e => toast('카메라 오류: ' + e));
 }
 
 function stopScan(key) {
@@ -4420,7 +4529,16 @@ function showPTab(name) {
   document.getElementById('ppage-' + name).classList.add('active');
   document.getElementById('ptab-' + name).classList.add('active');
   if (name === 'stat') loadProdStat();
-
+  if (name === 'entry') {
+    initProdSession();
+    const cw = document.getElementById('prod-confirmed-wrap');
+    const cb = document.getElementById('prod-confirmed-body');
+    if (cw) cw.style.display = 'none';
+    if (cb) cb.innerHTML = '';
+    const ec = document.getElementById('prod-entry-card');
+    if (ec) ec.style.display = 'none';
+    pendingProd = null;
+  }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
     document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
@@ -4464,7 +4582,9 @@ function startProdScan() {
         handleProdQR(data);
       } catch(_) {}
     }, () => {}
-  ).catch(e => toast('카메라 오류: ' + e));
+  ).then(() => {
+    applyFocusToScanner('prod-qr-reader');
+  }).catch(e => toast('카메라 오류: ' + e));
 }
 
 function stopProdScan() {
@@ -4488,7 +4608,19 @@ async function handleProdQR(data) {
   await renderDeckForm(data);
 }
 
-// ── 입력 폼 ──────────────────────────────────────────────
+// ── 세션 초기화 (탭 진입 시) ────────────────────────────
+function initProdSession() {
+  const dateEl = document.getElementById('prod-date');
+  if (dateEl && !dateEl.value) dateEl.value = getProductionDate();
+  const defShift = getDefaultShift();
+  const radios = document.querySelectorAll('input[name="prod-shift"]');
+  if (radios.length && ![...radios].some(r => r.checked)) {
+    radios.forEach(r => { r.checked = (r.value === defShift); });
+  }
+  updateShiftUI();
+}
+
+// ── 입력 폼 (날짜/호기/주야는 세션카드에서 읽음) ─────────
 async function renderDeckForm(data) {
   const packFrom = data.pack_from ?? data.pf ?? 0;
   const packTo   = data.pack_to   ?? data.pt ?? 0;
@@ -4504,9 +4636,8 @@ async function renderDeckForm(data) {
   }
   pendingProd._packs = packs;
 
-  // ── 이미 생산된 팩 조회 ──────────────────────────────────
   const donePacks = new Set();
-  const doneInfo  = {};   // pack_no -> {date, shift, machine}
+  const doneInfo  = {};
   if (db && (data.company || data.site)) {
     try {
       const snap = await db.collection('production_deck')
@@ -4528,31 +4659,23 @@ async function renderDeckForm(data) {
           });
         }
       });
-    } catch(e) { /* 조회 실패 시 무시 */ }
+    } catch(e) {}
   }
 
-  const defDate   = getProductionDate();
-  const defShift  = getDefaultShift();
   const hasDetail = packs.some(p => p.s !== null);
   const doneCount = packs.filter(p => donePacks.has(p.n)).length;
+  const sesDate    = document.getElementById('prod-date')?.value || getProductionDate();
+  const sesMachine = document.getElementById('prod-machine')?.value || '1호기';
+  const sesShift   = document.querySelector('input[name="prod-shift"]:checked')?.value || getDefaultShift();
 
-  let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
-    + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
-    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit"></div>'
-    + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">'
-    + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
-    + '</select></div></div>'
-    + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
-    + '<div style="display:flex;gap:8px">'
-    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
-    + '<input type="radio" name="prod-shift" value="주간" ' + (defShift==='주간'?'checked':'') + ' onchange="updateShiftUI()"> 🌤️ 주간</label>'
-    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
-    + '<input type="radio" name="prod-shift" value="야간" ' + (defShift==='야간'?'checked':'') + ' onchange="updateShiftUI()"> 🌙 야간</label>'
-    + '</div></div>'
+  let html = '<div style="background:#f3f4f6;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.78rem;color:#37474f">'
+    + '📅 <strong>' + sesDate + '</strong>'
+    + ' &nbsp;|&nbsp; 🏗️ <strong>' + esc(sesMachine) + '</strong>'
+    + ' &nbsp;|&nbsp; <strong style="color:' + (sesShift==='야간'?'#1565c0':'#e65100') + '">' + sesShift + '</strong>'
+    + ' <span style="color:#90a4ae;font-size:.72rem">(위 세션카드에서 변경)</span></div>'
     + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
-    + ' &nbsp;|  총 ' + packs.length + '패킹'
+    + ' &nbsp;|  총 ' + packs.length + '패킹'
     + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
@@ -4595,17 +4718,19 @@ async function renderDeckForm(data) {
     + '<div class="prod-summary-item"><div class="pval" id="sum-sheets">-</div><div class="plbl">총 장수</div></div>'
     + '<div class="prod-summary-item"><div class="pval" id="sum-area">-</div><div class="plbl">총 면적(㎡)</div></div>'
     + '</div>'
-    + '<button class="btn btn-success btn-full" style="margin-top:12px" onclick="submitProdEntry()">✅ 생산 등록</button>';
+    + '<button class="btn btn-success btn-full" style="margin-top:12px;font-size:1rem;font-weight:700" onclick="submitProdEntry()">✅ 이 QR 확정</button>'
+    + '<button class="btn btn-secondary btn-full" style="margin-top:6px" onclick="cancelProdEntry()">✕ 취소 (다시 스캔)</button>';
 
   document.getElementById('prod-entry-body').innerHTML = html;
-  updateShiftUI();
   updateProdTotals();
 }
 
 function updateShiftUI() {
   const isDay = document.querySelector('input[name="prod-shift"][value="주간"]')?.checked;
-  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
-  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+  const dayEl   = document.getElementById('lbl-shift-day');
+  const nightEl = document.getElementById('lbl-shift-night');
+  if (dayEl)   dayEl.style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
+  if (nightEl) nightEl.style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
 }
 
 function prodPackSelAll(val) {
@@ -4626,22 +4751,42 @@ function updateProdTotals() {
   document.getElementById('sum-area').textContent   = hasDetail ? tArea.toFixed(1) : '-';
 }
 
+function cancelProdEntry() {
+  document.getElementById('prod-entry-card').style.display = 'none';
+  pendingProd = null;
+}
+
+function addToConfirmedList(rec, siteName) {
+  const wrap = document.getElementById('prod-confirmed-wrap');
+  const body = document.getElementById('prod-confirmed-body');
+  if (!wrap || !body) return;
+  wrap.style.display = 'block';
+  const packNos = (rec.packs||[]).map(p=>p.pack_no).join(', ');
+  const areaStr = rec.total_area != null ? rec.total_area.toFixed(1) + '㎡' : rec.pack_count + '패킹';
+  const item = document.createElement('div');
+  item.style.cssText = 'padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:.8rem;color:#37474f';
+  item.innerHTML = '<span style="font-weight:700;color:#1b5e20">✅ ' + esc(siteName) + '</span>'
+    + ' <span style="color:#78909c">팩: ' + packNos + '</span>'
+    + ' <span style="float:right;color:#2e7d32;font-weight:700">' + areaStr + '</span>';
+  body.appendChild(item);
+}
+
 async function submitProdEntry() {
   if (!db) { toast('Firebase 미연결'); return; }
   if (!currentUser) { toast('먼저 이름을 설정하세요.'); return; }
   const sel = [...document.querySelectorAll('.prod-cb:checked')].map(c => +c.value);
   if (!sel.length) { toast('패킹을 선택하세요.'); return; }
 
-  const date    = document.getElementById('prod-date').value;
-  const machine = document.getElementById('prod-machine').value;
+  const date    = document.getElementById('prod-date')?.value || getProductionDate();
+  const machine = document.getElementById('prod-machine')?.value || '1호기';
   const shift   = document.querySelector('input[name="prod-shift"]:checked')?.value || '주간';
+  if (!date) { toast('생산 일자를 입력하세요.'); return; }
   const packs   = pendingProd._packs || [];
   const selPacks = sel.map(n => {
     const p = packs.find(x => x.n === n) || {n, s: null, a: null};
     return {pack_no: p.n, sheets: p.s, area: p.a};
   });
 
-  // ── 중복 등록 차단: 동일 업체+현장+의뢰번호+패킹번호 확인 ──────
   try {
     const dupSnap = await db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
@@ -4661,16 +4806,13 @@ async function submitProdEntry() {
           (d.packs || []).forEach(p => {
             registeredPacks.push(p.pack_no);
             if (!dupRecordMap[p.pack_no]) {
-              dupRecordMap[p.pack_no] = {
-                docId: doc.id, date: d.date||'', shift: d.shift||'', machine: d.machine||''
-              };
+              dupRecordMap[p.pack_no] = { docId: doc.id, date: d.date||'', shift: d.shift||'', machine: d.machine||'' };
             }
           });
         }
       });
       const dupPacks = sel.filter(n => registeredPacks.includes(n));
       if (dupPacks.length > 0) {
-        // 덮어쓰기 컨텍스트 저장
         window._pendingOverwriteCtx = {
           selPacks, date, machine, shift,
           company: pendingProd.company||'', site: pendingProd.site||'', req_code: pendingProd.req_code||''
@@ -4700,10 +4842,12 @@ async function submitProdEntry() {
 
   try {
     await db.collection('production_deck').add(rec);
+    const siteName = pendingProd.site || pendingProd.company || '';
     document.getElementById('prod-entry-card').style.display = 'none';
     pendingProd = null;
-    toast('✅ 생산 등록 완료!');
+    addToConfirmedList(rec, siteName);
     if (window._prodRecords) window._prodRecords.push({...rec, id: 'new'});
+    toast('✅ 확정 완료! 다음 QR을 스캔하세요.');
   } catch(e) { toast('저장 실패: ' + e.message); }
 }
 
@@ -5310,17 +5454,30 @@ async function startNativeScan(type) {
 
   try {
     nativeScanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:'environment', width:{ideal:1280}, height:{ideal:720},
-               advanced: [{focusMode:'continuous'}] }
+      video: {
+        facingMode: 'environment',
+        width:  { ideal: 1920, min: 1280 },
+        height: { ideal: 1080, min: 720 },
+        advanced: [{ focusMode: 'continuous' }]
+      }
     });
     const video = document.getElementById('native-scan-video');
     video.srcObject = nativeScanStream;
     await video.play();
 
-    // 손전등 지원 여부 확인
+    // 비디오 재생 후 AF를 강제로 초기화
     const track = nativeScanStream.getVideoTracks()[0];
     const caps = track.getCapabilities ? track.getCapabilities() : {};
     if (caps.torch && torchBtn) torchBtn.style.display = 'inline-block';
+
+    // 스트림 시작 후 명시적으로 continuous AF 적용 (일부 기기는 getUserMedia 후 명시 적용 필요)
+    if (caps.focusMode?.includes?.('continuous')) {
+      try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch(_) {}
+    }
+    // continuous 미지원 기기: single-shot으로 초기 AF 트리거
+    if (!caps.focusMode?.includes?.('continuous') && caps.focusMode?.includes?.('single-shot')) {
+      try { await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] }); } catch(_) {}
+    }
 
     // 캔버스 전처리 설정 (대비 강화로 고밀도 QR 인식 개선)
     const canvas = document.getElementById('native-scan-canvas');
@@ -5363,36 +5520,54 @@ async function startNativeScan(type) {
   }
 }
 
-// 탭하여 초점 맞추기
+// 탭하여 초점 맞추기 (강화 버전)
 async function tapToFocus(e, videoEl) {
   if (!nativeScanStream) return;
   const track = nativeScanStream.getVideoTracks()[0];
   if (!track) return;
-  // 탭 위치 시각 피드백 (원형 링 표시)
   showFocusRing(e.clientX, e.clientY);
   try {
     const caps = track.getCapabilities ? track.getCapabilities() : {};
-    const rect = videoEl.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top)  / rect.height;
-    // 1) pointOfInterest 지원 시 (일부 Android)
+    const rect  = videoEl.getBoundingClientRect();
+    const x     = (e.clientX - rect.left) / rect.width;
+    const y     = (e.clientY - rect.top)  / rect.height;
+
+    // 1) pointOfInterest 지원 - 가장 정확한 터치 AF
     if (caps.pointOfInterest) {
-      await track.applyConstraints({ advanced: [{ focusMode:'manual', pointOfInterest:{x, y} }] });
+      // manual로 포커스 포인트 설정 후 continuous로 복귀
+      await track.applyConstraints({ advanced: [{ focusMode: 'manual', pointOfInterest: { x, y } }] });
       setTimeout(async () => {
-        try { await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] }); } catch(_){}
-      }, 1000);
+        try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch(_) {}
+      }, 1500);
       return;
     }
-    // 2) single-shot AF 트리거 (Android Chrome 대부분 지원)
+
+    // 2) single-shot: continuous → idle → single-shot 순서로 AF 완전 재트리거
     if (caps.focusMode?.includes?.('single-shot')) {
-      await track.applyConstraints({ advanced: [{ focusMode:'single-shot' }] });
+      // 먼저 idle로 AF 리셋 (일부 기기에서 더 잘 작동)
+      try { await track.applyConstraints({ advanced: [{ focusMode: 'idle' }] }); } catch(_) {}
+      await new Promise(r => setTimeout(r, 80));
+      await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
       setTimeout(async () => {
-        try { await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] }); } catch(_){}
-      }, 800);
+        try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch(_) {}
+      }, 1200);
       return;
     }
-    // 3) 그 외: continuous 재적용으로 AF 리셋 유도
-    await track.applyConstraints({ advanced: [{ focusMode:'continuous' }] });
+
+    // 3) continuous만 지원하는 경우: idle 거쳐서 continuous 재적용 (AF 강제 재시작)
+    if (caps.focusMode?.includes?.('continuous')) {
+      try { await track.applyConstraints({ advanced: [{ focusMode: 'idle' }] }); } catch(_) {}
+      await new Promise(r => setTimeout(r, 80));
+      await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      return;
+    }
+
+    // 4) focusMode를 아무것도 지원 안 하는 경우: 해상도를 낮췄다 올리면 AF 재트리거
+    const w = caps.width?.max || 1280;
+    const h = caps.height?.max || 720;
+    await track.applyConstraints({ width: { ideal: Math.floor(w * 0.6) }, height: { ideal: Math.floor(h * 0.6) } });
+    await new Promise(r => setTimeout(r, 150));
+    await track.applyConstraints({ width: { ideal: w }, height: { ideal: h } });
   } catch(_) {}
 }
 
