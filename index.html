@@ -112,7 +112,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -146,7 +146,7 @@ function stopProdScan() {
   }
   const wrap = document.getElementById('prod-scan-wrap');
   if (wrap) wrap.style.display = 'none';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -732,7 +732,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -766,7 +766,7 @@ function stopProdScan() {
   }
   const wrap = document.getElementById('prod-scan-wrap');
   if (wrap) wrap.style.display = 'none';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -1333,7 +1333,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -1367,7 +1367,7 @@ function stopProdScan() {
   }
   const wrap = document.getElementById('prod-scan-wrap');
   if (wrap) wrap.style.display = 'none';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -1933,7 +1933,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -1967,7 +1967,7 @@ function stopProdScan() {
   }
   const wrap = document.getElementById('prod-scan-wrap');
   if (wrap) wrap.style.display = 'none';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -2834,10 +2834,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn btn-primary btn-full" id="btn-ib-native" onclick="startNativeScan('inbound')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
-      <button class="btn btn-primary btn-full" id="btn-ib-zxing" onclick="startZXingScan('inbound')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+      <button class="btn btn-primary btn-full" id="btn-ib-native" onclick="startNativeScan('inbound')" style="font-size:.85rem;padding:10px">📷 네이티브</button>
+      <button class="btn btn-primary btn-full" id="btn-ib-zxing" onclick="startZXingScan('inbound')" style="font-size:.85rem;padding:10px">🔍 ZXing</button>
     </div>
+    <button onclick="startPhotoScan('inbound')" style="font-size:.85rem;padding:10px;background:#7b1fa2;color:#fff;border-radius:10px;border:none;cursor:pointer;font-family:inherit;width:100%">📸 사진으로 스캔 (초점 불량 시 사용)</button>
     <div id="ib-scan-wrap" style="display:none;margin-top:12px">
       <div id="inbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
@@ -2874,10 +2875,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <div class="card">
     <div class="card-title">📤 출고 QR 스캔</div>
     <div class="alert alert-info">출고송장(shipment) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn btn-warning btn-full" id="btn-ob-native" onclick="startNativeScan('outbound')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
-      <button class="btn btn-warning btn-full" id="btn-ob-zxing" onclick="startZXingScan('outbound')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+      <button class="btn btn-warning btn-full" id="btn-ob-native" onclick="startNativeScan('outbound')" style="font-size:.85rem;padding:10px">📷 네이티브</button>
+      <button class="btn btn-warning btn-full" id="btn-ob-zxing" onclick="startZXingScan('outbound')" style="font-size:.85rem;padding:10px">🔍 ZXing</button>
     </div>
+    <button onclick="startPhotoScan('outbound')" style="font-size:.85rem;padding:10px;background:#7b1fa2;color:#fff;border-radius:10px;border:none;cursor:pointer;font-family:inherit;width:100%">📸 사진으로 스캔 (초점 불량 시 사용)</button>
     <div id="ob-scan-wrap" style="display:none;margin-top:12px">
       <div id="outbound-qr-reader"></div>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('outbound')">■ 스캔 중지</button>
@@ -3179,10 +3181,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card">
         <div class="card-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">세션 설정 후 QR을 스캔하세요. 여러 QR 연속 스캔 가능.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <button class="btn btn-primary btn-full" id="btn-prod-native" onclick="startNativeScan('production')" style="font-size:.9rem;padding:12px">📷 네이티브</button>
-          <button class="btn btn-primary btn-full" id="btn-prod-zxing" onclick="startZXingScan('production')" style="font-size:.9rem;padding:12px">🔍 ZXing</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+          <button class="btn btn-primary btn-full" id="btn-prod-native" onclick="startNativeScan('production')" style="font-size:.85rem;padding:10px">📷 네이티브</button>
+          <button class="btn btn-primary btn-full" id="btn-prod-zxing" onclick="startZXingScan('production')" style="font-size:.85rem;padding:10px">🔍 ZXing</button>
         </div>
+        <button class="btn btn-full" id="btn-prod-photo" onclick="startPhotoScan('production')" style="font-size:.85rem;padding:10px;background:#7b1fa2;color:#fff;border-radius:10px;border:none;cursor:pointer;font-family:inherit;width:100%">📸 사진으로 스캔 (초점 불량 시 사용)</button>
         <div id="prod-scan-wrap" style="display:none;margin-top:12px">
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
@@ -4568,7 +4571,7 @@ function getDefaultShift() {
 // ── QR 스캔 ──────────────────────────────────────────────
 function startProdScan() {
   document.getElementById('prod-scan-wrap').style.display = 'block';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   if (scanners.production) return;
   scanners.production = new Html5Qrcode('prod-qr-reader');
   scanners.production.start(
@@ -4602,7 +4605,7 @@ function stopProdScan() {
   }
   const wrap = document.getElementById('prod-scan-wrap');
   if (wrap) wrap.style.display = 'none';
-  ['btn-prod-native','btn-prod-zxing'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  ['btn-prod-native','btn-prod-zxing','btn-prod-photo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
 }
 
 async function handleProdQR(data) {
@@ -5443,6 +5446,89 @@ function processQRResult(type, raw) {
   else if (type === 'outbound')   handleOutbound(data);
   else if (type === 'production') { try { handleProdQR(data); } catch(_) {} }
 }
+
+// ─────────────────────────────────────────────────────────
+//  📸 사진 스캔 (네이티브 카메라 앱으로 찍어서 QR 디코딩)
+//  초점 문제를 완전히 우회 — 카메라 앱이 자동 초점 처리
+// ─────────────────────────────────────────────────────────
+let _photoScanType = null;
+
+function startPhotoScan(type) {
+  _photoScanType = type;
+  // 기존 input 재사용 또는 생성
+  let inp = document.getElementById('qr-photo-input');
+  if (!inp) {
+    inp = document.createElement('input');
+    inp.type     = 'file';
+    inp.id       = 'qr-photo-input';
+    inp.accept   = 'image/*';
+    inp.capture  = 'environment';   // 후면 카메라 직접 오픈
+    inp.style.display = 'none';
+    document.body.appendChild(inp);
+    inp.addEventListener('change', _onPhotoSelected);
+  }
+  // capture 속성 재설정 (type 바뀔 수 있으므로)
+  inp.capture = 'environment';
+  inp.value   = '';   // 같은 파일 재선택 허용
+  inp.click();
+}
+
+async function _onPhotoSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const type = _photoScanType;
+  toast('📸 QR 인식 중...');
+
+  // 방법1: BarcodeDetector (Android Chrome — 가장 빠름)
+  if ('BarcodeDetector' in window) {
+    try {
+      const bmp = await createImageBitmap(file);
+      const det = new BarcodeDetector({ formats: ['qr_code'] });
+      const results = await det.detect(bmp);
+      bmp.close();
+      if (results.length > 0) {
+        processQRResult(type, results[0].rawValue);
+        return;
+      }
+    } catch(_) {}
+  }
+
+  // 방법2: Html5Qrcode.scanFile (크로스 플랫폼 fallback)
+  if (typeof Html5Qrcode !== 'undefined') {
+    try {
+      const scanner = new Html5Qrcode('_photo-qr-hidden');
+      const raw = await scanner.scanFile(file, false);
+      scanner.clear().catch(()=>{});
+      if (raw) { processQRResult(type, raw); return; }
+    } catch(_) {}
+  }
+
+  // 방법3: ZXing 이미지 디코딩
+  if (typeof ZXing !== 'undefined') {
+    try {
+      const reader = new ZXing.BrowserQRCodeReader();
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      await new Promise(r => { img.onload = r; img.onerror = r; });
+      const result = await reader.decodeFromImage(img);
+      URL.revokeObjectURL(url);
+      if (result) { processQRResult(type, result.getText()); return; }
+    } catch(_) {}
+  }
+
+  toast('❌ QR 인식 실패. 더 가까이서 선명하게 찍어주세요.');
+}
+
+// Html5Qrcode.scanFile에 필요한 임시 hidden div (없으면 생성)
+(function() {
+  if (!document.getElementById('_photo-qr-hidden')) {
+    const d = document.createElement('div');
+    d.id = '_photo-qr-hidden';
+    d.style.display = 'none';
+    document.body.appendChild(d);
+  }
+})();
 
 // ─────────────────────────────────────────────────────────
 //  BarcodeDetector (네이티브 스캔)
