@@ -181,11 +181,10 @@ async function renderDeckForm(data) {
   const doneInfo  = {};   // pack_no -> {date, shift, machine}
   if (db && (data.company || data.site)) {
     try {
-      const snap = await db.collection('production_deck')
+      const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || '')
-        .get();
+        .where('req_code', '==', data.req_code  || ''));
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -317,11 +316,10 @@ async function submitProdEntry() {
 
   // ── 중복 등록 차단: 동일 업체+현장+의뢰번호+패킹번호 확인 ──────
   try {
-    const dupSnap = await db.collection('production_deck')
+    const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || '')
-      .get();
+      .where('req_code', '==', pendingProd.req_code  || ''));
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -387,7 +385,7 @@ async function loadProdStat() {
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await db.collection('production_deck').get();
+    const snap = await dbGet(db.collection('production_deck'));
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
@@ -590,7 +588,7 @@ async function deleteProdRow(docId, year, month) {
 async function openDeleteProd() {
   if (!db) { toast('Firebase 미연결'); return; }
   let snap;
-  try { snap = await db.collection('production_deck').orderBy('date','desc').limit(60).get(); }
+  try { snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(60)); }
   catch(e) { toast(e.message); return; }
   if (snap.empty) { toast('삭제할 기록이 없습니다.'); return; }
 
@@ -801,11 +799,10 @@ async function renderDeckForm(data) {
   const doneInfo  = {};   // pack_no -> {date, shift, machine}
   if (db && (data.company || data.site)) {
     try {
-      const snap = await db.collection('production_deck')
+      const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || '')
-        .get();
+        .where('req_code', '==', data.req_code  || ''));
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -937,11 +934,10 @@ async function submitProdEntry() {
 
   // ── 중복 등록 차단: 동일 업체+현장+의뢰번호+패킹번호 확인 ──────
   try {
-    const dupSnap = await db.collection('production_deck')
+    const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || '')
-      .get();
+      .where('req_code', '==', pendingProd.req_code  || ''));
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -1005,7 +1001,7 @@ async function loadProdStat() {
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await db.collection('production_deck').get();
+    const snap = await dbGet(db.collection('production_deck'));
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
@@ -1193,7 +1189,7 @@ function showProdMonth(year, month) {
 async function openDeleteProd() {
   if (!db) { toast('Firebase 미연결'); return; }
   let snap;
-  try { snap = await db.collection('production_deck').orderBy('date','desc').limit(60).get(); }
+  try { snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(60)); }
   catch(e) { toast(e.message); return; }
   if (snap.empty) { toast('삭제할 기록이 없습니다.'); return; }
 
@@ -1402,11 +1398,10 @@ async function renderDeckForm(data) {
   const doneInfo  = {};   // pack_no -> {date, shift, machine}
   if (db && (data.company || data.site)) {
     try {
-      const snap = await db.collection('production_deck')
+      const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || '')
-        .get();
+        .where('req_code', '==', data.req_code  || ''));
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -1538,11 +1533,10 @@ async function submitProdEntry() {
 
   // ── 중복 등록 차단: 동일 업체+현장+의뢰번호+패킹번호 확인 ──────
   try {
-    const dupSnap = await db.collection('production_deck')
+    const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || '')
-      .get();
+      .where('req_code', '==', pendingProd.req_code  || ''));
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -1606,7 +1600,7 @@ async function loadProdStat() {
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await db.collection('production_deck').get();
+    const snap = await dbGet(db.collection('production_deck'));
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
@@ -1794,7 +1788,7 @@ function showProdMonth(year, month) {
 async function openDeleteProd() {
   if (!db) { toast('Firebase 미연결'); return; }
   let snap;
-  try { snap = await db.collection('production_deck').orderBy('date','desc').limit(60).get(); }
+  try { snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(60)); }
   catch(e) { toast(e.message); return; }
   if (snap.empty) { toast('삭제할 기록이 없습니다.'); return; }
 
@@ -2002,11 +1996,10 @@ async function renderDeckForm(data) {
   const doneInfo  = {};   // pack_no -> {date, shift, machine}
   if (db && (data.company || data.site)) {
     try {
-      const snap = await db.collection('production_deck')
+      const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || '')
-        .get();
+        .where('req_code', '==', data.req_code  || ''));
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -2138,11 +2131,10 @@ async function submitProdEntry() {
 
   // ── 중복 등록 차단: 동일 업체+현장+의뢰번호+패킹번호 확인 ──────
   try {
-    const dupSnap = await db.collection('production_deck')
+    const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || '')
-      .get();
+      .where('req_code', '==', pendingProd.req_code  || ''));
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -2206,7 +2198,7 @@ async function loadProdStat() {
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await db.collection('production_deck').get();
+    const snap = await dbGet(db.collection('production_deck'));
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
@@ -2394,7 +2386,7 @@ function showProdMonth(year, month) {
 async function openDeleteProd() {
   if (!db) { toast('Firebase 미연결'); return; }
   let snap;
-  try { snap = await db.collection('production_deck').orderBy('date','desc').limit(60).get(); }
+  try { snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(60)); }
   catch(e) { toast(e.message); return; }
   if (snap.empty) { toast('삭제할 기록이 없습니다.'); return; }
 
@@ -3524,11 +3516,10 @@ function renderYardMap(stats) {
 async function refreshMap() {
   if (!db) return;
   try {
-    const snap = await db.collection('inventory').get();
+    const data = await fetchInventory(false);
     const stats = {};
     ZONES.forEach(z => stats[z] = {total: 0, sites: []});
-    snap.forEach(doc => {
-      const d = doc.data();
+    data.forEach(d => {
       (d.packs || []).filter(p => !p.shipped && ZONES.includes(p.zone)).forEach(p => {
         stats[p.zone].total++;
         if (!stats[p.zone].sites.includes(d.site)) stats[p.zone].sites.push(d.site);
@@ -3548,10 +3539,9 @@ async function showZoneDetail(zone) {
   document.getElementById('zd-body').innerHTML = '<div class="loading"><span class="spinner"></span>조회 중…</div>';
   openOv('ov-zone-detail');
   try {
-    const snap = await db.collection('inventory').get();
+    const data = await fetchInventory(false);
     const items = [];
-    snap.forEach(doc => {
-      const d = doc.data();
+    data.forEach(d => {
       const packs = (d.packs || []).filter(p => p.zone === zone && !p.shipped);
       if (packs.length) items.push({...d, activePacks: packs});
     });
@@ -3710,7 +3700,7 @@ async function handleInbound(data) {
     if (!db) { bodyEl.innerHTML = '<div class="alert alert-error">Firebase 미연결</div>'; return; }
     try {
       const docId = makeDocId(data.company, data.site);
-      const doc = await db.collection('inventory').doc(docId).get();
+      const doc = await dbGet(db.collection('inventory').doc(docId));
       if (!doc.exists) { bodyEl.innerHTML = '<div class="alert alert-info">등록된 재고 없음</div>'; return; }
       const d = doc.data();
       const active = (d.packs||[]).filter(p=>!p.shipped);
@@ -3741,7 +3731,7 @@ async function handleInbound(data) {
     if (db) {
       try {
         const docId = makeDocId(data.company, data.site);
-        const doc = await db.collection('inventory').doc(docId).get();
+        const doc = await dbGet(db.collection('inventory').doc(docId));
         if (doc.exists) {
           (doc.data().packs || []).forEach(p => {
             if (p.shipped) {
@@ -3864,7 +3854,7 @@ async function doInbound(zone) {
   const docId = makeDocId(data.company, data.site);
   try {
     const ref = db.collection('inventory').doc(docId);
-    const doc = await ref.get();
+    const doc = await dbGet(ref);
     const newPacks = data.selPacks.map(n => ({
       pack_no: n, zone, stacked_at: now, stacked_by: currentUser, shipped: false
     }));
@@ -3903,7 +3893,7 @@ async function handleOutbound(data) {
 
   try {
     const docId = makeDocId(data.company, data.site);
-    const doc = await db.collection('inventory').doc(docId).get();
+    const doc = await dbGet(db.collection('inventory').doc(docId));
     const stockPacks = doc.exists ? (doc.data().packs||[]).filter(p=>!p.shipped) : [];
     const inStock = new Set(stockPacks.map(p=>p.pack_no));
     const zoneMap = {};
@@ -4001,7 +3991,7 @@ async function doOutbound() {
   const docId = makeDocId(data.company, data.site);
   try {
     const ref = db.collection('inventory').doc(docId);
-    const doc = await ref.get();
+    const doc = await dbGet(ref);
     if (doc.exists) {
       const existing = doc.data().packs || [];
       const existingNos = new Set(existing.map(p=>p.pack_no));
@@ -4030,27 +4020,66 @@ async function doOutbound() {
 }
 
 // ─────────────────────────────────────────────────────────
+//  DB 공용 헬퍼 — 타임아웃 + 캐시
+// ─────────────────────────────────────────────────────────
+const DB_TIMEOUT_MS = 10000; // 10초 타임아웃
+
+function dbGet(query) {
+  return Promise.race([
+    query.get(),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('⏱ 응답 시간 초과 (네트워크 불안정). 재시도해 주세요.')), DB_TIMEOUT_MS)
+    )
+  ]);
+}
+
+let _invCache   = null;   // 재고 캐시
+let _invCacheTs = 0;      // 캐시 타임스탬프
+const INV_CACHE_TTL = 30000; // 30초 캐시 유효
+
+async function fetchInventory(forceRefresh) {
+  if (!forceRefresh && _invCache && (Date.now() - _invCacheTs < INV_CACHE_TTL)) {
+    return _invCache;
+  }
+  const snap = await dbGet(db.collection('inventory'));
+  const data = [];
+  snap.forEach(doc => data.push(doc.data()));
+  _invCache   = data;
+  _invCacheTs = Date.now();
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────
 //  INVENTORY LIST
 // ─────────────────────────────────────────────────────────
-async function loadInventory() {
-  if (invLoading) return; // 동시 중복 호출 방지
+async function loadInventory(forceRefresh) {
+  if (invLoading) return;
   const el = document.getElementById('inv-list');
   if (!db) {
-    // Firebase 초기화 전이면 잠깐 대기 후 재시도
     el.innerHTML = '<div class="loading"><span class="spinner"></span>연결 중…</div>';
     setTimeout(() => { if (db) loadInventory(); }, 1500);
+    return;
+  }
+  // 캐시가 있으면 즉시 표시 후 백그라운드 갱신
+  if (_invCache && !forceRefresh) {
+    allInv = _invCache;
+    renderInvStats();
+    filterInv();
+    // 백그라운드 갱신 (사용자는 기다리지 않음)
+    loadInventory(true);
     return;
   }
   invLoading = true;
   el.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   try {
-    const snap = await db.collection('inventory').get();
-    allInv = [];
-    snap.forEach(doc => allInv.push(doc.data()));
+    allInv = await fetchInventory(true);
     renderInvStats();
     filterInv();
   } catch(e) {
-    el.innerHTML = `<div class="alert alert-error">${e.message} <button class="btn btn-sm btn-secondary" onclick="loadInventory()" style="margin-top:6px">🔄 재시도</button></div>`;
+    el.innerHTML = `<div style="padding:16px;text-align:center">
+      <div style="color:#c62828;font-size:.88rem;margin-bottom:10px">❌ ${e.message}</div>
+      <button class="btn btn-secondary" onclick="loadInventory(true)" style="font-size:.85rem">🔄 다시 시도</button>
+    </div>`;
   } finally {
     invLoading = false;
   }
@@ -4164,7 +4193,7 @@ async function showInvDetail(docId) {
   document.getElementById('invd-body').innerHTML = '<div class="loading"><span class="spinner"></span></div>';
   openOv('ov-inv-detail');
   try {
-    const doc = await db.collection('inventory').doc(docId).get();
+    const doc = await dbGet(db.collection('inventory').doc(docId));
     if (!doc.exists) { document.getElementById('invd-body').innerHTML = '<div class="alert alert-info">없음</div>'; return; }
     const d = doc.data();
     document.getElementById('invd-title').textContent = (d.site || '') + (d.company ? ' (' + d.company + ')' : '');
@@ -4231,7 +4260,7 @@ async function openDeleteDoc() {
   listEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   openOv('ov-delete-doc');
   try {
-    const snap = await db.collection('inventory').get();
+    const snap = await dbGet(db.collection('inventory'));
     if (snap.empty) { listEl.innerHTML = '<div class="alert alert-info">재고 데이터가 없습니다.</div>'; return; }
     const items = [];
     snap.forEach(doc => {
@@ -4293,7 +4322,7 @@ async function deleteSelectedPacks() {
   if (!confirm('선택한 ' + total + '개 패킹을 삭제합니다.\n되돌릴 수 없습니다. 계속하시겠습니까?')) return;
   try {
     for (const [docId, packNos] of Object.entries(byDoc)) {
-      const snap = await db.collection('inventory').doc(docId).get();
+      const snap = await dbGet(db.collection('inventory').doc(docId));
       if (!snap.exists) continue;
       const packSet = new Set(packNos);
       const remaining = (snap.data().packs||[]).filter(p => !packSet.has(+p.pack_no));
@@ -4325,7 +4354,7 @@ async function openManualOb() {
   listEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   openOv('ov-manual-ob');
   try {
-    const snap = await db.collection('inventory').get();
+    const snap = await dbGet(db.collection('inventory'));
     const items = [];
     snap.forEach(doc => {
       const d = doc.data();
@@ -4352,7 +4381,7 @@ async function selectManualOb(docId) {
   if (!db) return;
   manualObDocId = docId;
   try {
-    const doc = await db.collection('inventory').doc(docId).get();
+    const doc = await dbGet(db.collection('inventory').doc(docId));
     if (!doc.exists) { toast('재고 없음'); return; }
     manualObData = doc.data();
     const active = (manualObData.packs||[]).filter(p=>!p.shipped);
@@ -4652,11 +4681,10 @@ async function renderDeckForm(data) {
   const doneInfo  = {};
   if (db && (data.company || data.site)) {
     try {
-      const snap = await db.collection('production_deck')
+      const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || '')
-        .get();
+        .where('req_code', '==', data.req_code  || ''));
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -4812,11 +4840,10 @@ async function submitProdEntry() {
   });
 
   try {
-    const dupSnap = await db.collection('production_deck')
+    const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || '')
-      .get();
+      .where('req_code', '==', pendingProd.req_code  || ''));
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -4893,7 +4920,7 @@ async function loadProdStat() {
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await db.collection('production_deck').where('type','==',currentProdType).get();
+    const snap = await dbGet(db.collection('production_deck').where('type','==',currentProdType));
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
@@ -5199,7 +5226,7 @@ function downloadProdMonthExcel() {
 async function openDeleteProd() {
   if (!db) { toast('Firebase 미연결'); return; }
   let snap;
-  try { snap = await db.collection('production_deck').orderBy('date','desc').limit(60).get(); }
+  try { snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(60)); }
   catch(e) { toast(e.message); return; }
   if (snap.empty) { toast('삭제할 기록이 없습니다.'); return; }
 
@@ -5411,7 +5438,7 @@ async function _backupEngine(cfg) {
     const to   = cfg.toId   ? document.getElementById(cfg.toId).value   : '';
     if (from && cfg.dateField) query = query.where(cfg.dateField, '>=', from);
     if (to   && cfg.dateField) query = query.where(cfg.dateField, '<=', to);
-    const snap = await query.get();
+    const snap = await dbGet(query);
     const records = [];
     snap.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
 
@@ -5888,7 +5915,7 @@ async function loadUsawonFolders() {
   const list = document.getElementById('usawon-folder-list');
   list.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:20px;font-size:.85rem">불러오는 중...</div>';
   try {
-    const snap = await db.collection('usawon_folders').orderBy('created_at','desc').get();
+    const snap = await dbGet(db.collection('usawon_folders').orderBy('created_at','desc'));
     if (snap.empty) {
       list.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem">폴더가 없습니다</div>';
       return;
@@ -5915,7 +5942,7 @@ async function loadUsawonFolders() {
 async function deleteUsawonFolder(folderId, folderName) {
   if (!confirm(`"${folderName}" 폴더와 안의 사진을 모두 삭제할까요?`)) return;
   try {
-    const photos = await db.collection('usawon_photos').where('folder_id','==',folderId).get();
+    const photos = await dbGet(db.collection('usawon_photos').where('folder_id','==',folderId));
     const batch = db.batch();
     photos.docs.forEach(p => batch.delete(p.ref));
     await batch.commit();
@@ -6006,7 +6033,7 @@ async function loadUsawonPhotos(folderId) {
   const grid = document.getElementById('usawon-photo-grid');
   grid.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">불러오는 중...</div>';
   try {
-    const snap = await db.collection('usawon_photos').where('folder_id','==',folderId).get();
+    const snap = await dbGet(db.collection('usawon_photos').where('folder_id','==',folderId));
     if (snap.empty) {
       grid.innerHTML = '<div style="text-align:center;color:#bdbdbd;padding:40px 0;font-size:.85rem;grid-column:1/-1">사진이 없습니다<br><span style="font-size:.75rem">+ 사진 버튼으로 추가하세요</span></div>';
       return;
@@ -6110,7 +6137,7 @@ async function openEditProd(docId, year, month) {
   if (!r) {
     if (!db) { toast('Firebase 미연결'); return; }
     try {
-      const snap = await db.collection('production_deck').doc(docId).get();
+      const snap = await dbGet(db.collection('production_deck').doc(docId));
       if (!snap.exists) { toast('기록을 찾을 수 없습니다.'); return; }
       r = { id: snap.id, ...snap.data() };
     } catch(e) { toast('기록 로드 실패: ' + e.message); return; }
