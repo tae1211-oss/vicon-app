@@ -2691,7 +2691,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         style="background:#e65100;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap">
         설치
       </button>
-      <button onclick="document.getElementById('pwa-install-banner').style.display='none'"
+      <button onclick="_hidePwaBanner()"
         style="background:transparent;color:#888;border:none;font-size:1.1rem;cursor:pointer;padding:4px;line-height:1">✕</button>
     </div>
 
@@ -6860,8 +6860,11 @@ let _pwaPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _pwaPrompt = e;
-  // 이미 설치돼 있으면 배너 숨김
-  if (!window.matchMedia('(display-mode: standalone)').matches) {
+  // 설치 완료 기록 있거나 standalone 모드면 배너 숨김
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  const alreadyInstalled = localStorage.getItem('pwa-installed') === '1';
+  if (!isStandalone && !alreadyInstalled) {
     const banner = document.getElementById('pwa-install-banner');
     if (banner) banner.style.display = 'flex';
   }
@@ -6870,6 +6873,7 @@ window.addEventListener('beforeinstallprompt', e => {
 window.addEventListener('appinstalled', () => {
   const banner = document.getElementById('pwa-install-banner');
   if (banner) banner.style.display = 'none';
+  localStorage.setItem('pwa-installed', '1');
   _pwaPrompt = null;
   toast('✅ 앱이 홈화면에 설치되었습니다!');
 });
@@ -6879,11 +6883,18 @@ function doPwaInstall() {
   _pwaPrompt.prompt();
   _pwaPrompt.userChoice.then(result => {
     if (result.outcome === 'accepted') {
+      localStorage.setItem('pwa-installed', '1');
       const banner = document.getElementById('pwa-install-banner');
       if (banner) banner.style.display = 'none';
     }
     _pwaPrompt = null;
   });
+}
+
+function _hidePwaBanner() {
+  localStorage.setItem('pwa-installed', '1');
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.style.display = 'none';
 }
 
 // ── 서비스워커 등록 ──
