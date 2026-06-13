@@ -3210,22 +3210,53 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
   <!-- ── 검색 ── -->
   <div class="page" id="ppage-search">
-    <div class="card">
-      <div class="card-title">🔍 생산 기록 검색</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+    <div class="card" style="padding:14px">
+      <div class="card-title" style="margin-bottom:10px">🔍 생산 기록 검색</div>
+
+      <!-- 1행: 현장명/의뢰번호 (전체 폭) -->
+      <div style="margin-bottom:8px">
+        <label style="font-size:.75rem;color:#546e7a;font-weight:600;display:block;margin-bottom:3px">현장명 또는 의뢰번호</label>
+        <input type="text" id="ps-keyword" placeholder="현장명 또는 의뢰번호 입력"
+          style="width:100%;border:1.5px solid #cfd8dc;border-radius:10px;padding:9px 12px;font-size:.88rem;box-sizing:border-box;font-family:inherit"
+          oninput="searchProd()">
+      </div>
+
+      <!-- 2행: 패킹번호 + 생산일자 (2열) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
-          <label style="font-size:.78rem;color:#546e7a;font-weight:600;display:block;margin-bottom:4px">현장명 또는 의뢰번호</label>
-          <input type="text" id="ps-keyword" placeholder="현장명 또는 의뢰번호 입력"
-            style="width:100%;border:1.5px solid #cfd8dc;border-radius:10px;padding:10px 12px;font-size:.88rem;box-sizing:border-box;font-family:inherit"
+          <label style="font-size:.75rem;color:#546e7a;font-weight:600;display:block;margin-bottom:3px">패킹번호 <span style="font-weight:400;color:#90a4ae">(선택)</span></label>
+          <input type="number" id="ps-pack" placeholder="예: 3"
+            style="width:100%;border:1.5px solid #cfd8dc;border-radius:10px;padding:9px 12px;font-size:.88rem;box-sizing:border-box;font-family:inherit"
             oninput="searchProd()">
         </div>
         <div>
-          <label style="font-size:.78rem;color:#546e7a;font-weight:600;display:block;margin-bottom:4px">패킹번호 <span style="font-weight:400;color:#90a4ae">(선택)</span></label>
-          <input type="number" id="ps-pack" placeholder="패킹번호 입력 (예: 3)"
-            style="width:100%;border:1.5px solid #cfd8dc;border-radius:10px;padding:10px 12px;font-size:.88rem;box-sizing:border-box;font-family:inherit"
-            oninput="searchProd()">
+          <label style="font-size:.75rem;color:#546e7a;font-weight:600;display:block;margin-bottom:3px">생산일자 <span style="font-weight:400;color:#90a4ae">(선택)</span></label>
+          <input type="date" id="ps-date"
+            style="width:100%;border:1.5px solid #cfd8dc;border-radius:10px;padding:9px 10px;font-size:.82rem;box-sizing:border-box;font-family:inherit;color:#37474f"
+            onchange="searchProd()">
         </div>
       </div>
+
+      <!-- 3행: 호기 + 주야 (2열, 버튼 토글) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div>
+          <label style="font-size:.75rem;color:#546e7a;font-weight:600;display:block;margin-bottom:3px">호기 <span style="font-weight:400;color:#90a4ae">(선택)</span></label>
+          <select id="ps-machine"
+            style="width:100%;border:1.5px solid #cfd8dc;border-radius:10px;padding:9px 10px;font-size:.84rem;box-sizing:border-box;font-family:inherit;background:#fff;color:#37474f"
+            onchange="searchProd()">
+            <option value="">전체</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:#546e7a;font-weight:600;display:block;margin-bottom:3px">주/야</label>
+          <div style="display:flex;gap:6px;margin-top:2px">
+            <button id="ps-shift-all"   onclick="setPsShift('')"      style="flex:1;padding:8px 0;border-radius:8px;border:1.5px solid #b0bec5;background:#f5f5f5;font-size:.8rem;font-family:inherit;cursor:pointer;color:#546e7a;font-weight:600">전체</button>
+            <button id="ps-shift-day"   onclick="setPsShift('주간')"  style="flex:1;padding:8px 0;border-radius:8px;border:1.5px solid #ffb74d;background:#fff3e0;font-size:.8rem;font-family:inherit;cursor:pointer;color:#e65100;font-weight:600">🌤️ 주간</button>
+            <button id="ps-shift-night" onclick="setPsShift('야간')"  style="flex:1;padding:8px 0;border-radius:8px;border:1.5px solid #90caf9;background:#e3f2fd;font-size:.8rem;font-family:inherit;cursor:pointer;color:#1565c0;font-weight:600">🌙 야간</button>
+          </div>
+        </div>
+      </div>
+
       <div id="ps-result" style="color:#90a4ae;font-size:.85rem;padding:20px 0;text-align:center">
         현장명 또는 의뢰번호를 입력하세요
       </div>
@@ -4621,15 +4652,14 @@ function showPTab(name) {
     pendingProd = null;
   }
   if (name === 'search') {
+    // 주/야 버튼 초기 상태
+    setPsShift(_psShift || '');
     // 캐시 만료됐거나 데이터 없으면 재로딩
     const cacheOk = _prodCache && _prodCache.length > 0 && (Date.now() - _prodCacheTs < PROD_CACHE_TTL);
-    if (!cacheOk) loadProdRecordsForSearch();
-    else if (window._prodRecords && window._prodRecords.length > 0) {
-      const el = document.getElementById('ps-result');
-      const kw = (document.getElementById('ps-keyword')?.value || '').trim();
-      if (!kw && el && el.innerHTML.includes('기록 로딩')) {
-        el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">총 ' + window._prodRecords.length + '건 로드됨<br>현장명 또는 의뢰번호를 입력하세요</div>';
-      }
+    if (!cacheOk) {
+      loadProdRecordsForSearch();
+    } else {
+      _populateMachineSelect(window._prodRecords || []);
     }
     setTimeout(function(){ var el=document.getElementById('ps-keyword'); if(el) el.focus(); }, 150);
   }
@@ -4679,12 +4709,13 @@ async function loadProdRecordsForSearch(forceRefresh) {
     _prodCache = records;
     _prodCacheTs = Date.now();
     window._prodRecords = records;
+    _populateMachineSelect(records);
     const kw = (document.getElementById('ps-keyword')?.value || '').trim();
     if (kw) {
       searchProd();
     } else {
       if (el) el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">'
-        + '총 ' + records.length + '건 로드됨<br>현장명 또는 의뢰번호를 입력하세요</div>';
+        + '총 ' + records.length + '건 로드됨<br>현장명·의뢰번호 입력 또는 조건을 선택하세요</div>';
     }
   } catch(e) {
     if (el) el.innerHTML = '<div style="color:#c62828;font-size:.85rem;padding:12px;text-align:center">'
@@ -4697,14 +4728,41 @@ async function loadProdRecordsForSearch(forceRefresh) {
   }
 }
 
+let _psShift = ''; // '', '주간', '야간'
+
+function setPsShift(val) {
+  _psShift = val;
+  ['all','day','night'].forEach(k => {
+    const btn = document.getElementById('ps-shift-' + k);
+    if (!btn) return;
+    const active = (k==='all' && val==='') || (k==='day' && val==='주간') || (k==='night' && val==='야간');
+    btn.style.opacity = active ? '1' : '0.45';
+    btn.style.fontWeight = active ? '700' : '500';
+  });
+  searchProd();
+}
+
+function _populateMachineSelect(records) {
+  const sel = document.getElementById('ps-machine');
+  if (!sel) return;
+  const machines = [...new Set(records.map(r => r.machine).filter(Boolean))].sort();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">전체</option>'
+    + machines.map(m => `<option value="${esc(m)}"${cur===m?' selected':''}>${esc(m)}</option>`).join('');
+}
+
 function searchProd() {
-  const kw    = (document.getElementById('ps-keyword')?.value || '').trim().toLowerCase();
-  const packNo = parseInt(document.getElementById('ps-pack')?.value || '');
-  const el    = document.getElementById('ps-result');
+  const kw      = (document.getElementById('ps-keyword')?.value || '').trim().toLowerCase();
+  const packNo  = parseInt(document.getElementById('ps-pack')?.value || '');
+  const dateVal = (document.getElementById('ps-date')?.value || '').trim();
+  const machine = (document.getElementById('ps-machine')?.value || '').trim();
+  const shift   = _psShift;
+  const el      = document.getElementById('ps-result');
   if (!el) return;
 
-  if (!kw && isNaN(packNo)) {
-    el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">현장명 또는 의뢰번호를 입력하세요</div>';
+  const hasFilter = kw || !isNaN(packNo) || dateVal || machine || shift;
+  if (!hasFilter) {
+    el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">현장명·의뢰번호 입력 또는 조건을 선택하세요</div>';
     return;
   }
   const records = window._prodRecords || [];
@@ -4716,10 +4774,11 @@ function searchProd() {
     const site    = (r.site    || '').toLowerCase();
     const req     = (r.req_code|| '').toLowerCase();
     const company = (r.company || '').toLowerCase();
-    const kwMatch = !kw || site.includes(kw) || req.includes(kw) || company.includes(kw);
-    if (!kwMatch) return;
+    if (kw && !site.includes(kw) && !req.includes(kw) && !company.includes(kw)) return;
+    if (dateVal && r.date !== dateVal) return;
+    if (machine && r.machine !== machine) return;
+    if (shift && r.shift !== shift) return;
     if (!isNaN(packNo)) {
-      // 패킹번호 지정 시: 해당 패킹만 추출
       const matched = (r.packs || []).filter(p => +p.pack_no === packNo);
       if (!matched.length) return;
       results.push({ r, packs: matched });
