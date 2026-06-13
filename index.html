@@ -3463,7 +3463,7 @@ function showTab(name) {
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'inventory') loadInventory();
-  if (name === 'map') refreshMap();
+  if (name === 'map') refreshMap(true); // 탭 전환 시 항상 최신 데이터로
 }
 
 // ─────────────────────────────────────────────────────────
@@ -3513,10 +3513,18 @@ function renderYardMap(stats) {
   }
 }
 
-async function refreshMap() {
-  if (!db) return;
+let _mapRefreshing = false;
+async function refreshMap(forceRefresh, _retry) {
+  if (!db || _mapRefreshing) return;
+  _mapRefreshing = true;
   try {
-    const data = await fetchInventory(false);
+    const data = await fetchInventory(forceRefresh || false);
+    // 데이터가 없으면 1회 자동 재시도 (Firebase 일시 오류 대응)
+    if (data.length === 0 && !_retry) {
+      _mapRefreshing = false;
+      setTimeout(() => refreshMap(true, true), 2000);
+      return;
+    }
     const stats = {};
     ZONES.forEach(z => stats[z] = {total: 0, sites: []});
     data.forEach(d => {
@@ -3526,7 +3534,15 @@ async function refreshMap() {
       });
     });
     renderYardMap(stats);
-  } catch(_) {}
+  } catch(_) {
+    // 실패 시 구역 목록에 새로고침 버튼 표시
+    const lw = document.getElementById('zone-list-wrap');
+    if (lw) lw.innerHTML = '<div style="padding:12px;text-align:center;color:#90a4ae;font-size:.85rem">'
+      + '데이터를 불러오지 못했습니다.<br>'
+      + '<button onclick="refreshMap(true)" style="margin-top:8px;padding:8px 18px;background:#e65100;color:#fff;border:none;border-radius:8px;font-size:.85rem;cursor:pointer;font-family:inherit">🔄 새로고침</button></div>';
+  } finally {
+    _mapRefreshing = false;
+  }
 }
 
 function onZoneClick(zone) {
@@ -4033,19 +4049,22 @@ function dbGet(query) {
   ]);
 }
 
-let _invCache   = null;   // 재고 캐시
-let _invCacheTs = 0;      // 캐시 타임스탬프
-const INV_CACHE_TTL = 30000; // 30초 캐시 유효
+let _invCache   = null;   // 재고 캐시 (빈 배열은 캐시하지 않음)
+let _invCacheTs = 0;
+const INV_CACHE_TTL = 30000;
 
 async function fetchInventory(forceRefresh) {
-  if (!forceRefresh && _invCache && (Date.now() - _invCacheTs < INV_CACHE_TTL)) {
+  if (!forceRefresh && _invCache && _invCache.length > 0 && (Date.now() - _invCacheTs < INV_CACHE_TTL)) {
     return _invCache;
   }
   const snap = await dbGet(db.collection('inventory'));
   const data = [];
   snap.forEach(doc => data.push(doc.data()));
-  _invCache   = data;
-  _invCacheTs = Date.now();
+  // 빈 결과는 캐시하지 않음 (Firebase 일시 오류 방지)
+  if (data.length > 0) {
+    _invCache   = data;
+    _invCacheTs = Date.now();
+  }
   return data;
 }
 
@@ -4075,6 +4094,8 @@ async function loadInventory(forceRefresh) {
     allInv = await fetchInventory(true);
     renderInvStats();
     filterInv();
+    // 재고 로드 성공 시 지도도 갱신 (캐시 공유)
+    refreshMap(false);
   } catch(e) {
     el.innerHTML = `<div style="padding:16px;text-align:center">
       <div style="color:#c62828;font-size:.88rem;margin-bottom:10px">❌ ${e.message}</div>
