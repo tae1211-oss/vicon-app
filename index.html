@@ -3513,18 +3513,13 @@ function renderYardMap(stats) {
   }
 }
 
-let _mapRefreshing = false;
-async function refreshMap(forceRefresh, _retry) {
-  if (!db || _mapRefreshing) return;
-  _mapRefreshing = true;
+async function refreshMap(forceRefresh) {
+  if (!db) return;
+  const lw = document.getElementById('zone-list-wrap');
+  // 로딩 표시
+  if (lw) lw.innerHTML = '<div style="padding:16px;text-align:center;color:#90a4ae;font-size:.85rem"><span class="spinner"></span> 로딩 중…</div>';
   try {
     const data = await fetchInventory(forceRefresh || false);
-    // 데이터가 없으면 1회 자동 재시도 (Firebase 일시 오류 대응)
-    if (data.length === 0 && !_retry) {
-      _mapRefreshing = false;
-      setTimeout(() => refreshMap(true, true), 2000);
-      return;
-    }
     const stats = {};
     ZONES.forEach(z => stats[z] = {total: 0, sites: []});
     data.forEach(d => {
@@ -3534,14 +3529,14 @@ async function refreshMap(forceRefresh, _retry) {
       });
     });
     renderYardMap(stats);
-  } catch(_) {
-    // 실패 시 구역 목록에 새로고침 버튼 표시
-    const lw = document.getElementById('zone-list-wrap');
-    if (lw) lw.innerHTML = '<div style="padding:12px;text-align:center;color:#90a4ae;font-size:.85rem">'
-      + '데이터를 불러오지 못했습니다.<br>'
-      + '<button onclick="refreshMap(true)" style="margin-top:8px;padding:8px 18px;background:#e65100;color:#fff;border:none;border-radius:8px;font-size:.85rem;cursor:pointer;font-family:inherit">🔄 새로고침</button></div>';
-  } finally {
-    _mapRefreshing = false;
+    // 여전히 비어있으면 자동 1회 재시도
+    if (data.length === 0 && !forceRefresh) {
+      setTimeout(() => refreshMap(true), 2500);
+    }
+  } catch(e) {
+    if (lw) lw.innerHTML = '<div style="padding:16px;text-align:center">'
+      + '<div style="color:#c62828;font-size:.82rem;margin-bottom:10px">❌ 불러오기 실패</div>'
+      + '<button onclick="refreshMap(true)" style="padding:9px 20px;background:#e65100;color:#fff;border:none;border-radius:8px;font-size:.85rem;cursor:pointer;font-family:inherit">🔄 다시 시도</button></div>';
   }
 }
 
