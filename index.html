@@ -3226,7 +3226,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
             oninput="searchProd()">
         </div>
       </div>
-      <div id="ps-result" style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">
+      <div id="ps-result" style="color:#90a4ae;font-size:.85rem;padding:20px 0;text-align:center">
         현장명 또는 의뢰번호를 입력하세요
       </div>
     </div>
@@ -4621,7 +4621,16 @@ function showPTab(name) {
     pendingProd = null;
   }
   if (name === 'search') {
-    if (!window._prodRecords || window._prodRecords.length === 0) loadProdRecordsForSearch();
+    // 캐시 만료됐거나 데이터 없으면 재로딩
+    const cacheOk = _prodCache && _prodCache.length > 0 && (Date.now() - _prodCacheTs < PROD_CACHE_TTL);
+    if (!cacheOk) loadProdRecordsForSearch();
+    else if (window._prodRecords && window._prodRecords.length > 0) {
+      const el = document.getElementById('ps-result');
+      const kw = (document.getElementById('ps-keyword')?.value || '').trim();
+      if (!kw && el && el.innerHTML.includes('기록 로딩')) {
+        el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">총 ' + window._prodRecords.length + '건 로드됨<br>현장명 또는 의뢰번호를 입력하세요</div>';
+      }
+    }
     setTimeout(function(){ var el=document.getElementById('ps-keyword'); if(el) el.focus(); }, 150);
   }
   if (name === 'psettings') {
@@ -4634,22 +4643,58 @@ function showPTab(name) {
 //  생산 검색
 // ─────────────────────────────────────────────────────────
 let _psLoading = false;
+let _psLoadTimer = null;
+let _prodCache = null;
+let _prodCacheTs = 0;
+const PROD_CACHE_TTL = 3 * 60 * 1000; // 3분 캐시
 
-async function loadProdRecordsForSearch() {
-  if (_psLoading || !db) return;
+async function loadProdRecordsForSearch(forceRefresh) {
+  if (!db) return;
+
+  // 캐시 유효하면 바로 검색
+  if (!forceRefresh && _prodCache && _prodCache.length > 0 && (Date.now() - _prodCacheTs < PROD_CACHE_TTL)) {
+    searchProd();
+    return;
+  }
+
+  // 이미 로딩 중이면 중복 실행 방지 (단 30초 초과 시 강제 해제)
+  if (_psLoading) return;
   _psLoading = true;
+  if (_psLoadTimer) clearTimeout(_psLoadTimer);
+  _psLoadTimer = setTimeout(() => { _psLoading = false; _psLoadTimer = null; }, 30000);
+
   const el = document.getElementById('ps-result');
-  if (el) el.innerHTML = '<div class="loading"><span class="spinner"></span>기록 로딩 중…</div>';
+  if (el) el.innerHTML = '<div style="text-align:center;padding:24px 0"><span class="spinner"></span><div style="margin-top:8px;font-size:.82rem;color:#90a4ae">기록 불러오는 중…<br><span style="font-size:.75rem">(데이터가 많으면 잠시 걸릴 수 있어요)</span></div></div>';
+
   try {
-    const snap = await dbGet(db.collection('production_deck'));
+    // orderBy로 최신순 → Firestore 인덱스 활용, 30초 타임아웃
+    const snap = await Promise.race([
+      db.collection('production_deck').orderBy('date', 'desc').get(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('⏱ 응답 시간 초과. 네트워크를 확인하고 재시도해 주세요.')), 30000)
+      )
+    ]);
     const records = [];
     snap.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+    _prodCache = records;
+    _prodCacheTs = Date.now();
     window._prodRecords = records;
-    if (el) el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">현장명 또는 의뢰번호를 입력하세요</div>';
-    searchProd();
+    const kw = (document.getElementById('ps-keyword')?.value || '').trim();
+    if (kw) {
+      searchProd();
+    } else {
+      if (el) el.innerHTML = '<div style="color:#90a4ae;font-size:.85rem;text-align:center;padding:20px 0">'
+        + '총 ' + records.length + '건 로드됨<br>현장명 또는 의뢰번호를 입력하세요</div>';
+    }
   } catch(e) {
-    if (el) el.innerHTML = '<div style="color:#c62828;font-size:.85rem;padding:12px;text-align:center">❌ ' + e.message + '<br><button onclick="loadProdRecordsForSearch()" style="margin-top:8px;padding:7px 16px;background:#e65100;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit">🔄 재시도</button></div>';
-  } finally { _psLoading = false; }
+    if (el) el.innerHTML = '<div style="color:#c62828;font-size:.85rem;padding:12px;text-align:center">'
+      + '❌ ' + e.message
+      + '<br><button onclick="loadProdRecordsForSearch(true)" style="margin-top:8px;padding:8px 20px;background:#e65100;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit">🔄 재시도</button></div>';
+  } finally {
+    _psLoading = false;
+    if (_psLoadTimer) clearTimeout(_psLoadTimer);
+    _psLoadTimer = null;
+  }
 }
 
 function searchProd() {
@@ -4697,21 +4742,22 @@ function searchProd() {
   results.forEach(({ r, packs }) => {
     const packNos = packs.map(p => p.pack_no).join(', ');
     const areaStr = r.total_area != null ? r.total_area.toFixed(1) + '㎡' : '';
-    html += `<div style="border:1.5px solid #e0e0e0;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#fff">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+    html += `<div style="border:1.5px solid #e0e0e0;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#fff;text-align:left">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;text-align:left">
         <span style="font-weight:700;font-size:.9rem">${esc(r.site||r.company||'-')}</span>
         <span style="font-size:.72rem;color:#90a4ae">${esc(r.company||'')}</span>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;text-align:left">
         <span style="background:#f3f4f6;border-radius:6px;padding:3px 9px;font-size:.78rem;color:#37474f">📅 ${r.date||'-'}</span>
         <span style="background:#f3f4f6;border-radius:6px;padding:3px 9px;font-size:.78rem;color:#37474f">🏗️ ${esc(r.machine||'-')}</span>
         <span style="background:${shiftBg(r.shift||'')};border-radius:6px;padding:3px 9px;font-size:.78rem;color:${shiftColor(r.shift||'')}">
           ${r.shift==='주간'?'🌤️':'🌙'} ${esc(r.shift||'-')}
         </span>
       </div>
-      <div style="font-size:.78rem;color:#546e7a">
-        의뢰번호: <strong>${esc(r.req_code||'-')}</strong> &nbsp;|&nbsp; 팩: <strong>${packNos}</strong>
-        ${areaStr ? ' &nbsp;|&nbsp; ' + areaStr : ''}
+      <div style="font-size:.78rem;color:#546e7a;text-align:left">
+        <div style="text-align:left">의뢰번호: <strong>${esc(r.req_code||'-')}</strong></div>
+        <div style="text-align:left">패킹번호: <strong>${packNos}</strong></div>
+        ${areaStr ? `<div style="text-align:left">면적: <strong>${areaStr}</strong></div>` : ''}
       </div>
     </div>`;
   });
