@@ -1,19 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- 배경 -->
   <rect width="512" height="512" fill="#ffffff"/>
 
-  <!-- 상단 첫번째 가로바 -->
-  <rect x="98" y="100" width="316" height="44" fill="#111111"/>
-  <!-- 상단 두번째 가로바 -->
-  <rect x="78" y="154" width="356" height="52" fill="#111111"/>
+  <!-- 첫번째 가로바 (짧음) -->
+  <rect x="98" y="104" width="316" height="46" fill="#111111"/>
+  <!-- 두번째 가로바 (긴) -->
+  <rect x="76" y="160" width="360" height="54" fill="#111111"/>
 
-  <!-- V 외곽선 (stroke 방식 → 경로 따라 완벽히 균일한 두께) -->
-  <polyline points="80,222 256,492 432,222"
-    fill="none" stroke="#111111" stroke-width="92"
-    stroke-linejoin="miter" stroke-linecap="butt"/>
+  <!-- 외곽 V: 왼쪽 팔 -->
+  <line x1="80"  y1="224" x2="256" y2="474"
+        stroke="#111111" stroke-width="52" stroke-linecap="butt"/>
+  <!-- 외곽 V: 오른쪽 팔 -->
+  <line x1="432" y1="224" x2="256" y2="474"
+        stroke="#111111" stroke-width="52" stroke-linecap="butt"/>
 
-  <!-- V 내부 흰색 컷아웃 (동일 경로, 좁은 stroke → 이중라인 효과) -->
-  <polyline points="80,222 256,492 432,222"
-    fill="none" stroke="#ffffff" stroke-width="48"
-    stroke-linejoin="miter" stroke-linecap="butt"/>
+  <!-- 내부 V: 왼쪽 팔 (안쪽에 위치, 더 짧게 끝남) -->
+  <line x1="164" y1="224" x2="256" y2="432"
+        stroke="#111111" stroke-width="46" stroke-linecap="butt"/>
+  <!-- 내부 V: 오른쪽 팔 -->
+  <line x1="348" y1="224" x2="256" y2="432"
+        stroke="#111111" stroke-width="46" stroke-linecap="butt"/>
 </svg>
