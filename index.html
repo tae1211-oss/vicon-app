@@ -2681,7 +2681,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <button class="btn-logout" onclick="doLogout()">로그아웃</button>
     </div>
     <!-- PWA 설치 배너 (설치 가능할 때만 표시) -->
-    <div id="pwa-install-banner" style="display:none;margin:0 0 14px 0;background:#111;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+    <div id="pwa-install-banner" style="display:none;margin:0 0 14px 0;background:#111;border-radius:14px;padding:14px 16px;align-items:center;gap:12px">
       <img src="/icons/icon-192.png" style="width:40px;height:40px;border-radius:8px;flex-shrink:0">
       <div style="flex:1;min-width:0">
         <div style="color:#fff;font-weight:700;font-size:.9rem">비콘관리 앱 설치</div>
@@ -6885,16 +6885,19 @@ async function downloadDailyReport() {
 // ── PWA 설치 프롬프트 ──
 let _pwaPrompt = null;
 
+(function() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) localStorage.setItem('pwa-installed', '1');
+})();
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _pwaPrompt = e;
-  // 설치 완료 기록 있거나 standalone 모드면 배너 숨김
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const alreadyInstalled = localStorage.getItem('pwa-installed') === '1';
   if (!isStandalone && !alreadyInstalled) {
     const banner = document.getElementById('pwa-install-banner');
-    if (banner) banner.style.display = 'flex';
+    if (banner) { banner.style.display = 'flex'; banner.style.alignItems = 'center'; }
   }
 });
 
