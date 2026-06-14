@@ -1,22 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#ffffff"/>
 
-  <!-- 첫번째 가로바 (짧음) -->
-  <rect x="98" y="104" width="316" height="46" fill="#111111"/>
-  <!-- 두번째 가로바 (긴) -->
-  <rect x="76" y="160" width="360" height="54" fill="#111111"/>
+  <!-- 첫번째 가로바 (짧음, 두번째보다 약간 좁음) -->
+  <rect x="96" y="92" width="320" height="38" fill="#111111"/>
 
-  <!-- 외곽 V: 왼쪽 팔 -->
-  <line x1="80"  y1="224" x2="256" y2="474"
-        stroke="#111111" stroke-width="52" stroke-linecap="butt"/>
-  <!-- 외곽 V: 오른쪽 팔 -->
-  <line x1="432" y1="224" x2="256" y2="474"
-        stroke="#111111" stroke-width="52" stroke-linecap="butt"/>
+  <!-- 두번째 가로바 (넓음, V 외곽 팔 좌우 끝과 정렬) -->
+  <rect x="68" y="136" width="376" height="52" fill="#111111"/>
 
-  <!-- 내부 V: 왼쪽 팔 (안쪽에 위치, 더 짧게 끝남) -->
-  <line x1="164" y1="224" x2="256" y2="432"
-        stroke="#111111" stroke-width="46" stroke-linecap="butt"/>
-  <!-- 내부 V: 오른쪽 팔 -->
-  <line x1="348" y1="224" x2="256" y2="432"
-        stroke="#111111" stroke-width="46" stroke-linecap="butt"/>
+  <!--
+    V 구조: 외곽 V + 내부 V
+    - 외곽 V 팔: 바 좌우 끝(x=68, x=444)과 정렬, 두께 57
+    - 내부 V 팔: 외곽 팔 안쪽으로 36px 간격 두고 위치, 두께 47
+    - 두 V 모두 stroke 방식 → 경로 따라 완벽히 균일한 두께
+  -->
+
+  <!-- 외곽 V 왼쪽 팔 (center x=92) -->
+  <line x1="92"  y1="196" x2="256" y2="458"
+        stroke="#111111" stroke-width="57" stroke-linecap="butt"/>
+
+  <!-- 외곽 V 오른쪽 팔 (center x=420) -->
+  <line x1="420" y1="196" x2="256" y2="458"
+        stroke="#111111" stroke-width="57" stroke-linecap="butt"/>
+
+  <!-- 내부 V 왼쪽 팔 (center x=173) -->
+  <line x1="173" y1="196" x2="256" y2="422"
+        stroke="#111111" stroke-width="47" stroke-linecap="butt"/>
+
+  <!-- 내부 V 오른쪽 팔 (center x=339) -->
+  <line x1="339" y1="196" x2="256" y2="422"
+        stroke="#111111" stroke-width="47" stroke-linecap="butt"/>
 </svg>
