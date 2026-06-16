@@ -106,11 +106,14 @@ function showPTab(name) {
   }
 }
 
-// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날)
+// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날) — 로컬 날짜로 계산
 function getProductionDate() {
   const now = new Date();
   if (now.getHours() < 8) now.setDate(now.getDate() - 1);
-  return now.toISOString().split('T')[0];
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 // 주간/야간 기본값: 8~20시 = 주간
 function getDefaultShift() {
@@ -724,11 +727,14 @@ function showPTab(name) {
   }
 }
 
-// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날)
+// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날) — 로컬 날짜로 계산
 function getProductionDate() {
   const now = new Date();
   if (now.getHours() < 8) now.setDate(now.getDate() - 1);
-  return now.toISOString().split('T')[0];
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 // 주간/야간 기본값: 8~20시 = 주간
 function getDefaultShift() {
@@ -1323,11 +1329,14 @@ function showPTab(name) {
   }
 }
 
-// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날)
+// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날) — 로컬 날짜로 계산
 function getProductionDate() {
   const now = new Date();
   if (now.getHours() < 8) now.setDate(now.getDate() - 1);
-  return now.toISOString().split('T')[0];
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 // 주간/야간 기본값: 8~20시 = 주간
 function getDefaultShift() {
@@ -1921,11 +1930,14 @@ function showPTab(name) {
   }
 }
 
-// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날)
+// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날) — 로컬 날짜로 계산
 function getProductionDate() {
   const now = new Date();
   if (now.getHours() < 8) now.setDate(now.getDate() - 1);
-  return now.toISOString().split('T')[0];
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 // 주간/야간 기본값: 8~20시 = 주간
 function getDefaultShift() {
@@ -3497,6 +3509,8 @@ async function initFirebase(cfg) {
     firebase.initializeApp(cfg);
     db = firebase.firestore();
     db.settings({experimentalAutoDetectLongPolling: true, merge: true});
+    // 오프라인 캐시: 앱 열자마자 캐시 데이터 즉시 표시, 백그라운드 동기화
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     setFbStatus('success', '✅ 연결됨 — ' + cfg.projectId);
     initAuth();
     // Firebase 준비 완료 후 active 탭 데이터 자동 로드
@@ -4127,6 +4141,7 @@ let _invCache   = null;   // 재고 캐시 (빈 배열은 캐시하지 않음)
 let _invCacheTs = 0;
 const INV_CACHE_TTL = 30000;
 
+
 async function fetchInventory(forceRefresh) {
   if (!forceRefresh && _invCache && _invCache.length > 0 && (Date.now() - _invCacheTs < INV_CACHE_TTL)) {
     return _invCache;
@@ -4737,7 +4752,7 @@ async function loadProdRecordsForSearch(forceRefresh) {
   try {
     // orderBy로 최신순 → Firestore 인덱스 활용, 30초 타임아웃
     const snap = await Promise.race([
-      db.collection('production_deck').orderBy('date', 'desc').get(),
+      db.collection('production_deck').orderBy('date', 'desc').limit(1000).get(),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('⏱ 응답 시간 초과. 네트워크를 확인하고 재시도해 주세요.')), 30000)
       )
@@ -4861,11 +4876,14 @@ function searchProd() {
   el.innerHTML = html;
 }
 
-// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날)
+// 날짜 기본값: 오전 8시 기준 (8시 이전이면 전날) — 로컬 날짜로 계산
 function getProductionDate() {
   const now = new Date();
   if (now.getHours() < 8) now.setDate(now.getDate() - 1);
-  return now.toISOString().split('T')[0];
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 // 주간/야간 기본값: 8~20시 = 주간
 function getDefaultShift() {
