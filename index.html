@@ -3423,42 +3423,13 @@ let selectedZone = null;
 let allInv = [];
 let zoneFilterVal = '';
 
-// 관리자 — PIN은 localStorage에 해시 없이 저장 (단순 보안)
-const DEFAULT_ADMIN_PIN = '1234';
+// 관리자 — 이메일 기반 자동 부여
+const ADMIN_EMAIL = '관리자@vicon.com';
 let isAdmin = false;
 
-function getAdminPin() {
-  return localStorage.getItem('bvy_admin_pin') || DEFAULT_ADMIN_PIN;
-}
-function adminLogin() {
-  const pin = document.getElementById('inp-admin-pin').value;
-  if (pin === getAdminPin()) {
-    isAdmin = true;
-    document.getElementById('inp-admin-pin').value = '';
-    document.getElementById('admin-login-msg').textContent = '';
-    updateAdminUI();
-    toast('✅ 관리자 모드 활성화');
-  } else {
-    document.getElementById('admin-login-msg').textContent = '❌ PIN이 올바르지 않습니다.';
-  }
-}
-function adminLogout() {
-  isAdmin = false;
-  updateAdminUI();
-  toast('관리자 모드 해제');
-}
-function changePin() {
-  const np = document.getElementById('inp-new-pin').value.trim();
-  if (!np) { toast('새 PIN을 입력하세요.'); return; }
-  if (np.length < 4) { toast('PIN은 4자리 이상으로 설정하세요.'); return; }
-  localStorage.setItem('bvy_admin_pin', np);
-  document.getElementById('inp-new-pin').value = '';
-  toast('✅ PIN이 변경되었습니다.');
-}
 function updateAdminUI() {
   document.getElementById('admin-only').style.display = isAdmin ? 'block' : 'none';
-  document.getElementById('card-admin-login').style.display = isAdmin ? 'none' : 'block';
-  // 수동 출고 버튼도 관리자만 접근 가능하게
+  document.getElementById('card-admin-login').style.display = 'none'; // PIN 로그인 항상 숨김
   const manualObCard = document.getElementById('card-manual-ob');
   if (manualObCard) manualObCard.style.display = isAdmin ? 'block' : 'none';
 }
@@ -5576,8 +5547,10 @@ function initAuth() {
       const name = user.displayName || user.email?.split('@')[0] || '사용자';
       currentUser = name;
       currentUserEmail = user.email || '';
+      isAdmin = (currentUserEmail === ADMIN_EMAIL);
       updateUserDisp();
       updateTiCardVisibility();
+      updateAdminUI();
       const el = document.getElementById('home-user-name');
       if (el) el.textContent = name;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -5587,6 +5560,8 @@ function initAuth() {
       refreshMap();
     } else {
       // 로그아웃됨 → 로그인 화면
+      currentUserEmail = '';
+      isAdmin = false;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-login').classList.add('active');
       window.scrollTo(0, 0);
@@ -5627,8 +5602,10 @@ async function doLogin() {
     const name = user.displayName || user.email?.split('@')[0] || '사용자';
     currentUser = name;
     currentUserEmail = user.email || '';
+    isAdmin = (currentUserEmail === ADMIN_EMAIL);
     try { updateUserDisp(); } catch(_) {}
     try { updateTiCardVisibility(); } catch(_) {}
+    try { updateAdminUI(); } catch(_) {}
     const nameEl = document.getElementById('home-user-name');
     if (nameEl) nameEl.textContent = name;
 
