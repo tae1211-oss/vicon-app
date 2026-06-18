@@ -6944,39 +6944,38 @@ function closeDailyReport() {
   document.getElementById('dr-modal').style.display = 'none';
 }
 
+function _isIOS() {
+  return /iP(hone|ad|od)/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 async function downloadDailyReport() {
   try {
     const dataUrl = window._drDataUrl;
     if (!dataUrl) { toast('이미지가 아직 준비되지 않았습니다.'); return; }
     const fname = `작업일보_${window._drMachine}_${window._drDate}.png`;
-
-    // dataURL → Blob
     const blob = await (await fetch(dataUrl)).blob();
 
-    // ① 모바일: Web Share API (네이티브 저장/공유 시트 — 아이폰·안드로이드 사진앱 저장)
-    if (navigator.canShare) {
+    // 아이폰: 직접 저장(다운로드)이 막혀 있어 공유 시트로만 사진앱 저장 가능
+    if (_isIOS() && navigator.canShare) {
       const file = new File([blob], fname, { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: '작업일보' });
-          return;
-        } catch(err) {
-          if (err && err.name === 'AbortError') return; // 사용자가 취소
-          // 그 외엔 아래 다운로드로 폴백
-        }
+        try { await navigator.share({ files: [file], title: '작업일보' }); return; }
+        catch(err) { if (err && err.name === 'AbortError') return; }
       }
     }
 
-    // ② PC/안드로이드 크롬: blob URL 다운로드 (data URL보다 모바일 호환 우수)
+    // 안드로이드·PC: blob URL 직접 다운로드 → 다운로드 폴더에 바로 저장 (공유 시트 안 뜸)
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.download = fname;
     a.href = url;
+    a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-    toast('저장됨 — 안 되면 위 이미지를 길게 눌러 저장하세요.');
+    toast('다운로드 폴더에 저장되었습니다.');
   } catch(e) {
     toast('저장 실패 — 위 이미지를 길게 눌러 저장하세요.');
   }
