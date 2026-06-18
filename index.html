@@ -101,8 +101,7 @@ function showPTab(name) {
     pendingProd = null;
   }
   if (name === 'psettings') {
-    document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
-    document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
+    document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
   }
 }
 
@@ -722,8 +721,7 @@ function showPTab(name) {
     pendingProd = null;
   }
   if (name === 'psettings') {
-    document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
-    document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
+    document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
   }
 }
 
@@ -1324,8 +1322,7 @@ function showPTab(name) {
     pendingProd = null;
   }
   if (name === 'psettings') {
-    document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
-    document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
+    document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
   }
 }
 
@@ -1925,8 +1922,7 @@ function showPTab(name) {
     pendingProd = null;
   }
   if (name === 'psettings') {
-    document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
-    document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
+    document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
   }
 }
 
@@ -2867,8 +2863,23 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 <!-- ════════════════════ INBOUND ════════════════════ -->
 <div class="page" id="page-inbound">
 
-  <!-- ── 적재 리스트 ── -->
-  <div class="card" id="loading-list-card">
+  <!-- QR 스캔 (맨 위) -->
+  <div class="card">
+    <div class="card-title">📥 입고 QR 스캔</div>
+    <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+      <button class="btn btn-primary btn-full" id="btn-ib-native" onclick="startNativeScan('inbound')" style="font-size:.85rem;padding:10px">📷 네이티브</button>
+      <button class="btn btn-primary btn-full" id="btn-ib-zxing" onclick="startZXingScan('inbound')" style="font-size:.85rem;padding:10px">🔍 ZXing</button>
+    </div>
+    <button onclick="startPhotoScan('inbound')" style="font-size:.85rem;padding:10px;background:#7b1fa2;color:#fff;border-radius:10px;border:none;cursor:pointer;font-family:inherit;width:100%">📸 사진으로 스캔 (초점 불량 시 사용)</button>
+    <div id="ib-scan-wrap" style="display:none;margin-top:12px">
+      <div id="inbound-qr-reader"></div>
+      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
+    </div>
+  </div>
+
+  <!-- 적재 리스트 -->
+  <div class="card" style="margin-top:10px" id="loading-list-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div class="card-title" style="margin:0">📋 적재 리스트</div>
       <button onclick="loadLoadingList(true)" style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#1565c0;padding:4px 8px;font-family:inherit;font-weight:600">↻ 새로고침</button>
@@ -2883,38 +2894,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     </div>
   </div>
 
-  <div class="card" style="margin-top:10px">
-    <div class="card-title">📥 입고 QR 스캔</div>
-    <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
-      <button class="btn btn-primary btn-full" id="btn-ib-native" onclick="startNativeScan('inbound')" style="font-size:.85rem;padding:10px">📷 네이티브</button>
-      <button class="btn btn-primary btn-full" id="btn-ib-zxing" onclick="startZXingScan('inbound')" style="font-size:.85rem;padding:10px">🔍 ZXing</button>
-    </div>
-    <button onclick="startPhotoScan('inbound')" style="font-size:.85rem;padding:10px;background:#7b1fa2;color:#fff;border-radius:10px;border:none;cursor:pointer;font-family:inherit;width:100%">📸 사진으로 스캔 (초점 불량 시 사용)</button>
-    <div id="ib-scan-wrap" style="display:none;margin-top:12px">
-      <div id="inbound-qr-reader"></div>
-      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopScan('inbound')">■ 스캔 중지</button>
-    </div>
-  </div>
-  <!-- 수동 입력 -->
-  <div class="card" style="margin-top:10px">
-    <div class="card-title" style="cursor:pointer;user-select:none" onclick="toggleManualIB()">
-      ✏️ 직접 입력 <span id="manual-ib-arrow" style="font-size:.8rem;color:#90a4ae">▼ 펼치기</span>
-    </div>
-    <div id="manual-ib-form" style="display:none;margin-top:10px">
-      <div style="display:grid;gap:8px">
-        <input id="mib-company" type="text" placeholder="업체명" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
-        <input id="mib-site" type="text" placeholder="현장명" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input id="mib-from" type="number" placeholder="패킹 시작번호" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
-          <input id="mib-to" type="number" placeholder="패킹 끝번호" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 12px;font-size:.88rem;width:100%;box-sizing:border-box">
-        </div>
-        <button class="btn btn-success btn-full" onclick="submitManualIB()">📥 입고 확인</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="ib-result-card" style="display:none">
+  <div id="ib-result-card" style="display:none;margin-top:10px">
     <div class="card">
       <div class="card-title" id="ib-result-title">스캔 결과</div>
       <div id="ib-result-body"></div>
@@ -2980,6 +2960,32 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
   <!-- 관리자 전용 영역 -->
   <div id="admin-only" style="display:none">
+
+    <!-- 적재 리스트 관리 -->
+    <div class="card" style="border:1.5px solid #1565c0">
+      <div class="card-title" style="color:#1565c0">🗂️ 적재 리스트 관리</div>
+      <div style="font-size:.78rem;color:#546e7a;margin-bottom:12px">오늘 적재할 작업을 추가하세요. 근무일 초기화 시 전체 삭제 후 새로 입력하세요.</div>
+      <div style="display:grid;gap:7px;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <input id="lt-site"    type="text"   placeholder="현장명*"  style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+          <input id="lt-company" type="text"   placeholder="업체명*"  style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+        </div>
+        <input id="lt-req" type="text" placeholder="의뢰번호 (선택)" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
+          <input id="lt-from" type="number" placeholder="패킹 시작*" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+          <input id="lt-to"   type="number" placeholder="패킹 끝*"   style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+          <select id="lt-machine" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 6px;font-size:.85rem;font-family:inherit;background:#fff;width:100%;box-sizing:border-box">
+            <option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="addLoadingTask()">+ 추가</button>
+      </div>
+      <div id="admin-task-list" style="max-height:260px;overflow-y:auto">
+        <div style="color:#90a4ae;text-align:center;padding:16px;font-size:.83rem">불러오는 중…</div>
+      </div>
+      <button class="btn btn-danger btn-full" style="margin-top:10px" onclick="clearAllLoadingTasks()">🗑️ 전체 삭제 (근무일 초기화)</button>
+    </div>
+
     <div class="card">
       <div class="card-title">🔥 Firebase 설정</div>
       <div class="alert alert-warning" style="font-size:.78rem">Firebase Console → 프로젝트 설정 → 앱 → firebaseConfig 를 JSON으로 붙여넣으세요.</div>
@@ -3345,10 +3351,6 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         <div id="backup-status" style="font-size:.8rem;margin-top:8px;min-height:16px;color:#222222"></div>
       </div>
     </div>
-    <div id="prod-noadmin-sec" class="card" style="display:none">
-      <div class="card-title">🔐 관리자 전용</div>
-      <div style="font-size:.78rem;color:#546e7a">재고수불 설정 탭에서 관리자 로그인 후 이용하세요.</div>
-    </div>
   </div>
 </div><!-- /screen-production -->
 
@@ -3421,6 +3423,10 @@ function updateAdminUI() {
   if (adminOnly) adminOnly.style.display = isAdmin ? 'block' : 'none';
   const manualObCard = document.getElementById('card-manual-ob');
   if (manualObCard) manualObCard.style.display = isAdmin ? 'block' : 'none';
+  // 설정 탭이 열려 있으면 관리자 적재 리스트 로드
+  if (isAdmin && document.getElementById('tab-settings')?.classList.contains('active')) {
+    loadAdminTaskList();
+  }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -3534,6 +3540,7 @@ function showTab(name) {
   if (name === 'inventory') loadInventory();
   if (name === 'map') refreshMap(true);
   if (name === 'inbound') loadLoadingList();
+  if (name === 'settings' && isAdmin) loadAdminTaskList();
 }
 
 // ─────────────────────────────────────────────────────────
@@ -3544,6 +3551,7 @@ let _llInvMap  = {};
 let _llTab     = '12';
 let _llLoading = false;
 
+// ── 작업자: 입고 탭 적재 리스트 ──
 async function loadLoadingList(force) {
   const bodyEl = document.getElementById('loading-list-body');
   if (!bodyEl) return;
@@ -3559,16 +3567,11 @@ async function loadLoadingList(force) {
   }
 
   try {
-    // 최근 90일 생산 기록
-    const cutoffStr = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
-    const snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(300));
+    const snap = await dbGet(db.collection('loading_tasks').orderBy('created_at', 'asc'));
     _llRecords = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if ((d.date || '') >= cutoffStr) _llRecords.push({id: doc.id, ...d});
-    });
+    snap.forEach(doc => _llRecords.push({id: doc.id, ...doc.data()}));
 
-    // 고유 현장별 재고 조회
+    // 현장별 재고 조회 (완료 여부 판단)
     const docIds = [...new Set(_llRecords.map(r => makeDocId(r.company, r.site)))];
     _llInvMap = {};
     await Promise.all(docIds.map(async did => {
@@ -3600,46 +3603,45 @@ function renderLoadingList() {
   recs = recs.map(r => {
     const did    = makeDocId(r.company, r.site);
     const invSet = _llInvMap[did] || new Set();
-    const pns    = (r.packs || []).map(p => p.pack_no);
-    const done   = pns.length > 0 && pns.every(p => invSet.has(p));
-    const partial= !done && pns.some(p => invSet.has(p));
-    return {...r, _pns: pns, _done: done, _partial: partial};
+    const total  = (r.pack_to || 0) - (r.pack_from || 0) + 1;
+    let inInv = 0;
+    for (let p = r.pack_from; p <= r.pack_to; p++) { if (invSet.has(p)) inInv++; }
+    const done    = total > 0 && inInv === total;
+    const partial = !done && inInv > 0;
+    return {...r, _done: done, _partial: partial, _total: total, _inInv: inInv};
   });
 
-  // 미완료(현장명순) → 완료(현장명순)
+  // 미완료(등록 순) → 완료(등록 순)
   recs.sort((a, b) => {
     if (a._done !== b._done) return a._done ? 1 : -1;
-    return (a.site || '').localeCompare(b.site || '');
+    return 0;
   });
 
   if (!recs.length) {
-    bodyEl.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:20px;font-size:.85rem">최근 90일 기록 없음</div>';
+    bodyEl.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:20px;font-size:.85rem">오늘 등록된 적재 작업이 없습니다.</div>';
     return;
   }
 
   let html = '';
   recs.forEach(r => {
-    const pns  = r._pns;
-    const from = pns.length ? Math.min(...pns) : '-';
-    const to   = pns.length ? Math.max(...pns) : '-';
     const badge = r._done
       ? '<span style="background:#e8f5e9;color:#2e7d32;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">✅ 완료</span>'
       : r._partial
-        ? '<span style="background:#fff8e1;color:#e65100;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">⏳ 일부</span>'
+        ? `<span style="background:#fff8e1;color:#e65100;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">⏳ ${r._inInv}/${r._total}</span>`
         : '';
     const click = r._done ? '' : `onclick="tapLoadingItem('${r.id}')"`;
     html += `<div class="ll-item${r._done ? ' done' : ''}" ${click}>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="flex:1;min-width:0;overflow:hidden">
-          <div style="font-weight:700;font-size:.9rem">${esc(r.site)}</div>
-          <div style="color:#546e7a;font-size:.76rem">${esc(r.company)}</div>
-          <div style="font-size:.8rem;margin-top:2px;color:#333">패킹 ${from}~${to}번 <span style="color:#90a4ae">(${pns.length}개 · ${esc(r.machine)})</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.92rem">${esc(r.site)}</div>
+          <div style="color:#546e7a;font-size:.77rem">${esc(r.company)}</div>
+          <div style="font-size:.81rem;margin-top:2px">
+            패킹 ${r.pack_from}~${r.pack_to}번
+            <span style="color:#90a4ae"> · ${r._total}개 · ${esc(r.machine)}</span>
+          </div>
           ${r.req_code ? `<div style="font-size:.74rem;color:#b0bec5">의뢰: ${esc(r.req_code)}</div>` : ''}
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          ${badge}
-          <div style="font-size:.68rem;color:#cfd8dc;margin-top:4px">${r.date||''}<br>${r.shift||''}</div>
-        </div>
+        <div style="text-align:right;flex-shrink:0">${badge}</div>
       </div>
     </div>`;
   });
@@ -3657,20 +3659,111 @@ function switchLoadingTab(tab) {
 function tapLoadingItem(recordId) {
   const r = (_llRecords || []).find(x => x.id === recordId);
   if (!r) return;
-  const pns = (r.packs || []).map(p => p.pack_no);
-  if (!pns.length) { toast('패킹 정보가 없습니다.'); return; }
   const data = {
     type: 'job_order',
-    company:  r.company  || '',
-    site:     r.site     || '',
-    req_code: r.req_code || '',
-    pack_from: Math.min(...pns),
-    pack_to:   Math.max(...pns)
+    company:   r.company   || '',
+    site:      r.site      || '',
+    req_code:  r.req_code  || '',
+    pack_from: r.pack_from,
+    pack_to:   r.pack_to
   };
   document.getElementById('ib-result-card').style.display = 'block';
   handleInbound(data).then(() => {
     setTimeout(() =>
       document.getElementById('ib-result-card')?.scrollIntoView({behavior:'smooth', block:'nearest'}), 250);
+  });
+}
+
+// ── 관리자: 적재 리스트 관리 ──
+let _adminTaskList = [];
+
+async function loadAdminTaskList() {
+  const bodyEl = document.getElementById('admin-task-list');
+  if (!bodyEl) return;
+  if (!db) { bodyEl.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:12px">Firebase 미연결</div>'; return; }
+  bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
+  try {
+    const snap = await dbGet(db.collection('loading_tasks').orderBy('created_at', 'asc'));
+    _adminTaskList = [];
+    snap.forEach(doc => _adminTaskList.push({id: doc.id, ...doc.data()}));
+    renderAdminTaskList();
+  } catch(e) {
+    bodyEl.innerHTML = '<div class="alert alert-error">' + esc(e.message) + '</div>';
+  }
+}
+
+function renderAdminTaskList() {
+  const bodyEl = document.getElementById('admin-task-list');
+  if (!bodyEl) return;
+  if (!_adminTaskList.length) {
+    bodyEl.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:14px;font-size:.83rem">등록된 작업 없음</div>';
+    return;
+  }
+  let html = '';
+  _adminTaskList.forEach(t => {
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0">
+      <div style="flex:1;font-size:.82rem;line-height:1.5">
+        <strong>${esc(t.site)}</strong> <span style="color:#78909c;font-size:.76rem">${esc(t.company)}</span><br>
+        패킹 ${t.pack_from}~${t.pack_to} · ${esc(t.machine)}
+        ${t.req_code ? `<span style="color:#b0bec5"> / ${esc(t.req_code)}</span>` : ''}
+      </div>
+      <button onclick="deleteLoadingTask('${t.id}')" style="background:#fce4ec;border:none;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:.75rem;color:#c62828;font-family:inherit;white-space:nowrap">삭제</button>
+    </div>`;
+  });
+  bodyEl.innerHTML = html;
+}
+
+async function addLoadingTask() {
+  const site      = document.getElementById('lt-site').value.trim();
+  const company   = document.getElementById('lt-company').value.trim();
+  const req_code  = document.getElementById('lt-req').value.trim();
+  const pack_from = parseInt(document.getElementById('lt-from').value);
+  const pack_to   = parseInt(document.getElementById('lt-to').value);
+  const machine   = document.getElementById('lt-machine').value;
+
+  if (!site || !company || isNaN(pack_from) || isNaN(pack_to)) {
+    toast('현장명, 업체명, 패킹 번호를 입력하세요.'); return;
+  }
+  if (pack_from > pack_to) { toast('시작번호가 끝번호보다 클 수 없습니다.'); return; }
+  if (!db) { toast('Firebase 미연결'); return; }
+
+  try {
+    await db.collection('loading_tasks').add({
+      site, company, req_code, pack_from, pack_to, machine,
+      created_at: firebase.firestore.Timestamp.now()
+    });
+    ['lt-site','lt-company','lt-req','lt-from','lt-to'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    toast('추가 완료');
+    _llRecords = null; // 작업자 캐시 초기화
+    await loadAdminTaskList();
+  } catch(e) { toast('저장 실패: ' + e.message); }
+}
+
+async function deleteLoadingTask(id) {
+  if (!db) return;
+  try {
+    await db.collection('loading_tasks').doc(id).delete();
+    toast('삭제 완료');
+    _llRecords = null;
+    await loadAdminTaskList();
+  } catch(e) { toast('삭제 실패: ' + e.message); }
+}
+
+async function clearAllLoadingTasks() {
+  showConfirm('전체 삭제', '적재 리스트를 전체 삭제하시겠습니까?\n(근무일 초기화)', async () => {
+    if (!db) return;
+    try {
+      const snap = await dbGet(db.collection('loading_tasks'));
+      if (snap.empty) { toast('삭제할 항목이 없습니다.'); return; }
+      const batch = db.batch();
+      snap.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+      toast('전체 삭제 완료');
+      _llRecords = null;
+      await loadAdminTaskList();
+    } catch(e) { toast('삭제 실패: ' + e.message); }
   });
 }
 
@@ -4875,8 +4968,7 @@ function showPTab(name) {
     setTimeout(function(){ var el=document.getElementById('ps-keyword'); if(el) el.focus(); }, 150);
   }
   if (name === 'psettings') {
-    document.getElementById('prod-admin-sec').style.display  = isAdmin ? 'block' : 'none';
-    document.getElementById('prod-noadmin-sec').style.display = isAdmin ? 'none'  : 'block';
+    document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
   }
 }
 
