@@ -2562,6 +2562,13 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 /* ─── SCANNER ─── */
 #inbound-qr-reader,#outbound-qr-reader{border-radius:10px;overflow:hidden}
 
+/* ─── LOADING LIST ─── */
+.ll-tab{background:#f0f4f8;border:none;border-radius:20px;padding:8px 0;font-size:.82rem;cursor:pointer;font-family:inherit;flex:1;color:#455a64;font-weight:600;text-align:center}
+.ll-tab.active{background:#1565c0;color:#fff}
+.ll-item{border:1.5px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;background:#fff;-webkit-tap-highlight-color:transparent}
+.ll-item:active{background:#f5f5f5}
+.ll-item.done{opacity:.5;background:#f7f7f7;cursor:default}
+
 /* ─── STAT ROW ─── */
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-card{background:#fbe9e7;border-radius:10px;padding:12px 8px;text-align:center}
@@ -2859,7 +2866,24 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
 <!-- ════════════════════ INBOUND ════════════════════ -->
 <div class="page" id="page-inbound">
-  <div class="card">
+
+  <!-- ── 적재 리스트 ── -->
+  <div class="card" id="loading-list-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="card-title" style="margin:0">📋 적재 리스트</div>
+      <button onclick="loadLoadingList(true)" style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#1565c0;padding:4px 8px;font-family:inherit;font-weight:600">↻ 새로고침</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="ll-tab active" id="ll-tab-12" onclick="switchLoadingTab('12')">1,2호기</button>
+      <button class="ll-tab" id="ll-tab-34" onclick="switchLoadingTab('34')">3,4호기</button>
+      <button class="ll-tab" id="ll-tab-dm" onclick="switchLoadingTab('dm')">탈형</button>
+    </div>
+    <div id="loading-list-body">
+      <div style="color:#90a4ae;text-align:center;padding:20px;font-size:.85rem">로딩 중…</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:10px">
     <div class="card-title">📥 입고 QR 스캔</div>
     <div class="alert alert-info">작업지시서(job_order) 또는 생산계획표(plan) QR을 스캔하세요.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
@@ -3102,21 +3126,6 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     <button class="btn btn-secondary btn-full" style="margin-top:10px" onclick="closeOv('ov-manual-ob')">닫기</button>
   </div>
 </div>
-
-<!-- Confirm -->
-<div class="overlay" id="ov-confirm">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="conf-title">확인</div>
-    <div id="conf-body" style="font-size:.88rem;margin-bottom:16px;line-height:1.6"></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeOv('ov-confirm')">취소</button>
-      <button class="btn btn-danger" style="flex:1" id="conf-ok">확인</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
 
 </div><!-- /screen-inventory -->
 
@@ -3523,7 +3532,146 @@ function showTab(name) {
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'inventory') loadInventory();
-  if (name === 'map') refreshMap(true); // 탭 전환 시 항상 최신 데이터로
+  if (name === 'map') refreshMap(true);
+  if (name === 'inbound') loadLoadingList();
+}
+
+// ─────────────────────────────────────────────────────────
+//  LOADING LIST (입고 탭 적재 리스트)
+// ─────────────────────────────────────────────────────────
+let _llRecords = null;
+let _llInvMap  = {};
+let _llTab     = '12';
+let _llLoading = false;
+
+async function loadLoadingList(force) {
+  const bodyEl = document.getElementById('loading-list-body');
+  if (!bodyEl) return;
+  if (_llLoading) return;
+  if (!force && _llRecords !== null) { renderLoadingList(); return; }
+
+  _llLoading = true;
+  bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
+
+  if (!db) {
+    bodyEl.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:20px;font-size:.85rem">Firebase 미연결</div>';
+    _llLoading = false; return;
+  }
+
+  try {
+    // 최근 90일 생산 기록
+    const cutoffStr = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    const snap = await dbGet(db.collection('production_deck').orderBy('date','desc').limit(300));
+    _llRecords = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if ((d.date || '') >= cutoffStr) _llRecords.push({id: doc.id, ...d});
+    });
+
+    // 고유 현장별 재고 조회
+    const docIds = [...new Set(_llRecords.map(r => makeDocId(r.company, r.site)))];
+    _llInvMap = {};
+    await Promise.all(docIds.map(async did => {
+      try {
+        const invDoc = await dbGet(db.collection('inventory').doc(did));
+        _llInvMap[did] = new Set(
+          invDoc.exists
+            ? (invDoc.data().packs || []).filter(p => !p.shipped).map(p => p.pack_no)
+            : []
+        );
+      } catch(e) { _llInvMap[did] = new Set(); }
+    }));
+
+    renderLoadingList();
+  } catch(e) {
+    bodyEl.innerHTML = '<div class="alert alert-error">' + esc(e.message) + '</div>';
+  } finally {
+    _llLoading = false;
+  }
+}
+
+function renderLoadingList() {
+  const bodyEl = document.getElementById('loading-list-body');
+  if (!bodyEl || !_llRecords) return;
+
+  const MAC = { '12': ['1호기','2호기'], '34': ['3호기','4호기'], 'dm': ['탈형'] };
+  let recs = _llRecords.filter(r => MAC[_llTab].includes(r.machine));
+
+  recs = recs.map(r => {
+    const did    = makeDocId(r.company, r.site);
+    const invSet = _llInvMap[did] || new Set();
+    const pns    = (r.packs || []).map(p => p.pack_no);
+    const done   = pns.length > 0 && pns.every(p => invSet.has(p));
+    const partial= !done && pns.some(p => invSet.has(p));
+    return {...r, _pns: pns, _done: done, _partial: partial};
+  });
+
+  // 미완료(현장명순) → 완료(현장명순)
+  recs.sort((a, b) => {
+    if (a._done !== b._done) return a._done ? 1 : -1;
+    return (a.site || '').localeCompare(b.site || '');
+  });
+
+  if (!recs.length) {
+    bodyEl.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:20px;font-size:.85rem">최근 90일 기록 없음</div>';
+    return;
+  }
+
+  let html = '';
+  recs.forEach(r => {
+    const pns  = r._pns;
+    const from = pns.length ? Math.min(...pns) : '-';
+    const to   = pns.length ? Math.max(...pns) : '-';
+    const badge = r._done
+      ? '<span style="background:#e8f5e9;color:#2e7d32;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">✅ 완료</span>'
+      : r._partial
+        ? '<span style="background:#fff8e1;color:#e65100;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">⏳ 일부</span>'
+        : '';
+    const click = r._done ? '' : `onclick="tapLoadingItem('${r.id}')"`;
+    html += `<div class="ll-item${r._done ? ' done' : ''}" ${click}>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1;min-width:0;overflow:hidden">
+          <div style="font-weight:700;font-size:.9rem">${esc(r.site)}</div>
+          <div style="color:#546e7a;font-size:.76rem">${esc(r.company)}</div>
+          <div style="font-size:.8rem;margin-top:2px;color:#333">패킹 ${from}~${to}번 <span style="color:#90a4ae">(${pns.length}개 · ${esc(r.machine)})</span></div>
+          ${r.req_code ? `<div style="font-size:.74rem;color:#b0bec5">의뢰: ${esc(r.req_code)}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          ${badge}
+          <div style="font-size:.68rem;color:#cfd8dc;margin-top:4px">${r.date||''}<br>${r.shift||''}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  bodyEl.innerHTML = html;
+}
+
+function switchLoadingTab(tab) {
+  _llTab = tab;
+  document.querySelectorAll('.ll-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('ll-tab-' + tab).classList.add('active');
+  renderLoadingList();
+}
+
+function tapLoadingItem(recordId) {
+  const r = (_llRecords || []).find(x => x.id === recordId);
+  if (!r) return;
+  const pns = (r.packs || []).map(p => p.pack_no);
+  if (!pns.length) { toast('패킹 정보가 없습니다.'); return; }
+  const data = {
+    type: 'job_order',
+    company:  r.company  || '',
+    site:     r.site     || '',
+    req_code: r.req_code || '',
+    pack_from: Math.min(...pns),
+    pack_to:   Math.max(...pns)
+  };
+  document.getElementById('ib-result-card').style.display = 'block';
+  handleInbound(data).then(() => {
+    setTimeout(() =>
+      document.getElementById('ib-result-card')?.scrollIntoView({behavior:'smooth', block:'nearest'}), 250);
+  });
 }
 
 // ─────────────────────────────────────────────────────────
@@ -4590,6 +4738,7 @@ let confirmCb = null;
 function showConfirm(title, body, cb) {
   document.getElementById('conf-title').textContent = title;
   document.getElementById('conf-body').textContent = body;
+  document.getElementById('conf-ok').style.display = ''; // 이전 호출에서 숨긴 경우 복원
   confirmCb = cb;
   document.getElementById('conf-ok').onclick = () => { closeOv('ov-confirm'); cb(); };
   openOv('ov-confirm');
@@ -5617,9 +5766,14 @@ function initAuth() {
         await auth.signInWithEmailAndPassword(reEmail, rePw);
         return; // 성공 시 onAuthStateChanged 가 user 로 다시 호출 → 홈
       } catch (e) {
-        // 비밀번호 변경 등 실제 인증 실패 → 자동로그인 해제 후 로그인 화면
-        localStorage.removeItem('bvy_remember');
-        localStorage.removeItem('bvy_login_pw');
+        // 실제 인증 실패(비밀번호 틀림·계정 없음)일 때만 자동로그인 해제
+        // 네트워크 오류 등 일시적 장애는 다음 접속 시 재시도
+        const AUTH_ERRORS = ['auth/user-not-found','auth/wrong-password','auth/invalid-email',
+                             'auth/user-disabled','auth/invalid-credential'];
+        if (AUTH_ERRORS.includes(e.code)) {
+          localStorage.removeItem('bvy_remember');
+          localStorage.removeItem('bvy_login_pw');
+        }
       }
     }
 
@@ -5700,15 +5854,7 @@ function _doLogoutNow() {
 }
 
 function doLogout() {
-  // 네이티브 confirm()은 모바일 PWA에서 차단되므로 자체 모달 사용
-  try {
-    const okBtn = document.getElementById('conf-ok');
-    if (okBtn) okBtn.style.display = '';
-    showConfirm('로그아웃', '로그아웃 하시겠습니까?', _doLogoutNow);
-  } catch (e) {
-    // 모달 사용 불가 시 즉시 로그아웃
-    _doLogoutNow();
-  }
+  showConfirm('로그아웃', '로그아웃 하시겠습니까?', _doLogoutNow);
 }
 
 // ── 생산기록 일괄 삭제 (관리자) ─────────────────────────
@@ -7179,6 +7325,20 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
+<!-- ══ 전역 확인 모달 (모든 화면에서 접근 가능) ══ -->
+<div class="overlay" id="ov-confirm">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="conf-title">확인</div>
+    <div id="conf-body" style="font-size:.88rem;margin-bottom:16px;line-height:1.6"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeOv('ov-confirm')">취소</button>
+      <button class="btn btn-danger" style="flex:1" id="conf-ok">확인</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
 
 </body>
 </html>
