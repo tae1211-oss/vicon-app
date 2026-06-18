@@ -2678,7 +2678,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     </div>
     <label class="login-remember">
       <input type="checkbox" id="chk-remember"/>
-      아이디·비밀번호 저장
+      자동 로그인 (다음부터 자동 접속)
     </label>
     <button class="btn-login" onclick="doLogin()">로그인</button>
     <div class="login-error" id="login-error"></div>
@@ -5600,10 +5600,12 @@ function initAuth() {
   if (savedPw)    document.getElementById('inp-login-pw').value    = savedPw;
   if (remember)   document.getElementById('chk-remember').checked  = true;
 
-  // 항상 LOCAL 유지 (로그아웃 전까지 로그인 유지)
+  // 로그인 세션을 기기에 영구 저장 (재접속해도 유지)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 
-  auth.onAuthStateChanged(user => {
+  let autoLoginTried = false;
+
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
       // 로그인됨 → 홈 화면
       const name = user.displayName || user.email?.split('@')[0] || '사용자';
@@ -5620,14 +5622,33 @@ function initAuth() {
       window.scrollTo(0, 0);
       loadInventory();
       refreshMap();
-    } else {
-      // 로그아웃됨 → 로그인 화면
-      currentUserEmail = '';
-      isAdmin = false;
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById('screen-login').classList.add('active');
-      window.scrollTo(0, 0);
+      return;
     }
+
+    // 세션 없음 → 자동로그인 켜져 있으면 저장된 정보로 자동 재로그인 시도
+    currentUserEmail = '';
+    isAdmin = false;
+
+    const reEmail    = localStorage.getItem('bvy_login_email');
+    const rePw       = localStorage.getItem('bvy_login_pw');
+    const reRemember = localStorage.getItem('bvy_remember') === '1';
+
+    if (reRemember && reEmail && rePw && !autoLoginTried) {
+      autoLoginTried = true;
+      try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.signInWithEmailAndPassword(reEmail, rePw);
+        return; // 성공 시 onAuthStateChanged 가 user 로 다시 호출 → 홈
+      } catch (e) {
+        // 비밀번호 변경 등으로 실패 → 자동로그인 해제 후 로그인 화면 표시
+        localStorage.removeItem('bvy_remember');
+        localStorage.removeItem('bvy_login_pw');
+      }
+    }
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-login').classList.add('active');
+    window.scrollTo(0, 0);
   });
 }
 
@@ -5694,6 +5715,11 @@ async function doLogin() {
 
 function doLogout() {
   if (!confirm('로그아웃 하시겠습니까?')) return;
+  // 자동로그인 해제 (로그아웃 직후 다시 자동 로그인되는 것 방지)
+  localStorage.removeItem('bvy_remember');
+  localStorage.removeItem('bvy_login_pw');
+  const chk = document.getElementById('chk-remember');
+  if (chk) chk.checked = false;
   firebase.auth().signOut();
 }
 
