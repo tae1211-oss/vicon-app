@@ -2954,32 +2954,8 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     <button class="btn btn-primary btn-full" onclick="saveUser()">저장</button>
   </div>
 
-  <!-- 관리자 로그인 (비관리자에게만 표시) -->
-  <div class="card" id="card-admin-login">
-    <div class="card-title">🔐 관리자 로그인</div>
-    <div class="form-group">
-      <label>관리자 PIN</label>
-      <input type="password" id="inp-admin-pin" placeholder="PIN 입력" maxlength="20"
-        onkeydown="if(event.key==='Enter') adminLogin()">
-    </div>
-    <button class="btn btn-primary btn-full" onclick="adminLogin()">로그인</button>
-    <div id="admin-login-msg" style="margin-top:8px;font-size:.8rem;color:#c62828"></div>
-  </div>
-
   <!-- 관리자 전용 영역 -->
   <div id="admin-only" style="display:none">
-    <div class="card" style="border:2px solid #e65100">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div class="card-title" style="margin-bottom:0">🛡️ 관리자 모드</div>
-        <button class="btn btn-sm btn-secondary" onclick="adminLogout()">로그아웃</button>
-      </div>
-      <div style="font-size:.78rem;color:#546e7a">관리자 PIN 변경</div>
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <input type="password" id="inp-new-pin" placeholder="새 PIN" style="flex:1;border:1.5px solid #cfd8dc;border-radius:10px;padding:10px 12px;font-size:.85rem">
-        <button class="btn btn-primary btn-sm" onclick="changePin()">변경</button>
-      </div>
-    </div>
-
     <div class="card">
       <div class="card-title">🔥 Firebase 설정</div>
       <div class="alert alert-warning" style="font-size:.78rem">Firebase Console → 프로젝트 설정 → 앱 → firebaseConfig 를 JSON으로 붙여넣으세요.</div>
@@ -3432,8 +3408,8 @@ const ADMIN_EMAIL = '관리자@vicon.com';
 let isAdmin = false;
 
 function updateAdminUI() {
-  document.getElementById('admin-only').style.display = isAdmin ? 'block' : 'none';
-  document.getElementById('card-admin-login').style.display = 'none'; // PIN 로그인 항상 숨김
+  const adminOnly = document.getElementById('admin-only');
+  if (adminOnly) adminOnly.style.display = isAdmin ? 'block' : 'none';
   const manualObCard = document.getElementById('card-manual-ob');
   if (manualObCard) manualObCard.style.display = isAdmin ? 'block' : 'none';
 }
@@ -5635,12 +5611,13 @@ function initAuth() {
 
     if (reRemember && reEmail && rePw && !autoLoginTried) {
       autoLoginTried = true;
+      // setPersistence 실패(일부 모바일 PWA)해도 로그인 자체는 진행
+      try { await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (_) {}
       try {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         await auth.signInWithEmailAndPassword(reEmail, rePw);
         return; // 성공 시 onAuthStateChanged 가 user 로 다시 호출 → 홈
       } catch (e) {
-        // 비밀번호 변경 등으로 실패 → 자동로그인 해제 후 로그인 화면 표시
+        // 비밀번호 변경 등 실제 인증 실패 → 자동로그인 해제 후 로그인 화면
         localStorage.removeItem('bvy_remember');
         localStorage.removeItem('bvy_login_pw');
       }
@@ -5713,14 +5690,25 @@ async function doLogin() {
   }
 }
 
-function doLogout() {
-  if (!confirm('로그아웃 하시겠습니까?')) return;
+function _doLogoutNow() {
   // 자동로그인 해제 (로그아웃 직후 다시 자동 로그인되는 것 방지)
   localStorage.removeItem('bvy_remember');
   localStorage.removeItem('bvy_login_pw');
   const chk = document.getElementById('chk-remember');
   if (chk) chk.checked = false;
-  firebase.auth().signOut();
+  if (typeof firebase !== 'undefined' && firebase.auth) firebase.auth().signOut();
+}
+
+function doLogout() {
+  // 네이티브 confirm()은 모바일 PWA에서 차단되므로 자체 모달 사용
+  try {
+    const okBtn = document.getElementById('conf-ok');
+    if (okBtn) okBtn.style.display = '';
+    showConfirm('로그아웃', '로그아웃 하시겠습니까?', _doLogoutNow);
+  } catch (e) {
+    // 모달 사용 불가 시 즉시 로그아웃
+    _doLogoutNow();
+  }
 }
 
 // ── 생산기록 일괄 삭제 (관리자) ─────────────────────────
