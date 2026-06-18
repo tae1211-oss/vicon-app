@@ -7165,20 +7165,17 @@ function _hidePwaBanner() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => {
-        reg.onupdatefound = () => {
-          const w = reg.installing;
-          w.onstatechange = () => {
-            if (w.state === 'installed' && navigator.serviceWorker.controller) {
-              if (confirm('새 버전이 있습니다. 지금 업데이트할까요?')) {
-                w.postMessage({ type: 'SKIP_WAITING' });
-                location.reload();
-              }
-            }
-          };
-        };
-      })
       .catch(err => console.warn('SW 등록 실패:', err));
+
+    // 새 SW가 활성화되어 제어권을 가져오면 자동 새로고침
+    // (sw.js의 skipWaiting + clients.claim이 이미 자동으로 새 SW를 활성화함)
+    let _swRefreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!_swRefreshing) {
+        _swRefreshing = true;
+        window.location.reload();
+      }
+    });
   });
 }
 </script>
