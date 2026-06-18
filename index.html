@@ -2975,7 +2975,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           <input id="lt-from" type="number" placeholder="패킹 시작*" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
           <input id="lt-to"   type="number" placeholder="패킹 끝*"   style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
           <select id="lt-machine" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 6px;font-size:.85rem;font-family:inherit;background:#fff;width:100%;box-sizing:border-box">
-            <option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>
+            <option>1,2호기</option><option>3,4호기</option><option>탈형</option><option disabled>─</option><option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option>
           </select>
         </div>
         <button class="btn btn-primary btn-full" onclick="addLoadingTask()">+ 추가</button>
@@ -3597,7 +3597,7 @@ function renderLoadingList() {
   const bodyEl = document.getElementById('loading-list-body');
   if (!bodyEl || !_llRecords) return;
 
-  const MAC = { '12': ['1호기','2호기'], '34': ['3호기','4호기'], 'dm': ['탈형'] };
+  const MAC = { '12': ['1호기','2호기','1,2호기'], '34': ['3호기','4호기','3,4호기'], 'dm': ['탈형'] };
   let recs = _llRecords.filter(r => MAC[_llTab].includes(r.machine));
 
   recs = recs.map(r => {
@@ -3630,6 +3630,9 @@ function renderLoadingList() {
         ? `<span style="background:#fff8e1;color:#e65100;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">⏳ ${r._inInv}/${r._total}</span>`
         : '';
     const click = r._done ? '' : `onclick="tapLoadingItem('${r.id}')"`;
+    const editBtn = isAdmin
+      ? `<button onclick="event.stopPropagation();editLoadingTask('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#90a4ae;padding:4px 6px;-webkit-tap-highlight-color:transparent">✏️</button>`
+      : '';
     html += `<div class="ll-item${r._done ? ' done' : ''}" ${click}>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div style="flex:1;min-width:0">
@@ -3641,7 +3644,7 @@ function renderLoadingList() {
           </div>
           ${r.req_code ? `<div style="font-size:.74rem;color:#b0bec5">의뢰: ${esc(r.req_code)}</div>` : ''}
         </div>
-        <div style="text-align:right;flex-shrink:0">${badge}</div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">${badge}${editBtn}</div>
       </div>
     </div>`;
   });
@@ -3707,6 +3710,7 @@ function renderAdminTaskList() {
         패킹 ${t.pack_from}~${t.pack_to} · ${esc(t.machine)}
         ${t.req_code ? `<span style="color:#b0bec5"> / ${esc(t.req_code)}</span>` : ''}
       </div>
+      <button onclick="editLoadingTask('${t.id}')" style="background:#e3f2fd;border:none;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:.75rem;color:#1565c0;font-family:inherit;white-space:nowrap">수정</button>
       <button onclick="deleteLoadingTask('${t.id}')" style="background:#fce4ec;border:none;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:.75rem;color:#c62828;font-family:inherit;white-space:nowrap">삭제</button>
     </div>`;
   });
@@ -3739,6 +3743,45 @@ async function addLoadingTask() {
     _llRecords = null; // 작업자 캐시 초기화
     await loadAdminTaskList();
   } catch(e) { toast('저장 실패: ' + e.message); }
+}
+
+function editLoadingTask(id) {
+  const r = (_llRecords || []).find(x => x.id === id) ||
+            (_adminTaskList || []).find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('edit-task-id').value = id;
+  document.getElementById('et-site').value    = r.site    || '';
+  document.getElementById('et-company').value = r.company || '';
+  document.getElementById('et-req').value     = r.req_code || '';
+  document.getElementById('et-from').value    = r.pack_from || '';
+  document.getElementById('et-to').value      = r.pack_to   || '';
+  const sel = document.getElementById('et-machine');
+  const opt = [...sel.options].find(o => o.value === r.machine);
+  if (opt) sel.value = r.machine;
+  openOv('ov-edit-task');
+}
+
+async function saveEditLoadingTask() {
+  const id       = document.getElementById('edit-task-id').value;
+  const site     = document.getElementById('et-site').value.trim();
+  const company  = document.getElementById('et-company').value.trim();
+  const req_code = document.getElementById('et-req').value.trim();
+  const pack_from = parseInt(document.getElementById('et-from').value);
+  const pack_to   = parseInt(document.getElementById('et-to').value);
+  const machine   = document.getElementById('et-machine').value;
+  if (!site || !company || isNaN(pack_from) || isNaN(pack_to)) {
+    toast('현장명, 업체명, 패킹번호를 입력하세요.'); return;
+  }
+  if (pack_to < pack_from) { toast('패킹 끝 번호가 시작보다 작습니다.'); return; }
+  if (!db || !id) return;
+  try {
+    await db.collection('loading_tasks').doc(id).update({ site, company, req_code, pack_from, pack_to, machine });
+    closeOv('ov-edit-task');
+    toast('수정 완료');
+    _llRecords = null;
+    await loadLoadingList(true);
+    if (document.getElementById('admin-task-list')) loadAdminTaskList();
+  } catch(e) { toast('수정 실패: ' + e.message); }
 }
 
 async function deleteLoadingTask(id) {
@@ -7419,6 +7462,31 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <!-- ══ 전역 확인 모달 (모든 화면에서 접근 가능) ══ -->
+<div class="overlay" id="ov-edit-task">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">적재 항목 수정</div>
+    <input type="hidden" id="edit-task-id">
+    <div style="display:grid;gap:8px;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+        <input id="et-site"    type="text"   placeholder="현장명*"  style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+        <input id="et-company" type="text"   placeholder="업체명*"  style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+      </div>
+      <input id="et-req" type="text" placeholder="의뢰번호 (선택)" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
+        <input id="et-from" type="number" placeholder="패킹 시작*" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+        <input id="et-to"   type="number" placeholder="패킹 끝*"   style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
+        <select id="et-machine" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 6px;font-size:.85rem;font-family:inherit;background:#fff;width:100%;box-sizing:border-box">
+          <option>1,2호기</option><option>3,4호기</option><option>탈형</option><option disabled>─</option><option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeOv('ov-edit-task')">취소</button>
+      <button class="btn btn-primary"   style="flex:1" onclick="saveEditLoadingTask()">저장</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="ov-confirm">
   <div class="modal">
     <div class="modal-handle"></div>
