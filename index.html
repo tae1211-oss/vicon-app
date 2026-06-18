@@ -2564,6 +2564,9 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .ll-item{border:1.5px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;background:#fff;-webkit-tap-highlight-color:transparent}
 .ll-item:active{background:#f5f5f5}
 .ll-item.done{opacity:.5;background:#f7f7f7;cursor:default}
+.btn-zone{background:#f0f4f8;border:1.5px solid #cfd8dc;border-radius:10px;padding:15px 0;font-size:1.02rem;font-weight:700;color:#37474f;font-family:inherit;cursor:pointer;width:100%;-webkit-tap-highlight-color:transparent}
+.btn-zone:active{background:#e3e9ef}
+.btn-zone.zone-active{background:#1565c0;border-color:#1565c0;color:#fff}
 
 /* ─── STAT ROW ─── */
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
@@ -3710,7 +3713,7 @@ function renderAdminTaskList() {
         패킹 ${t.pack_from}~${t.pack_to} · ${esc(t.machine)}
         ${t.req_code ? `<span style="color:#b0bec5"> / ${esc(t.req_code)}</span>` : ''}
       </div>
-      <button onclick="editLoadingTask('${t.id}')" style="background:#e3f2fd;border:none;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:.75rem;color:#1565c0;font-family:inherit;white-space:nowrap">수정</button>
+      <button onclick="editLoadingTask('${t.id}')" style="background:#e3f2fd;border:none;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:.75rem;color:#1565c0;font-family:inherit;white-space:nowrap">구역</button>
       <button onclick="deleteLoadingTask('${t.id}')" style="background:#fce4ec;border:none;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:.75rem;color:#c62828;font-family:inherit;white-space:nowrap">삭제</button>
     </div>`;
   });
@@ -3745,43 +3748,41 @@ async function addLoadingTask() {
   } catch(e) { toast('저장 실패: ' + e.message); }
 }
 
+// 개별 호기(1호기 등)를 구역(1,2호기/3,4호기/탈형)으로 변환
+function zoneOf(machine) {
+  if (machine === '1호기' || machine === '2호기') return '1,2호기';
+  if (machine === '3호기' || machine === '4호기') return '3,4호기';
+  return machine; // 1,2호기 / 3,4호기 / 탈형 그대로
+}
+
 function editLoadingTask(id) {
   const r = (_llRecords || []).find(x => x.id === id) ||
             (_adminTaskList || []).find(x => x.id === id);
   if (!r) return;
   document.getElementById('edit-task-id').value = id;
-  document.getElementById('et-site').value    = r.site    || '';
-  document.getElementById('et-company').value = r.company || '';
-  document.getElementById('et-req').value     = r.req_code || '';
-  document.getElementById('et-from').value    = r.pack_from || '';
-  document.getElementById('et-to').value      = r.pack_to   || '';
-  const sel = document.getElementById('et-machine');
-  const opt = [...sel.options].find(o => o.value === r.machine);
-  if (opt) sel.value = r.machine;
+  document.getElementById('zone-item-info').innerHTML =
+    `<strong>${esc(r.site)}</strong> · ${esc(r.company)}<br>` +
+    `패킹 ${r.pack_from}~${r.pack_to}번<br>` +
+    `현재 구역: <b style="color:#1565c0">${esc(r.machine || '-')}</b>`;
+  // 현재 구역 버튼 강조
+  const cur = zoneOf(r.machine);
+  document.querySelectorAll('#ov-edit-task [data-zone]').forEach(b => {
+    b.classList.toggle('zone-active', b.getAttribute('data-zone') === cur);
+  });
   openOv('ov-edit-task');
 }
 
-async function saveEditLoadingTask() {
-  const id       = document.getElementById('edit-task-id').value;
-  const site     = document.getElementById('et-site').value.trim();
-  const company  = document.getElementById('et-company').value.trim();
-  const req_code = document.getElementById('et-req').value.trim();
-  const pack_from = parseInt(document.getElementById('et-from').value);
-  const pack_to   = parseInt(document.getElementById('et-to').value);
-  const machine   = document.getElementById('et-machine').value;
-  if (!site || !company || isNaN(pack_from) || isNaN(pack_to)) {
-    toast('현장명, 업체명, 패킹번호를 입력하세요.'); return;
-  }
-  if (pack_to < pack_from) { toast('패킹 끝 번호가 시작보다 작습니다.'); return; }
+async function setZone(zone) {
+  const id = document.getElementById('edit-task-id').value;
   if (!db || !id) return;
   try {
-    await db.collection('loading_tasks').doc(id).update({ site, company, req_code, pack_from, pack_to, machine });
+    await db.collection('loading_tasks').doc(id).update({ machine: zone });
     closeOv('ov-edit-task');
-    toast('수정 완료');
+    toast('구역 변경 → ' + zone);
     _llRecords = null;
     await loadLoadingList(true);
     if (document.getElementById('admin-task-list')) loadAdminTaskList();
-  } catch(e) { toast('수정 실패: ' + e.message); }
+  } catch(e) { toast('변경 실패: ' + e.message); }
 }
 
 async function deleteLoadingTask(id) {
@@ -7465,26 +7466,15 @@ if ('serviceWorker' in navigator) {
 <div class="overlay" id="ov-edit-task">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">적재 항목 수정</div>
+    <div class="modal-title">구역(호기) 변경</div>
     <input type="hidden" id="edit-task-id">
-    <div style="display:grid;gap:8px;margin-bottom:14px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-        <input id="et-site"    type="text"   placeholder="현장명*"  style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
-        <input id="et-company" type="text"   placeholder="업체명*"  style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
-      </div>
-      <input id="et-req" type="text" placeholder="의뢰번호 (선택)" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 10px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
-        <input id="et-from" type="number" placeholder="패킹 시작*" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
-        <input id="et-to"   type="number" placeholder="패킹 끝*"   style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 8px;font-size:.85rem;font-family:inherit;width:100%;box-sizing:border-box">
-        <select id="et-machine" style="border:1.5px solid #cfd8dc;border-radius:8px;padding:9px 6px;font-size:.85rem;font-family:inherit;background:#fff;width:100%;box-sizing:border-box">
-          <option>1,2호기</option><option>3,4호기</option><option>탈형</option><option disabled>─</option><option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option>
-        </select>
-      </div>
+    <div id="zone-item-info" style="font-size:.85rem;color:#546e7a;margin-bottom:14px;line-height:1.6;padding:10px;background:#f5f7fa;border-radius:8px"></div>
+    <div style="display:grid;gap:8px">
+      <button class="btn-zone" data-zone="1,2호기" onclick="setZone('1,2호기')">1,2호기</button>
+      <button class="btn-zone" data-zone="3,4호기" onclick="setZone('3,4호기')">3,4호기</button>
+      <button class="btn-zone" data-zone="탈형" onclick="setZone('탈형')">탈형</button>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeOv('ov-edit-task')">취소</button>
-      <button class="btn btn-primary"   style="flex:1" onclick="saveEditLoadingTask()">저장</button>
-    </div>
+    <button class="btn btn-secondary btn-full" style="margin-top:10px" onclick="closeOv('ov-edit-task')">취소</button>
   </div>
 </div>
 <div class="overlay" id="ov-confirm">
