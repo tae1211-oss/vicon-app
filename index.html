@@ -2895,11 +2895,13 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card-title" style="margin:0">📋 적재 리스트</div>
       <button onclick="loadLoadingList(true)" style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#1565c0;padding:4px 8px;font-family:inherit;font-weight:600">↻ 새로고침</button>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:10px">
+    <div style="display:flex;gap:6px;margin-bottom:8px">
       <button class="ll-tab active" id="ll-tab-12" onclick="switchLoadingTab('12')">1,2호기</button>
       <button class="ll-tab" id="ll-tab-34" onclick="switchLoadingTab('34')">3,4호기</button>
       <button class="ll-tab" id="ll-tab-dm" onclick="switchLoadingTab('dm')">탈형</button>
     </div>
+    <input type="text" id="ll-search" placeholder="현장명 검색" oninput="renderLoadingList()"
+      style="width:100%;box-sizing:border-box;border:1.5px solid #cfd8dc;border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:inherit;margin-bottom:8px;outline:none">
     <div id="loading-list-body">
       <div style="color:#90a4ae;text-align:center;padding:20px;font-size:.85rem">로딩 중…</div>
     </div>
@@ -3609,7 +3611,9 @@ function renderLoadingList() {
   if (!bodyEl || !_llRecords) return;
 
   const MAC = { '12': ['1호기','2호기','1,2호기'], '34': ['3호기','4호기','3,4호기'], 'dm': ['탈형'] };
+  const searchQ = (document.getElementById('ll-search')?.value || '').trim();
   let recs = _llRecords.filter(r => MAC[_llTab].includes(r.machine));
+  if (searchQ) recs = recs.filter(r => (r.site || '').includes(searchQ));
 
   recs = recs.map(r => {
     const did    = makeDocId(r.company, r.site);
@@ -3644,9 +3648,6 @@ function renderLoadingList() {
         ? `<span style="background:#fff8e1;color:#e65100;border-radius:12px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap">⏳ ${r._inInv}/${r._total}</span>`
         : '';
     const click = r._done ? '' : `onclick="tapLoadingItem('${r.id}')"`;
-    const editBtn = isAdmin
-      ? `<button onclick="event.stopPropagation();editLoadingTask('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#90a4ae;padding:4px 6px;-webkit-tap-highlight-color:transparent">✏️</button>`
-      : '';
     // 적재 취소(구역 해제) — 완료/부분완료 항목, 모든 사용자
     const releaseBtn = (r._done || r._partial)
       ? `<button onclick="event.stopPropagation();releaseLoadingTask('${r.id}')" style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.74rem;color:#e65100;font-weight:700;font-family:inherit;white-space:nowrap;-webkit-tap-highlight-color:transparent">↩ 해제</button>`
@@ -3663,7 +3664,7 @@ function renderLoadingList() {
           </div>
           ${r.req_code ? `<div style="font-size:.74rem;color:#b0bec5">의뢰: ${esc(r.req_code)}</div>` : ''}
         </div>
-        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">${badge}${releaseBtn}${editBtn}</div>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">${badge}${releaseBtn}</div>
       </div>
     </div>`;
   });
@@ -5903,19 +5904,15 @@ async function deleteProdRecord(docId, btn) {
 // ─────────────────────────────────────────────────────────
 //  FIREBASE AUTH
 // ─────────────────────────────────────────────────────────
-function initAuth() {
+async function initAuth() {
   const auth = firebase.auth();
 
-  // 저장된 아이디/비밀번호 자동 입력
+  // 저장된 아이디 자동 입력
   const savedEmail = localStorage.getItem('bvy_login_email');
-  const savedPw    = localStorage.getItem('bvy_login_pw');
-  const remember   = localStorage.getItem('bvy_remember') === '1';
   if (savedEmail) document.getElementById('inp-login-email').value = savedEmail;
-  if (savedPw)    document.getElementById('inp-login-pw').value    = savedPw;
-  if (remember)   document.getElementById('chk-remember').checked  = true;
 
-  // 로그인 세션을 기기에 영구 저장 (재접속해도 유지)
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+  // 세션을 기기에 영구 저장 — onAuthStateChanged 등록 전에 반드시 완료
+  try { await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (_) {}
 
   let autoLoginTried = false;
 
@@ -5939,7 +5936,7 @@ function initAuth() {
       return;
     }
 
-    // 세션 없음 → 자동로그인 켜져 있으면 저장된 정보로 자동 재로그인 시도
+    // 세션 없음 → 저장된 자격증명으로 자동 재로그인 시도 (iOS PWA IndexedDB 초기화 대비)
     currentUserEmail = '';
     isAdmin = false;
 
@@ -5949,14 +5946,10 @@ function initAuth() {
 
     if (reRemember && reEmail && rePw && !autoLoginTried) {
       autoLoginTried = true;
-      // setPersistence 실패(일부 모바일 PWA)해도 로그인 자체는 진행
-      try { await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (_) {}
       try {
         await auth.signInWithEmailAndPassword(reEmail, rePw);
-        return; // 성공 시 onAuthStateChanged 가 user 로 다시 호출 → 홈
+        return;
       } catch (e) {
-        // 실제 인증 실패(비밀번호 틀림·계정 없음)일 때만 자동로그인 해제
-        // 네트워크 오류 등 일시적 장애는 다음 접속 시 재시도
         const AUTH_ERRORS = ['auth/user-not-found','auth/wrong-password','auth/invalid-email',
                              'auth/user-disabled','auth/invalid-credential'];
         if (AUTH_ERRORS.includes(e.code)) {
