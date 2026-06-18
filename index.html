@@ -2881,6 +2881,14 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     </div>
   </div>
 
+  <!-- 스캔 결과 (패킹 체크/해제 — 스캔 직후 여기로 이동) -->
+  <div id="ib-result-card" style="display:none;margin-top:10px">
+    <div class="card">
+      <div class="card-title" id="ib-result-title">스캔 결과</div>
+      <div id="ib-result-body"></div>
+    </div>
+  </div>
+
   <!-- 적재 리스트 -->
   <div class="card" style="margin-top:10px" id="loading-list-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -2897,12 +2905,6 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     </div>
   </div>
 
-  <div id="ib-result-card" style="display:none;margin-top:10px">
-    <div class="card">
-      <div class="card-title" id="ib-result-title">스캔 결과</div>
-      <div id="ib-result-body"></div>
-    </div>
-  </div>
 </div>
 
 <!-- ════════════════════ OUTBOUND ════════════════════ -->
@@ -3580,12 +3582,18 @@ async function loadLoadingList(force) {
     await Promise.all(docIds.map(async did => {
       try {
         const invDoc = await dbGet(db.collection('inventory').doc(did));
-        _llInvMap[did] = new Set(
-          invDoc.exists
-            ? (invDoc.data().packs || []).filter(p => !p.shipped).map(p => p.pack_no)
-            : []
-        );
-      } catch(e) { _llInvMap[did] = new Set(); }
+        // pack_no → stacked_at(밀리초) 맵 (완료 시각 계산용)
+        const m = new Map();
+        if (invDoc.exists) {
+          (invDoc.data().packs || []).forEach(p => {
+            if (!p.shipped) {
+              const t = (p.stacked_at && p.stacked_at.toMillis) ? p.stacked_at.toMillis() : 0;
+              m.set(p.pack_no, t);
+            }
+          });
+        }
+        _llInvMap[did] = m;
+      } catch(e) { _llInvMap[did] = new Map(); }
     }));
 
     renderLoadingList();
@@ -3605,18 +3613,21 @@ function renderLoadingList() {
 
   recs = recs.map(r => {
     const did    = makeDocId(r.company, r.site);
-    const invSet = _llInvMap[did] || new Set();
+    const invMap = _llInvMap[did] || new Map();
     const total  = (r.pack_to || 0) - (r.pack_from || 0) + 1;
-    let inInv = 0;
-    for (let p = r.pack_from; p <= r.pack_to; p++) { if (invSet.has(p)) inInv++; }
+    let inInv = 0, doneAt = 0;
+    for (let p = r.pack_from; p <= r.pack_to; p++) {
+      if (invMap.has(p)) { inInv++; const t = invMap.get(p) || 0; if (t > doneAt) doneAt = t; }
+    }
     const done    = total > 0 && inInv === total;
     const partial = !done && inInv > 0;
-    return {...r, _done: done, _partial: partial, _total: total, _inInv: inInv};
+    return {...r, _done: done, _partial: partial, _total: total, _inInv: inInv, _doneAt: doneAt};
   });
 
-  // 미완료(등록 순) → 완료(등록 순)
+  // 미완료(등록 순) → 완료(완료 시각 순: 최근 완료가 위, 먼저 완료한 게 제일 아래)
   recs.sort((a, b) => {
     if (a._done !== b._done) return a._done ? 1 : -1;
+    if (a._done && b._done) return b._doneAt - a._doneAt;
     return 0;
   });
 
@@ -3783,6 +3794,42 @@ async function setZone(zone) {
     await loadLoadingList(true);
     if (document.getElementById('admin-task-list')) loadAdminTaskList();
   } catch(e) { toast('변경 실패: ' + e.message); }
+}
+
+// 구역 해제 = 적재(입고) 되돌리기: 해당 패킹을 재고에서 빼고 목록 위(미완료)로 올림
+function releaseFromModal() {
+  const id = document.getElementById('edit-task-id').value;
+  const r  = (_llRecords || []).find(x => x.id === id) ||
+             (_adminTaskList || []).find(x => x.id === id);
+  if (!r) return;
+  closeOv('ov-edit-task');
+  showConfirm('적재 취소',
+    `${r.site} / 패킹 ${r.pack_from}~${r.pack_to}번을 재고(적재구역)에서 빼고 목록 위로 다시 올립니다. 계속할까요?`,
+    () => _doReleaseLoadingTask(r));
+}
+
+async function _doReleaseLoadingTask(r) {
+  if (!db) { toast('Firebase 미연결'); return; }
+  try {
+    const docId = makeDocId(r.company, r.site);
+    const ref = db.collection('inventory').doc(docId);
+    const doc = await dbGet(ref);
+    if (!doc.exists) {
+      toast('재고에 해당 항목이 없습니다.');
+      _llRecords = null; await loadLoadingList(true); return;
+    }
+    const packs = doc.data().packs || [];
+    // 이 항목 범위(pack_from~pack_to)의 '미출고' 패킹만 제거 (출고된 것은 보존)
+    const remain  = packs.filter(p =>
+      !(p.pack_no >= r.pack_from && p.pack_no <= r.pack_to && !p.shipped));
+    const removed = packs.length - remain.length;
+    if (removed === 0) { toast('해제할 적재가 없습니다.'); return; }
+    await ref.update({ packs: remain });
+    toast(`적재 취소 완료 (${removed}개 해제)`);
+    _llRecords = null;
+    await loadLoadingList(true);
+    if (typeof refreshMap === 'function') refreshMap();
+  } catch(e) { toast('해제 실패: ' + e.message); }
 }
 
 async function deleteLoadingTask(id) {
@@ -4163,6 +4210,9 @@ async function handleInbound(data) {
       + '📍 구역 선택 후 적재'
       + '</button>';
     bodyEl.innerHTML = html;
+    // 스캔/탭 직후 패킹 체크 창으로 이동
+    setTimeout(() =>
+      document.getElementById('ib-result-card')?.scrollIntoView({behavior:'smooth', block:'start'}), 200);
     return;
   }
 
@@ -5945,6 +5995,8 @@ async function doLogin() {
   if (btnEl) { btnEl.textContent = '로그인 중...'; btnEl.disabled = true; }
 
   try {
+    // 세션을 기기에 영구 저장 (재접속 시 ID/PW 재입력 불필요) — 로그인 전에 보장
+    try { await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch(_) {}
     const cred = await firebase.auth().signInWithEmailAndPassword(email, pw);
     const user = cred.user;
 
@@ -7469,12 +7521,15 @@ if ('serviceWorker' in navigator) {
     <div class="modal-title">구역(호기) 변경</div>
     <input type="hidden" id="edit-task-id">
     <div id="zone-item-info" style="font-size:.85rem;color:#546e7a;margin-bottom:14px;line-height:1.6;padding:10px;background:#f5f7fa;border-radius:8px"></div>
+    <div style="font-size:.74rem;color:#90a4ae;margin-bottom:6px">구역(호기) 변경</div>
     <div style="display:grid;gap:8px">
       <button class="btn-zone" data-zone="1,2호기" onclick="setZone('1,2호기')">1,2호기</button>
       <button class="btn-zone" data-zone="3,4호기" onclick="setZone('3,4호기')">3,4호기</button>
       <button class="btn-zone" data-zone="탈형" onclick="setZone('탈형')">탈형</button>
     </div>
-    <button class="btn btn-secondary btn-full" style="margin-top:10px" onclick="closeOv('ov-edit-task')">취소</button>
+    <div style="border-top:1px solid #eceff1;margin:13px 0 9px"></div>
+    <button class="btn btn-full" style="background:#fff3e0;color:#e65100;border:1.5px solid #ffb74d;font-weight:700" onclick="releaseFromModal()">↩️ 구역 해제 (적재 취소 · 위로 올리기)</button>
+    <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closeOv('ov-edit-task')">취소</button>
   </div>
 </div>
 <div class="overlay" id="ov-confirm">
