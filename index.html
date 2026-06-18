@@ -5904,15 +5904,22 @@ async function deleteProdRecord(docId, btn) {
 // ─────────────────────────────────────────────────────────
 //  FIREBASE AUTH
 // ─────────────────────────────────────────────────────────
-async function initAuth() {
+function initAuth() {
   const auth = firebase.auth();
 
-  // 저장된 아이디 자동 입력
+  // 저장된 아이디·비밀번호 자동 입력 (자동로그인이 안 되는 환경에서도 한 번 탭으로 로그인)
   const savedEmail = localStorage.getItem('bvy_login_email');
-  if (savedEmail) document.getElementById('inp-login-email').value = savedEmail;
+  const savedPw    = localStorage.getItem('bvy_login_pw');
+  const savedRem   = localStorage.getItem('bvy_remember') === '1';
+  const emailEl = document.getElementById('inp-login-email');
+  const pwEl    = document.getElementById('inp-login-pw');
+  const remEl   = document.getElementById('chk-remember');
+  if (savedEmail && emailEl) emailEl.value = savedEmail;
+  if (savedPw    && pwEl)    pwEl.value    = savedPw;
+  if (emailEl && savedEmail !== null && remEl) remEl.checked = savedRem; // 이전 선택 반영(없으면 HTML 기본 checked 유지)
 
-  // 세션을 기기에 영구 저장 — onAuthStateChanged 등록 전에 반드시 완료
-  try { await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (_) {}
+  // 세션 영구 저장(브라우저 기본값도 LOCAL) — 블로킹하지 않음(모바일 IndexedDB 지연 대비)
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 
   let autoLoginTried = false;
 
@@ -5991,8 +5998,9 @@ async function doLogin() {
   if (btnEl) { btnEl.textContent = '로그인 중...'; btnEl.disabled = true; }
 
   try {
-    // 세션을 기기에 영구 저장 (재접속 시 ID/PW 재입력 불필요) — 로그인 전에 보장
-    try { await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch(_) {}
+    // 세션을 기기에 영구 저장 (재접속 시 ID/PW 재입력 불필요). LOCAL은 브라우저 기본값이라
+    // 블로킹 없이 적용 — 일부 모바일에서 setPersistence가 지연돼도 로그인은 진행
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
     const cred = await firebase.auth().signInWithEmailAndPassword(email, pw);
     const user = cred.user;
 
