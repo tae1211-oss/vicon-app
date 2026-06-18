@@ -196,7 +196,7 @@ async function renderDeckForm(data) {
       const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || ''));
+        );
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -331,7 +331,7 @@ async function submitProdEntry() {
     const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || ''));
+      );
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -817,7 +817,7 @@ async function renderDeckForm(data) {
       const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || ''));
+        );
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -952,7 +952,7 @@ async function submitProdEntry() {
     const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || ''));
+      );
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -1419,7 +1419,7 @@ async function renderDeckForm(data) {
       const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || ''));
+        );
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -1554,7 +1554,7 @@ async function submitProdEntry() {
     const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || ''));
+      );
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -2020,7 +2020,7 @@ async function renderDeckForm(data) {
       const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || ''));
+        );
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -2155,7 +2155,7 @@ async function submitProdEntry() {
     const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || ''));
+      );
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -2633,7 +2633,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 .dr-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
 .dr-btn-dl{background:#f57c00;color:#000;border:none;border-radius:8px;padding:9px 18px;font-size:.85rem;cursor:pointer;font-family:inherit}
 .dr-btn-cl{background:#90a4ae;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:.85rem;cursor:pointer;font-family:inherit}
-.dr-page{width:790px;background:#fff;padding:14px 18px;box-sizing:border-box;font-family:'맑은 고딕','Malgun Gothic',Arial,sans-serif;font-size:9.5pt;color:#000}
+.dr-page{width:790px;background:#fff;padding:14px 18px;box-sizing:border-box;font-family:'맑은 고딕','Malgun Gothic',Arial,sans-serif;font-size:9.5pt;color:#000;transform-origin:top left}
 .dr-hrow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .dr-title{font-size:17pt;font-weight:bold}
 .dr-stbl{border-collapse:collapse;font-size:9pt}
@@ -3088,6 +3088,10 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     <div class="modal-handle"></div>
     <div class="modal-title">🗑️ 패킹별 재고 삭제</div>
     <div style="font-size:.78rem;color:#c62828;background:#ffebee;border-radius:8px;padding:8px 10px;margin-bottom:10px">선택한 패킹의 입출고 이력이 삭제됩니다. 되돌릴 수 없습니다.</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <input id="del-filter-site" type="text" placeholder="현장명 검색" oninput="renderDelList()" style="flex:2;border:1.5px solid #cfd8dc;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:inherit">
+      <input id="del-filter-pack" type="text" placeholder="패킹번호" oninput="renderDelList()" style="flex:1;border:1.5px solid #cfd8dc;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:inherit">
+    </div>
     <div style="display:flex;gap:6px;margin-bottom:10px">
       <button class="btn btn-sm btn-secondary" style="flex:1" onclick="delSelAll(true)">전체선택</button>
       <button class="btn btn-sm btn-secondary" style="flex:1" onclick="delSelAll(false)">전체해제</button>
@@ -3457,6 +3461,21 @@ window.addEventListener('DOMContentLoaded', () => {
   const fbEl = document.getElementById('inp-fb-cfg');
   if (fbEl) fbEl.value = JSON.stringify(cfg, null, 2);
   initFirebase(cfg);
+
+  // 백그라운드 복귀 시 현재 화면 데이터만 다시 불러오기
+  // (네트워크 토글 없음 — SDK가 자동 재연결하므로 재조회만 하면 됨)
+  let _lastHidden = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      _lastHidden = Date.now();
+    } else if (document.visibilityState === 'visible' && db) {
+      if (Date.now() - _lastHidden > 8000) {
+        const activeScreen = document.querySelector('.screen.active');
+        if (activeScreen?.id === 'screen-inventory') loadInventory(true);
+        else refreshMap(true);
+      }
+    }
+  });
   // zone filter buttons
   const wrap = document.getElementById('zone-filter-wrap');
   ZONES.forEach(z => {
@@ -3479,9 +3498,10 @@ async function initFirebase(cfg) {
     }
     firebase.initializeApp(cfg);
     db = firebase.firestore();
-    db.settings({experimentalAutoDetectLongPolling: true, merge: true});
-    // 오프라인 캐시: 앱 열자마자 캐시 데이터 즉시 표시, 백그라운드 동기화
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    // 강제 long-polling — 모바일/PWA/회사망에서 WebChannel 자동감지가 멈추는 문제 해결
+    db.settings({experimentalForceLongPolling: true, merge: true});
+    // synchronizeTabs 없이 단독 탭 persistence — 오프라인 캐시 제공, 멀티탭 락 문제 없음
+    db.enablePersistence().catch(() => {});
     setFbStatus('success', '✅ 연결됨 — ' + cfg.projectId);
     initAuth();
     // Firebase 준비 완료 후 active 탭 데이터 자동 로드
@@ -4097,15 +4117,25 @@ async function doOutbound() {
 // ─────────────────────────────────────────────────────────
 //  DB 공용 헬퍼 — 타임아웃 + 캐시
 // ─────────────────────────────────────────────────────────
-const DB_TIMEOUT_MS = 10000; // 10초 타임아웃
+const DB_TIMEOUT_MS = 20000; // 20초 타임아웃 (long-polling 첫 연결 여유)
 
-function dbGet(query) {
+function _dbGetOnce(query, ms) {
   return Promise.race([
     query.get(),
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('⏱ 응답 시간 초과 (네트워크 불안정). 재시도해 주세요.')), DB_TIMEOUT_MS)
+      setTimeout(() => reject(new Error('⏱ 응답 시간 초과 (네트워크 불안정). 재시도해 주세요.')), ms)
     )
   ]);
+}
+
+// 1회 실패 시 자동 재시도 후 던짐
+async function dbGet(query) {
+  try {
+    return await _dbGetOnce(query, DB_TIMEOUT_MS);
+  } catch (e) {
+    await new Promise(r => setTimeout(r, 800));
+    return await _dbGetOnce(query, DB_TIMEOUT_MS);
+  }
 }
 
 let _invCache   = null;   // 재고 캐시 (빈 배열은 캐시하지 않음)
@@ -4335,50 +4365,82 @@ function makeQR() {
 // ─────────────────────────────────────────────────────────
 //  DATA MANAGEMENT
 // ─────────────────────────────────────────────────────────
+let _delItems = [];
+
 async function openDeleteDoc() {
   if (!db) { toast('Firebase를 연결하세요.'); return; }
   const listEl = document.getElementById('del-list');
   listEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
+  const siteEl = document.getElementById('del-filter-site');
+  const packEl = document.getElementById('del-filter-pack');
+  if (siteEl) siteEl.value = '';
+  if (packEl) packEl.value = '';
   openOv('ov-delete-doc');
   try {
     const snap = await dbGet(db.collection('inventory'));
-    if (snap.empty) { listEl.innerHTML = '<div class="alert alert-info">재고 데이터가 없습니다.</div>'; return; }
-    const items = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      items.push({ docId: doc.id, site: d.site||'', company: d.company||'', packs: d.packs||[] });
-    });
-    items.sort((a,b) => a.site.localeCompare(b.site));
-    listEl.innerHTML = items.map(it => {
-      const activeCnt  = it.packs.filter(p=>!p.shipped).length;
-      const shippedCnt = it.packs.filter(p=> p.shipped).length;
-      const packRows = it.packs
-        .slice()
-        .sort((a,b) => (+a.pack_no||0) - (+b.pack_no||0))
-        .map(p => {
-          const statusLbl = p.shipped
-            ? '<span style="color:#90a4ae;font-size:.68rem;margin-left:3px">출고됨</span>'
-            : '<span style="color:#2e7d32;font-size:.68rem;margin-left:3px">재고</span>';
-          const zoneLbl = p.zone
-            ? '<span style="color:#546e7a;font-size:.68rem;margin-left:4px">[' + esc(p.zone) + ']</span>'
-            : '';
-          return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid #f5f5f5;cursor:pointer">'
-            + '<input type="checkbox" class="del-pack-cb" data-doc="' + esc(it.docId) + '" data-pack="' + p.pack_no + '" style="width:17px;height:17px;flex-shrink:0;accent-color:#c62828">'
-            + '<span style="font-size:.82rem;flex:1"><strong>' + p.pack_no + '번</strong>' + zoneLbl + statusLbl + '</span>'
-            + '</label>';
-        }).join('');
-      return '<div style="margin-bottom:12px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">'
-        + '<div style="background:#f5f5f5;padding:8px 10px;display:flex;align-items:center;justify-content:space-between">'
-        + '<div><div style="font-weight:700;font-size:.85rem">' + esc(it.site) + '</div>'
-        + '<div style="font-size:.72rem;color:#78909c">' + esc(it.company) + ' · 재고 ' + activeCnt + '패킹 · 출고 ' + shippedCnt + '패킹</div></div>'
-        + '<div style="display:flex;gap:4px;flex-shrink:0">'
-        + '<button class="btn btn-sm btn-secondary" style="font-size:.68rem;padding:3px 7px" onclick="delSiteSelAll(\'' + esc(it.docId) + '\',true)">전체선택</button>'
-        + '<button class="btn btn-sm btn-secondary" style="font-size:.68rem;padding:3px 7px" onclick="delSiteSelAll(\'' + esc(it.docId) + '\',false)">해제</button>'
-        + '</div></div>'
-        + '<div style="padding:0">' + packRows + '</div>'
-        + '</div>';
-    }).join('');
+    _delItems = [];
+    if (!snap.empty) {
+      snap.forEach(doc => {
+        const d = doc.data();
+        _delItems.push({ docId: doc.id, site: d.site||'', company: d.company||'', packs: d.packs||[] });
+      });
+      _delItems.sort((a,b) => a.site.localeCompare(b.site));
+    }
+    renderDelList();
   } catch(e) { listEl.innerHTML = '<div class="alert alert-error">' + e.message + '</div>'; }
+}
+
+function renderDelList() {
+  const listEl = document.getElementById('del-list');
+  if (!listEl) return;
+  const siteQ = (document.getElementById('del-filter-site')?.value || '').trim().toLowerCase();
+  const packQ = (document.getElementById('del-filter-pack')?.value || '').trim();
+  const packNums = packQ.split(/[,\s]+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+
+  const filtered = _delItems
+    .map(it => {
+      if (siteQ && !it.site.toLowerCase().includes(siteQ) && !it.company.toLowerCase().includes(siteQ)) return null;
+      let packs = it.packs;
+      if (packNums.length > 0) packs = packs.filter(p => packNums.includes(+p.pack_no));
+      if (packNums.length > 0 && packs.length === 0) return null;
+      return { ...it, packs };
+    })
+    .filter(Boolean);
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="alert alert-info">검색 결과가 없습니다.</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(it => {
+    const activeCnt  = it.packs.filter(p=>!p.shipped).length;
+    const shippedCnt = it.packs.filter(p=> p.shipped).length;
+    const packRows = it.packs
+      .slice()
+      .sort((a,b) => (+a.pack_no||0) - (+b.pack_no||0))
+      .map(p => {
+        const statusLbl = p.shipped
+          ? '<span style="color:#90a4ae;font-size:.68rem;margin-left:3px">출고됨</span>'
+          : '<span style="color:#2e7d32;font-size:.68rem;margin-left:3px">재고</span>';
+        const zoneLbl = p.zone
+          ? '<span style="color:#546e7a;font-size:.68rem;margin-left:4px">[' + esc(p.zone) + ']</span>'
+          : '';
+        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid #f5f5f5;cursor:pointer">'
+          + '<input type="checkbox" class="del-pack-cb" data-doc="' + esc(it.docId) + '" data-pack="' + p.pack_no + '" style="width:17px;height:17px;flex-shrink:0;accent-color:#c62828">'
+          + '<span style="font-size:.82rem;flex:1"><strong>' + p.pack_no + '번</strong>' + zoneLbl + statusLbl + '</span>'
+          + '</label>';
+      }).join('');
+    return '<div style="margin-bottom:12px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">'
+      + '<div style="background:#f5f5f5;padding:8px 10px;display:flex;align-items:center;justify-content:space-between">'
+      + '<div><div style="font-weight:700;font-size:.85rem">' + esc(it.site) + '</div>'
+      + '<div style="font-size:.72rem;color:#78909c">' + esc(it.company) + ' · 재고 ' + activeCnt + '패킹 · 출고 ' + shippedCnt + '패킹</div></div>'
+      + '<div style="display:flex;gap:4px;flex-shrink:0">'
+      + '<button class="btn btn-sm btn-secondary" style="font-size:.68rem;padding:3px 7px" onclick="delSiteSelAll(\'' + esc(it.docId) + '\',true)">전체선택</button>'
+      + '<button class="btn btn-sm btn-secondary" style="font-size:.68rem;padding:3px 7px" onclick="delSiteSelAll(\'' + esc(it.docId) + '\',false)">해제</button>'
+      + '</div></div>'
+      + '<div style="padding:0">' + packRows + '</div>'
+      + '</div>';
+  }).join('');
 }
 
 function delSelAll(checked) {
@@ -4948,7 +5010,7 @@ async function renderDeckForm(data) {
       const snap = await dbGet(db.collection('production_deck')
         .where('company',  '==', data.company  || '')
         .where('site',     '==', data.site      || '')
-        .where('req_code', '==', data.req_code  || ''));
+        );
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 4);
       const cutoffStr = cutoff.toISOString().slice(0, 10);
@@ -5107,7 +5169,7 @@ async function submitProdEntry() {
     const dupSnap = await dbGet(db.collection('production_deck')
       .where('company',  '==', pendingProd.company  || '')
       .where('site',     '==', pendingProd.site      || '')
-      .where('req_code', '==', pendingProd.req_code  || ''));
+      );
 
     if (!dupSnap.empty) {
       const registeredPacks = [];
@@ -6650,7 +6712,7 @@ async function saveEditProd() {
   } catch(e) { toast('수정 실패: ' + e.message); }
 }
 
-// ── 작업일보 ─────────────────────────────────────────────
+// ── 작업일보 (네이티브 캔버스 렌더링 — DOM/뷰포트/zoom 무관, 항상 동일 결과) ──
 function openDailyReport(date, machine, shift) {
   const allRecs = (window._prodRecords||[]).filter(r =>
     r.date === date &&
@@ -6663,82 +6725,219 @@ function openDailyReport(date, machine, shift) {
   const d  = new Date(date + 'T12:00:00');
   const y  = d.getFullYear(), mo = d.getMonth()+1, dy = d.getDate();
   const dw = '일월화수목금토'[d.getDay()];
+  const curShift = shift || (allRecs[0] && allRecs[0].shift) || '';
   const ROWS = 13;
-  const pages = [];
-  for (let i = 0; i < Math.max(1, Math.ceil(allRecs.length / ROWS)); i++)
-    pages.push(allRecs.slice(i*ROWS, (i+1)*ROWS));
 
-  let pagesHtml = '';
-  pages.forEach((recs, pi) => {
-    let rowsHtml = '', tArea = 0, tSheets = 0;
-    recs.forEach(r => {
-      const packs = r.packs || [];
-      const nos = packs.map(p => Number(p.pack_no)).filter(n => !isNaN(n)).sort((a,b)=>a-b);
+  // 페이지별 구조화 데이터
+  const pages = [];
+  for (let i = 0; i < Math.max(1, Math.ceil(allRecs.length / ROWS)); i++) {
+    const recs = allRecs.slice(i*ROWS, (i+1)*ROWS);
+    let tArea = 0, tSheets = 0;
+    const rows = recs.map(r => {
+      const nos = (r.packs||[]).map(p => Number(p.pack_no)).filter(n => !isNaN(n)).sort((a,b)=>a-b);
       const packStr = nos.length
         ? (nos[0]===nos[nos.length-1] ? String(nos[0]) : nos[0]+'-'+nos[nos.length-1])
         : (r.pack_count ? '('+r.pack_count+'건)' : '');
-      const site = r.site||'', req = r.req_code||'';
-      const area = r.total_area!=null ? (+r.total_area).toFixed(2) : '';
-      const qty  = r.total_sheets!=null ? r.total_sheets : (r.pack_count||'');
-      tArea += r.total_area||0;
-      tSheets += r.total_sheets||r.pack_count||0;
-      const combined = site+(packStr?' '+packStr:'');
-      const inner = combined.length>22
-        ? esc(site)+'<br><span style="font-size:8pt;color:#444">'+esc(packStr)+'</span>'
-        : esc(combined);
-      rowsHtml += `<tr style="height:22px">
-        <td class="dr-site-td">${inner}</td>
-        <td>${esc(req)}</td><td>${area}</td><td>${qty}</td>
-        <td><span class="dr-chk"></span></td><td><span class="dr-chk"></span></td>
-        <td style="letter-spacing:2px">&thinsp;:&thinsp;</td><td>합 / 불</td></tr>`;
+      tArea   += r.total_area || 0;
+      tSheets += r.total_sheets || r.pack_count || 0;
+      return {
+        site: r.site || '', packStr,
+        req:  r.req_code || '',
+        area: r.total_area != null ? (+r.total_area).toFixed(2) : '',
+        qty:  r.total_sheets != null ? String(r.total_sheets) : (r.pack_count ? String(r.pack_count) : '')
+      };
     });
-    for (let i=recs.length; i<ROWS; i++)
-      rowsHtml += `<tr style="height:22px"><td class="dr-site-td"></td><td></td><td></td><td></td>
-        <td><span class="dr-chk"></span></td><td><span class="dr-chk"></span></td>
-        <td style="letter-spacing:2px">&thinsp;:&thinsp;</td><td>합 / 불</td></tr>`;
+    pages.push({ rows, tArea, tSheets });
+  }
 
-    const curShift = shift || (allRecs[0] && allRecs[0].shift) || '';
-    const circleStyle = 'display:inline-block;border:2px solid #c0392b;border-radius:50%;width:1.5em;height:1.5em;line-height:1.4em;text-align:center;color:#c0392b;font-weight:bold;vertical-align:middle';
-    const shiftHtml = curShift==='주간'
-      ? '<span style="'+circleStyle+'">주</span>&nbsp;야'
-      : '주&nbsp;<span style="'+circleStyle+'">야</span>';
+  const meta = { machine: String(machine), y, mo, dy, dw, shift: curShift, ROWS };
+  window._drDate = date; window._drMachine = machine;
 
-    pagesHtml += `
-    ${pi>0?'<div class="dr-page-gap"></div>':''}
-    <div class="dr-page">
-      <div class="dr-hrow">
-        <div class="dr-title">(${esc(String(machine))}) 데크반 작업일보</div>
-        <table class="dr-stbl"><tr><th>작&nbsp;성</th><th>조 / 반장</th><th>확&nbsp;인</th></tr>
-          <tr><td style="height:60px"></td><td></td><td></td></tr></table>
-      </div>
-      <div class="dr-dateline">${y}년 ${mo}월 ${dy}일 &nbsp;${dw}요일 &nbsp;&nbsp;(${shiftHtml}) &nbsp;&nbsp; OP :&nbsp;&nbsp;&nbsp;&nbsp; TI</div>
-      <div class="dr-note">※ 라벨에 날자 기록 / 자주검사 및 박리검사 명확하게 할 것</div>
-      <div class="dr-winfo">■ 작업시간 : 시작&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;종료 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ■ 작업자 이름 (&nbsp;&nbsp;&nbsp;&nbsp;명) :</div>
-      <table class="dr-tbl">
-        <thead><tr>
-          <th rowspan="2" style="width:215px">현 장 명</th>
-          <th rowspan="2" style="width:95px">의뢰번호</th>
-          <th rowspan="2" style="width:58px">면 적</th>
-          <th rowspan="2" style="width:48px">수 량</th>
-          <th colspan="2">포장방식</th><th colspan="2">자 주 검 사</th>
-        </tr><tr>
-          <th style="width:42px">목 재</th><th style="width:42px">슬리퍼</th>
-          <th style="width:72px">시 간</th><th style="width:62px">합 / 불</th>
-        </tr></thead>
-        <tbody>${rowsHtml}
-          <tr class="dr-total-row">
-            <td colspan="2" style="text-align:right;padding-right:8px">합&nbsp;&nbsp;&nbsp;계</td>
-            <td>${(+tArea).toFixed(2)}</td><td>${tSheets||''}</td><td colspan="4"></td>
-          </tr>
-        </tbody>
-      </table>
-      ${pages.length>1?`<div class="dr-pgnum">${pi+1} / ${pages.length}</div>`:''}
-    </div>`;
+  const body = document.getElementById('dr-body');
+  body.innerHTML = '<div style="padding:20px;text-align:center;color:#90a4ae">생성 중…</div>';
+  document.getElementById('dr-modal').style.display = 'flex';
+
+  // 시스템 폰트(맑은 고딕 등) 준비 후 렌더 — 첫 그리기 글자 누락 방지
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(() => {
+      const canvas = renderDailyReportCanvas(meta, pages);
+      const dataUrl = canvas.toDataURL('image/png');
+      window._drDataUrl = dataUrl;
+      body.innerHTML = '';
+      const img = new Image();
+      img.src = dataUrl;
+      img.style.cssText = 'width:100%;max-width:780px;height:auto;display:block;margin:0 auto;border:1px solid #ddd';
+      body.appendChild(img);
+    });
+}
+
+// 작업일보를 캔버스에 직접 그려서 반환 (790px 논리좌표, 2배 해상도)
+function renderDailyReportCanvas(meta, pages) {
+  const S = 2, W = 790, PADX = 18, PADTOP = 16, PADBOT = 16;
+  const cw = W - PADX*2;
+  const FN = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif";
+
+  // 표 열 너비 (HTML th 힌트 비율 그대로 → 전체폭에 맞게 분배)
+  const hints = [215, 95, 58, 48, 42, 42, 72, 62];
+  const hsum  = hints.reduce((a,b)=>a+b, 0);
+  const colW  = hints.map(h => h/hsum*cw);
+  const colX  = [PADX];
+  colW.forEach(w => colX.push(colX[colX.length-1] + w));   // colX[0..8]
+
+  const TH = 24, ROWH = 32, ROWS = meta.ROWS, TOTALH = 28;
+  const isMulti = pages.length > 1;
+  const HDR = 84, GAP1 = 10, DATE_H = 26, NOTE_H = 16, WINFO_H = 26, PG_H = isMulti ? 18 : 0;
+  const pageH = PADTOP + HDR + GAP1 + DATE_H + NOTE_H + WINFO_H + TH*2 + ROWS*ROWH + TOTALH + PG_H + PADBOT;
+  const GAPP = 22;
+  const totalH = pages.length*pageH + (pages.length-1)*GAPP;
+
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(W*S);
+  cv.height = Math.round(totalH*S);
+  const ctx = cv.getContext('2d');
+  ctx.scale(S, S);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, totalH);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+  ctx.textBaseline = 'middle';
+
+  const txt = (s, x, yy, { f = '12px '+FN, a = 'left', c = '#000', baseline = 'middle' } = {}) => {
+    ctx.font = f; ctx.fillStyle = c; ctx.textAlign = a; ctx.textBaseline = baseline;
+    ctx.fillText(s, x, yy);
+  };
+  // 셀 안에 텍스트 (가로 정렬 + 세로 가운데), 너비 초과 시 폰트 자동 축소
+  const cellText = (s, ci, top, h, { a = 'center', size = 12, c = '#000', padl = 6 } = {}) => {
+    if (s === '' || s == null) return;
+    const w = colW[ci], maxW = w - 8;
+    let fs = size;
+    ctx.font = fs+'px '+FN;
+    while (ctx.measureText(s).width > maxW && fs > 8) { fs--; ctx.font = fs+'px '+FN; }
+    let x;
+    if (a === 'left') x = colX[ci] + padl;
+    else x = colX[ci] + w/2;
+    txt(s, x, top + h/2, { f: fs+'px '+FN, a, c });
+  };
+
+  pages.forEach((pg, pi) => {
+    const oy = pi*(pageH + GAPP);
+    let y = oy + PADTOP;
+
+    // ── 헤더: 제목(좌) + 작성/조반장/확인 표(우) ──
+    const stW = 62, stX = W - PADX - stW*3;
+    // 제목 세로 가운데
+    txt(`(${meta.machine}) 데크반 작업일보`, PADX, y + HDR/2 - 8, { f: 'bold 23px '+FN, a: 'left', baseline: 'middle' });
+    // 우측 표
+    const stLabels = ['작 성', '조 / 반장', '확 인'];
+    for (let i = 0; i < 3; i++) {
+      ctx.strokeRect(stX + i*stW, y, stW, TH);          // 라벨칸
+      ctx.strokeRect(stX + i*stW, y + TH, stW, 60);      // 빈칸
+      txt(stLabels[i], stX + i*stW + stW/2, y + TH/2, { f: '11px '+FN, a: 'center' });
+    }
+    y += HDR + GAP1;
+
+    // ── 날짜줄 (주/야 빨간 원) ──
+    const dlY = y + DATE_H/2;
+    ctx.textBaseline = 'middle';
+    let dx = PADX;
+    ctx.font = '13px '+FN; ctx.fillStyle = '#000'; ctx.textAlign = 'left';
+    const seg1 = `${meta.y}년 ${meta.mo}월 ${meta.dy}일   ${meta.dw}요일      (`;
+    ctx.fillText(seg1, dx, dlY); dx += ctx.measureText(seg1).width;
+    // 주
+    const wJu = ctx.measureText('주').width;
+    ctx.fillText('주', dx, dlY);
+    if (meta.shift === '주간') drawShiftCircle(ctx, dx + wJu/2, dlY, '주', FN);
+    dx += wJu + ctx.measureText('  ').width;
+    // 야
+    const wYa = ctx.measureText('야').width;
+    ctx.fillText('야', dx, dlY);
+    if (meta.shift !== '주간') drawShiftCircle(ctx, dx + wYa/2, dlY, '야', FN);
+    dx += wYa;
+    ctx.fillText(`)        OP :          TI`, dx, dlY);
+    y += DATE_H;
+
+    // ── 안내문 / 작업시간줄 ──
+    txt('※ 라벨에 날자 기록 / 자주검사 및 박리검사 명확하게 할 것', PADX, y + NOTE_H/2, { f: '11px '+FN, c: '#444' });
+    y += NOTE_H;
+    txt('■ 작업시간 : 시작            ~            종료          ■ 작업자 이름 (        명) :',
+        PADX, y + WINFO_H/2, { f: '12px '+FN });
+    y += WINFO_H;
+
+    // ── 표 헤더 (2행) ──
+    const tY = y;
+    ctx.fillStyle = '#d0d0d0';
+    ctx.fillRect(colX[0], tY, cw, TH*2);
+    ctx.fillStyle = '#000';
+    // 1행: 현장명·의뢰번호·면적·수량 (rowspan2) / 포장방식(colspan2) / 자주검사(colspan2)
+    for (let i = 0; i < 4; i++) { ctx.strokeRect(colX[i], tY, colW[i], TH*2); }
+    ctx.strokeRect(colX[4], tY, colW[4]+colW[5], TH);
+    ctx.strokeRect(colX[6], tY, colW[6]+colW[7], TH);
+    // 2행: 목재·슬리퍼·시간·합/불
+    for (let i = 4; i < 8; i++) { ctx.strokeRect(colX[i], tY+TH, colW[i], TH); }
+    const h1 = ['현 장 명', '의뢰번호', '면 적', '수 량'];
+    h1.forEach((s, i) => txt(s, colX[i]+colW[i]/2, tY+TH, { f: 'bold 12px '+FN, a: 'center' }));
+    txt('포장방식', colX[4]+(colW[4]+colW[5])/2, tY+TH/2, { f: 'bold 12px '+FN, a: 'center' });
+    txt('자 주 검 사', colX[6]+(colW[6]+colW[7])/2, tY+TH/2, { f: 'bold 12px '+FN, a: 'center' });
+    ['목 재','슬리퍼','시 간','합 / 불'].forEach((s, i) =>
+      txt(s, colX[4+i]+colW[4+i]/2, tY+TH+TH/2, { f: 'bold 11px '+FN, a: 'center' }));
+    y += TH*2;
+
+    // ── 본문 13행 ──
+    for (let r = 0; r < ROWS; r++) {
+      const rowTop = y + r*ROWH;
+      for (let i = 0; i < 8; i++) ctx.strokeRect(colX[i], rowTop, colW[i], ROWH);
+      const row = pg.rows[r];
+      if (row) {
+        // 현장명 (좌측, 길면 2줄: 현장명 / 패킹번호)
+        const combined = row.site + (row.packStr ? ' ' + row.packStr : '');
+        ctx.font = '12px '+FN;
+        const fitsOne = ctx.measureText(combined).width <= colW[0] - 10;
+        if (!row.packStr || fitsOne) {
+          cellText(combined, 0, rowTop, ROWH, { a: 'left' });
+        } else {
+          txt(row.site, colX[0]+6, rowTop + ROWH*0.34, { f: '12px '+FN, a: 'left' });
+          txt(row.packStr, colX[0]+6, rowTop + ROWH*0.72, { f: '10px '+FN, a: 'left', c: '#444' });
+        }
+        cellText(row.req,  1, rowTop, ROWH);
+        cellText(row.area, 2, rowTop, ROWH);
+        cellText(row.qty,  3, rowTop, ROWH);
+      }
+      // 목재·슬리퍼: 빈 체크박스
+      [4,5].forEach(ci => {
+        const bx = colX[ci]+colW[ci]/2-6, by = rowTop+ROWH/2-6;
+        ctx.lineWidth = 1.3; ctx.strokeRect(bx, by, 12, 12); ctx.lineWidth = 1;
+      });
+      // 시간: ":" / 합·불
+      txt(':', colX[6]+colW[6]/2, rowTop+ROWH/2, { f: '12px '+FN, a: 'center' });
+      txt('합 / 불', colX[7]+colW[7]/2, rowTop+ROWH/2, { f: '11px '+FN, a: 'center' });
+    }
+    y += ROWS*ROWH;
+
+    // ── 합계행 ──
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(colX[0], y, cw, TOTALH);
+    ctx.fillStyle = '#000';
+    ctx.strokeRect(colX[0], y, colW[0]+colW[1], TOTALH);  // 합계 라벨 (병합)
+    ctx.strokeRect(colX[2], y, colW[2], TOTALH);
+    ctx.strokeRect(colX[3], y, colW[3], TOTALH);
+    ctx.strokeRect(colX[4], y, colW[4]+colW[5]+colW[6]+colW[7], TOTALH);
+    txt('합   계', colX[2]-8, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'right' });
+    txt((+pg.tArea).toFixed(2), colX[2]+colW[2]/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
+    txt(pg.tSheets ? String(pg.tSheets) : '', colX[3]+colW[3]/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
+    y += TOTALH;
+
+    // ── 페이지 번호 ──
+    if (isMulti) txt(`${pi+1} / ${pages.length}`, W-PADX, y+PG_H/2, { f: '10px '+FN, a: 'right', c: '#777' });
   });
 
-  document.getElementById('dr-body').innerHTML = pagesHtml;
-  document.getElementById('dr-modal').style.display = 'flex';
-  window._drDate = date; window._drMachine = machine;
+  return cv;
+}
+
+function drawShiftCircle(ctx, cx, cy, ch, FN) {
+  ctx.save();
+  ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, 11, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = '#c0392b'; ctx.font = 'bold 13px '+FN; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(ch, cx, cy);
+  ctx.restore();
 }
 
 function closeDailyReport() {
@@ -6746,15 +6945,41 @@ function closeDailyReport() {
 }
 
 async function downloadDailyReport() {
-  const body = document.getElementById('dr-body');
   try {
-    toast('이미지 생성 중...');
-    const canvas = await html2canvas(body, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false});
+    const dataUrl = window._drDataUrl;
+    if (!dataUrl) { toast('이미지가 아직 준비되지 않았습니다.'); return; }
+    const fname = `작업일보_${window._drMachine}_${window._drDate}.png`;
+
+    // dataURL → Blob
+    const blob = await (await fetch(dataUrl)).blob();
+
+    // ① 모바일: Web Share API (네이티브 저장/공유 시트 — 아이폰·안드로이드 사진앱 저장)
+    if (navigator.canShare) {
+      const file = new File([blob], fname, { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: '작업일보' });
+          return;
+        } catch(err) {
+          if (err && err.name === 'AbortError') return; // 사용자가 취소
+          // 그 외엔 아래 다운로드로 폴백
+        }
+      }
+    }
+
+    // ② PC/안드로이드 크롬: blob URL 다운로드 (data URL보다 모바일 호환 우수)
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.download = `작업일보_${window._drMachine}_${window._drDate}.png`;
-    a.href = canvas.toDataURL('image/png');
+    a.download = fname;
+    a.href = url;
+    document.body.appendChild(a);
     a.click();
-  } catch(e) { toast('이미지 저장 실패: '+e.message); }
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('저장됨 — 안 되면 위 이미지를 길게 눌러 저장하세요.');
+  } catch(e) {
+    toast('저장 실패 — 위 이미지를 길게 눌러 저장하세요.');
+  }
 }
 
 
