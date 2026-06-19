@@ -3497,18 +3497,20 @@ async function initFirebase(cfg) {
     }
     firebase.initializeApp(cfg);
     db = firebase.firestore();
-    // 강제 long-polling — 모바일/PWA/회사망에서 WebChannel 자동감지가 멈추는 문제 해결
-    db.settings({experimentalForceLongPolling: true, merge: true});
+    // 강제 long-polling — 모바일/PWA/회사망에서 WebChannel 자동감지가 멈추는 문제 해결.
+    // merge:true 는 SDK 기본 autoDetect 와 충돌(예외)을 일으켜 이후 initAuth 가 실행되지
+    // 않는 버그가 있었음 → merge 제거 + try/catch 로 격리(설정 실패해도 앱은 진행).
+    try { db.settings({experimentalForceLongPolling: true}); } catch(_) {}
     // synchronizeTabs 없이 단독 탭 persistence — 오프라인 캐시 제공, 멀티탭 락 문제 없음
-    db.enablePersistence().catch(() => {});
+    try { db.enablePersistence().catch(() => {}); } catch(_) {}
     setFbStatus('success', '✅ 연결됨 — ' + cfg.projectId);
-    initAuth();
-    // Firebase 준비 완료 후 active 탭 데이터 자동 로드
-    refreshMap();
-    if (document.getElementById('page-inventory')?.classList.contains('active')) loadInventory();
   } catch(e) {
     setFbStatus('error', '❌ 오류: ' + e.message);
   }
+  // ⚠️ 인증은 Firestore 설정 성패와 무관하게 반드시 실행 — onAuthStateChanged 등록 보장(자동로그인 핵심)
+  try { initAuth(); } catch(e) { console.error('initAuth 실패', e); }
+  try { refreshMap(); } catch(_) {}
+  try { if (document.getElementById('page-inventory')?.classList.contains('active')) loadInventory(); } catch(_) {}
 }
 function saveFirebase() {
   const raw = document.getElementById('inp-fb-cfg').value.trim();
