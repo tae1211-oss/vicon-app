@@ -5367,6 +5367,21 @@ async function renderDeckForm(data) {
     + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
+  // ── 포장방식 선택 (작업지시서 pm 기본값, 변경 가능) ──────────
+  const pmDefault = data.pm || '';
+  html += '<div style="margin-bottom:10px">'
+    + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:6px">📦 <strong>포장방식</strong>'
+    + (pmDefault
+        ? ' <span style="color:#90a4ae;font-size:.72rem">(작업지시서: ' + pmDefault + ')</span>'
+        : ' <span style="color:#f57f17;font-size:.72rem">(작업지시서 정보 없음 — 직접 선택)</span>')
+    + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<label id="lbl-pm-wood" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid ' + (pmDefault==='목재'?'#6d4c41':'#cfd8dc') + ';border-radius:10px;cursor:pointer;font-size:.9rem">'
+    + '<input type="radio" name="prod-pm" value="목재" ' + (pmDefault==='목재'?'checked':'') + ' onchange="updatePmUI()"> 🪵 목재</label>'
+    + '<label id="lbl-pm-slip" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid ' + (pmDefault==='슬리퍼'?'#6d4c41':'#cfd8dc') + ';border-radius:10px;cursor:pointer;font-size:.9rem">'
+    + '<input type="radio" name="prod-pm" value="슬리퍼" ' + (pmDefault==='슬리퍼'?'checked':'') + ' onchange="updatePmUI()"> 🛷 슬리퍼</label>'
+    + '</div></div>';
+
   if (doneCount > 0) {
     html += '<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#2e7d32">'
       + '✅ 이미 생산 완료 ' + doneCount + '패킹은 자동 해제되었습니다 ('
@@ -5421,6 +5436,14 @@ function updateShiftUI() {
   const nightEl = document.getElementById('lbl-shift-night');
   if (dayEl)   dayEl.style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
   if (nightEl) nightEl.style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+}
+
+function updatePmUI() {
+  const v = document.querySelector('input[name="prod-pm"]:checked')?.value;
+  const woodEl = document.getElementById('lbl-pm-wood');
+  const slipEl = document.getElementById('lbl-pm-slip');
+  if (woodEl) woodEl.style.borderColor = v==='목재'   ? '#6d4c41' : '#cfd8dc';
+  if (slipEl) slipEl.style.borderColor = v==='슬리퍼' ? '#6d4c41' : '#cfd8dc';
 }
 
 function prodPackSelAll(val) {
@@ -5486,6 +5509,7 @@ async function submitProdEntry() {
     const p = packs.find(x => x.n === n) || {n, s: null, a: null};
     return {pack_no: p.n, sheets: p.s, area: p.a};
   });
+  const packMethod = document.querySelector('input[name="prod-pm"]:checked')?.value || pendingProd.pm || '';
 
   try {
     const dupSnap = await dbGet(db.collection('production_deck')
@@ -5513,7 +5537,7 @@ async function submitProdEntry() {
       const dupPacks = sel.filter(n => registeredPacks.includes(n));
       if (dupPacks.length > 0) {
         window._pendingOverwriteCtx = {
-          selPacks, date, machine, shift,
+          selPacks, date, machine, shift, pack_method: packMethod,
           company: pendingProd.company||'', site: pendingProd.site||'', req_code: pendingProd.req_code||''
         };
         showDupWarning(dupPacks, dupRecordMap);
@@ -5531,6 +5555,7 @@ async function submitProdEntry() {
     company:      pendingProd.company  || '',
     site:         pendingProd.site     || '',
     req_code:     pendingProd.req_code || '',
+    pack_method:  packMethod,
     packs:        selPacks,
     pack_count:   selPacks.length,
     total_sheets: totSheets,
@@ -6948,12 +6973,13 @@ async function confirmOverwrite() {
   const ctx = window._pendingOverwriteCtx;
   if (!ctx || !db) return;
   window._pendingOverwriteCtx = null;
-  const { selPacks, date, machine, shift, company, site, req_code } = ctx;
+  const { selPacks, date, machine, shift, company, site, req_code, pack_method } = ctx;
   const hasDetail = selPacks.some(p => p.sheets !== null);
   const totSheets = hasDetail ? selPacks.reduce((s,p) => s+(+p.sheets||0), 0) : null;
   const totArea   = hasDetail ? +selPacks.reduce((s,p) => s+(+p.area||0), 0).toFixed(2) : null;
   const rec = {
     type: currentProdType, date, shift, machine, company, site, req_code,
+    pack_method: pack_method || '',
     packs: selPacks, pack_count: selPacks.length,
     total_sheets: totSheets, total_area: totArea,
     recorded_at: firebase.firestore.Timestamp.now(), recorded_by: currentUser
