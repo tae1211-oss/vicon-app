@@ -82,6 +82,8 @@ function setProdType(type) {
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
   document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
   const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pjl = document.getElementById('prod-joblist-card');
+  if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
   setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
@@ -717,6 +719,8 @@ function setProdType(type) {
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
   document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
   const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pjl = document.getElementById('prod-joblist-card');
+  if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
   setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
@@ -1333,6 +1337,8 @@ function setProdType(type) {
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
   document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
   const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pjl = document.getElementById('prod-joblist-card');
+  if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
   setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
@@ -1948,6 +1954,8 @@ function setProdType(type) {
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
   document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
   const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pjl = document.getElementById('prod-joblist-card');
+  if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
   setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
@@ -3281,6 +3289,15 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           <div id="prod-qr-reader"></div>
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
         </div>
+      </div>
+      <!-- ②-1 작업 목록에서 선택 (QR 없이) — PC 업로더가 올린 작업지시서 -->
+      <div class="card" id="prod-joblist-card" style="display:none">
+        <div class="card-title">📋 작업 목록에서 선택 <span style="font-size:.7rem;color:#90a4ae;font-weight:400">QR 없이 입력</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="joblist-search" oninput="renderJobList()" placeholder="현장·업체·코드 검색" style="flex:1;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.82rem;font-family:inherit;box-sizing:border-box">
+          <button class="btn btn-sm btn-secondary" onclick="loadJobOrders(true)" title="새로고침">↻</button>
+        </div>
+        <div id="joblist-body"><div style="color:#90a4ae;text-align:center;padding:14px;font-size:.8rem">불러오는 중…</div></div>
       </div>
     </div><!-- /pentry-common -->
     <!-- 데크 결과 -->
@@ -5142,6 +5159,8 @@ function setProdType(type) {
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
   document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
   const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pjl = document.getElementById('prod-joblist-card');
+  if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
   setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
@@ -5842,6 +5861,76 @@ function addToTGConfirmedList(rec, siteName, docId) {
     + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + rec.total_sheets + 'EA / ' + rec.total_area.toFixed(1) + 'M</strong>'
     + '</div>';
   body.appendChild(item);
+}
+
+// ── 작업 목록(QR 없이 데크 생산입력) — PC 업로더가 올린 job_orders ──
+let _jobOrders = null;
+let _jobListRendered = [];
+let _jobLoading = false;
+async function loadJobOrders(force) {
+  const body = document.getElementById('joblist-body');
+  if (!body) return;
+  if (_jobLoading) return;
+  if (!force && _jobOrders !== null) { renderJobList(); return; }
+  if (!db) { body.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:14px;font-size:.8rem">Firebase 미연결</div>'; return; }
+  _jobLoading = true;
+  body.innerHTML = '<div class="loading"><span class="spinner"></span>목록 불러오는 중…</div>';
+  try {
+    let snap;
+    try {
+      snap = await dbGet(db.collection('job_orders').orderBy('updated_at', 'desc'));
+    } catch(_) {
+      snap = await dbGet(db.collection('job_orders'));   // 인덱스 문제 시 정렬 없이
+    }
+    _jobOrders = [];
+    snap.forEach(doc => _jobOrders.push({ id: doc.id, ...doc.data() }));
+    renderJobList();
+  } catch(e) {
+    body.innerHTML = '<div class="alert alert-error">' + esc(e.message) + '</div>';
+  } finally { _jobLoading = false; }
+}
+
+function renderJobList() {
+  const body = document.getElementById('joblist-body');
+  if (!body || !_jobOrders) return;
+  const q = (document.getElementById('joblist-search')?.value || '').trim();
+  let list = _jobOrders;
+  if (q) list = list.filter(r =>
+    (r.site||'').includes(q) || (r.company||'').includes(q) || (r.req_code||'').includes(q));
+  _jobListRendered = list;
+  if (!list.length) {
+    body.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:14px;font-size:.8rem">'
+      + (q ? '검색 결과 없음' : '등록된 작업이 없습니다. (PC에서 업로드 필요)') + '</div>';
+    return;
+  }
+  body.innerHTML = list.map((r, i) =>
+    '<div onclick="tapJobOrder(' + i + ')" style="padding:11px 12px;border:1px solid #e3e7ea;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent">'
+    + '<div style="font-weight:700;font-size:.9rem;color:#263238">' + esc(r.site||'') + '</div>'
+    + '<div style="color:#607d8b;font-size:.76rem;margin-top:2px">' + esc(r.company||'')
+      + (r.req_code ? ' · ' + esc(r.req_code) : '') + '</div>'
+    + '<div style="font-size:.8rem;margin-top:3px;color:#37474f">패킹 ' + r.pack_from + '~' + r.pack_to
+      + ' <span style="color:#90a4ae">· ' + (r.total_sheets||0) + '매 / ' + (+(r.total_area||0)).toFixed(1) + '㎡</span></div>'
+    + '</div>'
+  ).join('');
+}
+
+function tapJobOrder(i) {
+  const r = _jobListRendered[i];
+  if (!r) { toast('항목을 찾을 수 없습니다.'); return; }
+  // Firestore d:[{s,a}] → 앱 d:[[장수,면적]]
+  const d = (r.d || []).map(x => Array.isArray(x) ? x : [x.s || 0, x.a || 0]);
+  const data = {
+    type: 'job_order',
+    company:   r.company   || '',
+    site:      r.site      || '',
+    req_code:  r.req_code  || '',
+    pack_from: r.pack_from,
+    pack_to:   r.pack_to,
+    d
+  };
+  handleProdQR(data);
+  setTimeout(() =>
+    document.getElementById('prod-entry-card')?.scrollIntoView({behavior:'smooth', block:'start'}), 200);
 }
 
 function downloadTGWorkLog() {
