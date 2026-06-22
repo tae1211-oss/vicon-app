@@ -76,8 +76,13 @@ function setProdType(type) {
   document.querySelectorAll('.prod-type-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
+  const isTG   = type === 'tg';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = isDeck ? 'none'  : 'block';
+  const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -161,7 +166,9 @@ function stopProdScan() {
 }
 
 async function handleProdQR(data) {
+  if (data.type === 'tg_order') { handleTGQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
+  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
@@ -430,9 +437,10 @@ function showProdYear(year) {
 
   const totPacks = records.reduce((s,r) => s+(r.pack_count||0), 0);
   const totArea  = records.reduce((s,r) => s+(r.total_area||0), 0);
+  const _isTGy = currentProdType === 'tg';
   bodyEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#546e7a;font-size:.9rem">'
-    + year + '년 전체: <strong>' + totPacks + '</strong>패킹'
-    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>㎡' : '')
+    + year + '년 전체: <strong>' + totPacks + '</strong>' + (_isTGy ? '건' : '패킹')
+    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>' + (_isTGy ? 'M' : '㎡') : '')
     + '<br><span style="font-size:.78rem">아래에서 월을 탭하세요</span></div>';
 }
 
@@ -565,10 +573,14 @@ function showProdMonth(year, month) {
         const grp = byKey[k2];
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
+          if (currentProdType === 'tg') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+          } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
+          }
         } else {
           detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
         }
@@ -697,8 +709,13 @@ function setProdType(type) {
   document.querySelectorAll('.prod-type-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
+  const isTG   = type === 'tg';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = isDeck ? 'none'  : 'block';
+  const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -782,7 +799,9 @@ function stopProdScan() {
 }
 
 async function handleProdQR(data) {
+  if (data.type === 'tg_order') { handleTGQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
+  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
@@ -1049,9 +1068,10 @@ function showProdYear(year) {
 
   const totPacks = records.reduce((s,r) => s+(r.pack_count||0), 0);
   const totArea  = records.reduce((s,r) => s+(r.total_area||0), 0);
+  const _isTGy = currentProdType === 'tg';
   bodyEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#546e7a;font-size:.9rem">'
-    + year + '년 전체: <strong>' + totPacks + '</strong>패킹'
-    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>㎡' : '')
+    + year + '년 전체: <strong>' + totPacks + '</strong>' + (_isTGy ? '건' : '패킹')
+    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>' + (_isTGy ? 'M' : '㎡') : '')
     + '<br><span style="font-size:.78rem">아래에서 월을 탭하세요</span></div>';
 }
 
@@ -1184,10 +1204,14 @@ function showProdMonth(year, month) {
         const grp = byKey[k2];
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
+          if (currentProdType === 'tg') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+          } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
+          }
         } else {
           detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
         }
@@ -1299,8 +1323,13 @@ function setProdType(type) {
   document.querySelectorAll('.prod-type-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
+  const isTG   = type === 'tg';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = isDeck ? 'none'  : 'block';
+  const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -1384,7 +1413,9 @@ function stopProdScan() {
 }
 
 async function handleProdQR(data) {
+  if (data.type === 'tg_order') { handleTGQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
+  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
@@ -1651,9 +1682,10 @@ function showProdYear(year) {
 
   const totPacks = records.reduce((s,r) => s+(r.pack_count||0), 0);
   const totArea  = records.reduce((s,r) => s+(r.total_area||0), 0);
+  const _isTGy = currentProdType === 'tg';
   bodyEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#546e7a;font-size:.9rem">'
-    + year + '년 전체: <strong>' + totPacks + '</strong>패킹'
-    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>㎡' : '')
+    + year + '년 전체: <strong>' + totPacks + '</strong>' + (_isTGy ? '건' : '패킹')
+    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>' + (_isTGy ? 'M' : '㎡') : '')
     + '<br><span style="font-size:.78rem">아래에서 월을 탭하세요</span></div>';
 }
 
@@ -1786,10 +1818,14 @@ function showProdMonth(year, month) {
         const grp = byKey[k2];
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
+          if (currentProdType === 'tg') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+          } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
+          }
         } else {
           detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
         }
@@ -1900,8 +1936,13 @@ function setProdType(type) {
   document.querySelectorAll('.prod-type-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
+  const isTG   = type === 'tg';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = isDeck ? 'none'  : 'block';
+  const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -1985,7 +2026,9 @@ function stopProdScan() {
 }
 
 async function handleProdQR(data) {
+  if (data.type === 'tg_order') { handleTGQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
+  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
@@ -2252,9 +2295,10 @@ function showProdYear(year) {
 
   const totPacks = records.reduce((s,r) => s+(r.pack_count||0), 0);
   const totArea  = records.reduce((s,r) => s+(r.total_area||0), 0);
+  const _isTGy = currentProdType === 'tg';
   bodyEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#546e7a;font-size:.9rem">'
-    + year + '년 전체: <strong>' + totPacks + '</strong>패킹'
-    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>㎡' : '')
+    + year + '년 전체: <strong>' + totPacks + '</strong>' + (_isTGy ? '건' : '패킹')
+    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>' + (_isTGy ? 'M' : '㎡') : '')
     + '<br><span style="font-size:.78rem">아래에서 월을 탭하세요</span></div>';
 }
 
@@ -2387,10 +2431,14 @@ function showProdMonth(year, month) {
         const grp = byKey[k2];
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
+          if (currentProdType === 'tg') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+          } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
+          }
         } else {
           detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
         }
@@ -3183,8 +3231,8 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 
   <!-- ── 생산입력 ── -->
   <div class="page" id="ppage-entry">
-    <!-- 데크 -->
-    <div id="pdeck-entry">
+    <!-- 공통: 세션 + 스캔 (데크/TG 공용) -->
+    <div id="pentry-common">
       <!-- ① 세션 설정 (항상 표시) -->
       <div class="card" id="prod-session-card">
         <div class="card-title" style="margin-bottom:10px">📅 작업 세션 설정</div>
@@ -3214,7 +3262,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       </div>
       <!-- ② QR 스캔 -->
       <div class="card">
-        <div class="card-title">📐 데크 QR 스캔</div>
+        <div class="card-title" id="prod-scan-title">📐 데크 QR 스캔</div>
         <div class="alert alert-info" style="font-size:.78rem">세션 설정 후 QR을 스캔하세요. 여러 QR 연속 스캔 가능.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
           <button class="btn btn-primary btn-full" id="btn-prod-native" onclick="startNativeScan('production')" style="font-size:.85rem;padding:10px">📷 네이티브</button>
@@ -3226,6 +3274,9 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="stopProdScan()">■ 스캔 중지</button>
         </div>
       </div>
+    </div><!-- /pentry-common -->
+    <!-- 데크 결과 -->
+    <div id="pdeck-entry">
       <!-- ③ QR 스캔 결과 (팩 체크) -->
       <div id="prod-entry-card" style="display:none">
         <div class="card">
@@ -3241,7 +3292,22 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         </div>
       </div>
     </div>
-    <!-- 준비중 (신선/TG/포밍) -->
+    <!-- TG 결과 -->
+    <div id="ptg-entry" style="display:none">
+      <div id="tg-entry-card" style="display:none">
+        <div class="card">
+          <div class="card-title" id="tg-entry-title">✏️ TG 생산 내역 입력</div>
+          <div id="tg-entry-body"></div>
+        </div>
+      </div>
+      <div id="tg-confirmed-wrap" style="display:none">
+        <div class="card">
+          <div class="card-title">✅ 이번 세션 등록 목록</div>
+          <div id="tg-confirmed-body"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 준비중 (신선/포밍) -->
     <div id="pother-entry" style="display:none">
       <div class="card" style="text-align:center;padding:36px 16px">
         <div style="font-size:2.5rem;margin-bottom:10px">🚧</div>
@@ -5036,8 +5102,13 @@ function setProdType(type) {
   document.querySelectorAll('.prod-type-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
+  const isTG   = type === 'tg';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = isDeck ? 'none'  : 'block';
+  const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  setProdMachineOptions(isTG);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -5107,7 +5178,7 @@ async function loadProdRecordsForSearch(forceRefresh) {
   try {
     // orderBy로 최신순 → Firestore 인덱스 활용, 30초 타임아웃
     const snap = await Promise.race([
-      db.collection('production_deck').orderBy('date', 'desc').limit(1000).get(),
+      db.collection(prodCollection()).orderBy('date', 'desc').limit(1000).get(),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('⏱ 응답 시간 초과. 네트워크를 확인하고 재시도해 주세요.')), 30000)
       )
@@ -5177,6 +5248,7 @@ function searchProd() {
   if (!records.length) { loadProdRecordsForSearch(); return; }
 
   // 필터링
+  const isTGsearch = currentProdType === 'tg';
   const results = [];
   records.forEach(r => {
     const site    = (r.site    || '').toLowerCase();
@@ -5186,7 +5258,15 @@ function searchProd() {
     if (dateVal && r.date !== dateVal) return;
     if (machine && r.machine !== machine) return;
     if (shift && r.shift !== shift) return;
-    if (!isNaN(packNo)) {
+    if (isTGsearch) {
+      if (!isNaN(packNo)) {
+        const matched = (r.items || []).filter(it => +it.seq === packNo);
+        if (!matched.length) return;
+        results.push({ r, packs: [], items: matched });
+      } else {
+        results.push({ r, packs: [], items: r.items || [] });
+      }
+    } else if (!isNaN(packNo)) {
       const matched = (r.packs || []).filter(p => +p.pack_no === packNo);
       if (!matched.length) return;
       results.push({ r, packs: matched });
@@ -5206,9 +5286,23 @@ function searchProd() {
   const shiftColor = s => s==='주간' ? '#e65100' : '#1565c0';
   const shiftBg    = s => s==='주간' ? '#fff3e0' : '#e3f2fd';
   let html = '<div style="font-size:.75rem;color:#90a4ae;margin-bottom:8px">' + results.length + '건 검색됨</div>';
-  results.forEach(({ r, packs }) => {
-    const packNos = packs.map(p => p.pack_no).join(', ');
-    const areaStr = r.total_area != null ? r.total_area.toFixed(1) + '㎡' : '';
+  results.forEach(({ r, packs, items }) => {
+    let detail;
+    if (isTGsearch) {
+      const segs  = (items||[]).map(it => '순번' + it.seq + '(' + it.qty + '매)').join(', ');
+      const mStr  = r.total_area   != null ? r.total_area.toFixed(1) + 'M' : '';
+      const shStr = r.total_sheets != null ? r.total_sheets + '매' : '';
+      detail = '<div style="text-align:left">의뢰번호: <strong>' + esc(r.req_code||'-') + '</strong></div>'
+        + '<div style="text-align:left">데크순번: <strong>' + (segs||'-') + '</strong></div>'
+        + (shStr ? '<div style="text-align:left">수량: <strong>' + shStr + '</strong></div>' : '')
+        + (mStr  ? '<div style="text-align:left">길이합: <strong>' + mStr + '</strong></div>' : '');
+    } else {
+      const packNos = packs.map(p => p.pack_no).join(', ');
+      const areaStr = r.total_area != null ? r.total_area.toFixed(1) + '㎡' : '';
+      detail = '<div style="text-align:left">의뢰번호: <strong>' + esc(r.req_code||'-') + '</strong></div>'
+        + '<div style="text-align:left">패킹번호: <strong>' + packNos + '</strong></div>'
+        + (areaStr ? '<div style="text-align:left">면적: <strong>' + areaStr + '</strong></div>' : '');
+    }
     html += `<div style="border:1.5px solid #e0e0e0;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#fff;text-align:left">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;text-align:left">
         <span style="font-weight:700;font-size:.9rem">${esc(r.site||r.company||'-')}</span>
@@ -5221,11 +5315,7 @@ function searchProd() {
           ${r.shift==='주간'?'🌤️':'🌙'} ${esc(r.shift||'-')}
         </span>
       </div>
-      <div style="font-size:.78rem;color:#546e7a;text-align:left">
-        <div style="text-align:left">의뢰번호: <strong>${esc(r.req_code||'-')}</strong></div>
-        <div style="text-align:left">패킹번호: <strong>${packNos}</strong></div>
-        ${areaStr ? `<div style="text-align:left">면적: <strong>${areaStr}</strong></div>` : ''}
-      </div>
+      <div style="font-size:.78rem;color:#546e7a;text-align:left">${detail}</div>
     </div>`;
   });
   el.innerHTML = html;
@@ -5287,7 +5377,9 @@ function stopProdScan() {
 }
 
 async function handleProdQR(data) {
+  if (data.type === 'tg_order') { handleTGQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
+  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
@@ -5494,6 +5586,212 @@ function addToConfirmedList(rec, siteName, docId) {
   body.appendChild(item);
 }
 
+// ═════════════════════════════════════════════════════════
+//  TG 생산입력 (데크순번별 분할 입력)
+// ═════════════════════════════════════════════════════════
+let pendingTG = null;
+function prodCollection() { return currentProdType === 'tg' ? 'production_tg' : 'production_deck'; }
+
+// 공정별 호기 옵션 (TG=1~7호기, 데크=1~4호기+탈형)
+function setProdMachineOptions(isTG) {
+  const sel = document.getElementById('prod-machine');
+  if (!sel) return;
+  const opts = isTG ? ['1호기','2호기','3호기','4호기','5호기','6호기','7호기']
+                    : ['1호기','2호기','3호기','4호기','탈형'];
+  const cur = sel.value;
+  sel.innerHTML = opts.map(o => '<option' + (o === cur ? ' selected' : '') + '>' + o + '</option>').join('');
+  if (!opts.includes(cur)) sel.value = opts[0];
+}
+
+function handleTGQR(data) {
+  if (currentProdType !== 'tg') setProdType('tg');
+  pendingTG = data;
+  const card = document.getElementById('tg-entry-card');
+  if (card) card.style.display = 'block';
+  const title = document.getElementById('tg-entry-title');
+  if (title) title.textContent = (data.site || '') + (data.company ? ' (' + data.company + ')' : '');
+  const bodyEl = document.getElementById('tg-entry-body');
+  if (bodyEl) bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>기존 생산 확인 중…</div>';
+  renderTGForm(data);
+}
+
+// 같은 의뢰번호 데크순번별 기생산 수량(매) 합산
+async function fetchTGProduced(data) {
+  const produced = {};
+  if (!db) return produced;
+  try {
+    const snap = await dbGet(db.collection('production_tg')
+      .where('company','==', data.company || '')
+      .where('site','==', data.site || ''));
+    const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 6);
+    const cstr = cutoff.toISOString().slice(0,10);
+    snap.forEach(doc => {
+      const d = doc.data();
+      if ((d.date || '9999') >= cstr && (d.req_code || '') === (data.req_code || '')) {
+        (d.items || []).forEach(it => { produced[it.seq] = (produced[it.seq]||0) + (it.qty||0); });
+      }
+    });
+  } catch(e) {}
+  return produced;
+}
+
+async function renderTGForm(data) {
+  const items = (data.d || []).map(x => ({ seq: x[0], len: x[1], qty: x[2] }));
+  pendingTG._items = items;
+  const produced = await fetchTGProduced(data);
+  pendingTG._produced = produced;
+
+  const sesDate    = document.getElementById('prod-date')?.value || getProductionDate();
+  const sesMachine = document.getElementById('prod-machine')?.value || '1호기';
+  const sesShift   = document.querySelector('input[name="prod-shift"]:checked')?.value || getDefaultShift();
+
+  let html = '<div style="background:#f3f4f6;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.78rem;color:#37474f">'
+    + '📅 <strong>' + sesDate + '</strong>'
+    + ' &nbsp;|&nbsp; 🏗️ <strong>' + esc(sesMachine) + '</strong>'
+    + ' &nbsp;|&nbsp; <strong style="color:' + (sesShift==='야간'?'#1565c0':'#e65100') + '">' + sesShift + '</strong>'
+    + ' <span style="color:#90a4ae;font-size:.72rem">(위 세션카드에서 변경)</span></div>';
+
+  html += '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+    + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
+    + ' &nbsp;|&nbsp; <strong>TYPE:</strong> ' + esc(data.tg_type || '-')
+    + ' / 높이 ' + esc(String(data.h ?? '-')) + ' / 피복 ' + esc(String(data.cov ?? '-'))
+    + '</div>';
+
+  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+    + '✏️ 데크순번별 <strong>이번에 생산한 수량(매)</strong>을 입력하세요. (분할 가능 — 남은수량 자동입력)</div>';
+
+  html += '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;overflow-x:auto">'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.76rem">'
+    + '<thead><tr style="background:#f5f5f5;color:#546e7a">'
+    + '<th style="padding:6px 4px">순번</th><th style="padding:6px 4px">길이</th>'
+    + '<th style="padding:6px 4px">목표/기생산</th><th style="padding:6px 4px">이번수량(매)</th>'
+    + '<th style="padding:6px 4px">M</th></tr></thead><tbody>';
+
+  items.forEach(it => {
+    const p = produced[it.seq] || 0;
+    const remain = Math.max(it.qty - p, 0);
+    const over = p >= it.qty;
+    html += '<tr style="border-top:1px solid #eee">'
+      + '<td style="text-align:center;font-weight:600;padding:5px 4px">' + it.seq + '</td>'
+      + '<td style="text-align:center;padding:5px 4px">' + it.len + '</td>'
+      + '<td style="text-align:center;padding:5px 4px">' + it.qty + '매'
+        + '<br><span style="font-size:.68rem;color:' + (p>0?(over?'#c62828':'#2e7d32'):'#bbb') + '">기생산 ' + p + '매</span></td>'
+      + '<td style="text-align:center;padding:5px 4px"><input type="number" class="tg-qty" min="0" '
+        + 'data-seq="' + it.seq + '" data-len="' + it.len + '" data-target="' + it.qty + '" data-produced="' + p + '" '
+        + 'value="' + remain + '" inputmode="numeric" '
+        + 'style="width:60px;border:1.5px solid #cfd8dc;border-radius:8px;padding:6px;font-size:.85rem;text-align:center;font-family:inherit" '
+        + 'oninput="updateTGTotals()"></td>'
+      + '<td style="text-align:center;padding:5px 4px;color:#7b1fa2" id="tg-m-' + it.seq + '">0</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="prod-summary-bar" id="tg-summary">'
+    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-cnt">0</div><div class="plbl">입력 순번</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-sheets">0</div><div class="plbl">총 수량(매)</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-m">0</div><div class="plbl">총 길이(M)</div></div>'
+    + '</div>'
+    + '<button class="btn btn-success btn-full" style="margin-top:12px;font-size:1rem;font-weight:700" onclick="submitTGEntry()">✅ 이 QR 확정</button>'
+    + '<button class="btn btn-secondary btn-full" style="margin-top:6px" onclick="cancelTGEntry()">✕ 취소 (다시 스캔)</button>';
+
+  document.getElementById('tg-entry-body').innerHTML = html;
+  updateTGTotals();
+}
+
+function updateTGTotals() {
+  let cnt = 0, sheets = 0, m = 0;
+  document.querySelectorAll('.tg-qty').forEach(inp => {
+    const q   = parseInt(inp.value) || 0;
+    const len = parseInt(inp.dataset.len) || 0;
+    const seq = inp.dataset.seq;
+    const mv  = q > 0 ? +(len * q / 1000).toFixed(2) : 0;
+    const cell = document.getElementById('tg-m-' + seq);
+    if (cell) cell.textContent = mv ? mv.toFixed(1) : '0';
+    if (q > 0) { cnt++; sheets += q; m += mv; }
+  });
+  const e1 = document.getElementById('tg-sum-cnt');    if (e1) e1.textContent = cnt;
+  const e2 = document.getElementById('tg-sum-sheets'); if (e2) e2.textContent = sheets;
+  const e3 = document.getElementById('tg-sum-m');      if (e3) e3.textContent = m.toFixed(1);
+}
+
+function cancelTGEntry() {
+  const card = document.getElementById('tg-entry-card');
+  if (card) card.style.display = 'none';
+  pendingTG = null;
+}
+
+async function submitTGEntry() {
+  if (!db) { toast('Firebase 미연결'); return; }
+  if (!currentUser) { toast('먼저 이름을 설정하세요.'); return; }
+  const date    = document.getElementById('prod-date')?.value || getProductionDate();
+  const machine = document.getElementById('prod-machine')?.value || '1호기';
+  const shift   = document.querySelector('input[name="prod-shift"]:checked')?.value || '주간';
+  if (!date) { toast('생산 일자를 입력하세요.'); return; }
+
+  const produced = pendingTG?._produced || {};
+  const items = []; const overList = [];
+  document.querySelectorAll('.tg-qty').forEach(inp => {
+    const q = parseInt(inp.value) || 0;
+    if (q <= 0) return;
+    const seq    = parseInt(inp.dataset.seq);
+    const len    = parseInt(inp.dataset.len) || 0;
+    const target = parseInt(inp.dataset.target) || 0;
+    const p      = produced[seq] || 0;
+    const area_m = +(len * q / 1000).toFixed(2);
+    items.push({ seq, length: len, qty: q, area_m });
+    if (p + q > target) overList.push('순번' + seq + ' (' + (p + q) + '/' + target + '매)');
+  });
+  if (!items.length) { toast('수량을 1개 이상 입력하세요.'); return; }
+
+  if (overList.length) {
+    if (!confirm('목표 수량을 초과하는 항목이 있습니다:\n' + overList.join('\n') + '\n\n그래도 저장할까요?')) return;
+  }
+
+  const totSheets = items.reduce((s, it) => s + it.qty, 0);
+  const totM      = +items.reduce((s, it) => s + it.area_m, 0).toFixed(2);
+  const rec = {
+    type: 'tg', date, shift, machine,
+    company:  pendingTG.company  || '',
+    site:     pendingTG.site     || '',
+    req_code: pendingTG.req_code || '',
+    tg_type:  pendingTG.tg_type  || '',
+    height:   pendingTG.h ?? null,
+    cover:    pendingTG.cov ?? null,
+    items,
+    pack_count:   items.length,
+    total_sheets: totSheets,
+    total_area:   totM,
+    recorded_at:  firebase.firestore.Timestamp.now(),
+    recorded_by:  currentUser
+  };
+  try {
+    const docRef = await db.collection('production_tg').add(rec);
+    const siteName = pendingTG.site || pendingTG.company || '';
+    document.getElementById('tg-entry-card').style.display = 'none';
+    pendingTG = null;
+    addToTGConfirmedList(rec, siteName, docRef.id);
+    if (window._prodRecords) window._prodRecords.push({ ...rec, id: docRef.id });
+    toast('✅ 확정 완료! 다음 QR을 스캔하세요.');
+  } catch(e) { toast('저장 실패: ' + e.message); }
+}
+
+function addToTGConfirmedList(rec, siteName, docId) {
+  const wrap = document.getElementById('tg-confirmed-wrap');
+  const body = document.getElementById('tg-confirmed-body');
+  if (!wrap || !body) return;
+  wrap.style.display = 'block';
+  const segs = (rec.items || []).map(it => '순번' + it.seq + '(' + it.qty + '매)').join(', ');
+  const item = document.createElement('div');
+  item.style.cssText = 'padding:10px 10px;border-bottom:1px solid #f0f0f0;font-size:.8rem;color:#37474f';
+  item.innerHTML =
+    '<div style="font-weight:700;color:#1b5e20">✅ ' + esc(siteName) + '</div>'
+    + '<div style="margin-top:4px;color:#546e7a;font-size:.76rem">'
+    + '데크순번: ' + segs
+    + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + rec.total_sheets + '매 / ' + rec.total_area.toFixed(1) + 'M</strong>'
+    + '</div>';
+  body.appendChild(item);
+}
+
 async function submitProdEntry() {
   if (!db) { toast('Firebase 미연결'); return; }
   if (!currentUser) { toast('먼저 이름을 설정하세요.'); return; }
@@ -5593,7 +5891,7 @@ async function loadProdStat() {
   bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>로딩 중…</div>';
   navEl.innerHTML  = '';
   try {
-    const snap = await dbGet(db.collection('production_deck').where('type','==',currentProdType));
+    const snap = await dbGet(db.collection(prodCollection()).where('type','==',currentProdType));
     const records = [];
     snap.forEach(doc => records.push({id: doc.id, ...doc.data()}));
     window._prodRecords = records;
@@ -5628,9 +5926,10 @@ function showProdYear(year) {
 
   const totPacks = records.reduce((s,r) => s+(r.pack_count||0), 0);
   const totArea  = records.reduce((s,r) => s+(r.total_area||0), 0);
+  const _isTGy = currentProdType === 'tg';
   bodyEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#546e7a;font-size:.9rem">'
-    + year + '년 전체: <strong>' + totPacks + '</strong>패킹'
-    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>㎡' : '')
+    + year + '년 전체: <strong>' + totPacks + '</strong>' + (_isTGy ? '건' : '패킹')
+    + (totArea ? ' / <strong>' + totArea.toFixed(1) + '</strong>' + (_isTGy ? 'M' : '㎡') : '')
     + '<br><span style="font-size:.78rem">아래에서 월을 탭하세요</span></div>';
 }
 
@@ -5763,10 +6062,14 @@ function showProdMonth(year, month) {
         const grp = byKey[k2];
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
+          if (currentProdType === 'tg') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+          } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
             + '<button onclick="openDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="작업일보">&#x1F4CB;</button>'
             + '</td>';
+          }
         } else {
           detailHtml += '<td style="text-align:center;color:#ccc;font-size:.8rem">-</td>';
         }
@@ -5831,7 +6134,7 @@ function downloadProdMonthExcel() {
   // 제목 행
   const totalCols = _shifts.length * _macs.length + 1;
   html += '<tr><td colspan="' + (totalCols + 1) + '" style="background:#e8eaf6;font-size:14px;font-weight:bold;font-family:Arial;padding:8px 12px;border:1px solid #ccc">'
-    + year + '년 ' + (+month) + '월 생산수불 현황 (데크)</td></tr>';
+    + year + '년 ' + (+month) + '월 생산수불 현황 (' + (currentProdType==='tg'?'TG':'데크') + ')</td></tr>';
 
   // 헤더 1행: 날짜 | 야간 (macs) | 주간 (macs) | 총합계
   html += '<tr>';
