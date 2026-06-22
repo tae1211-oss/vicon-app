@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vicon-v20';
+const CACHE_NAME = 'vicon-v21';
 
 // 앱 껍데기(HTML/아이콘)만 캐시 — Firebase 데이터는 항상 네트워크
 const PRECACHE = [

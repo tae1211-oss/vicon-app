@@ -4383,14 +4383,30 @@ async function handleOutbound(data) {
   if (!db) { bodyEl.innerHTML = '<div class="alert alert-error">Firebase 미연결</div>'; return; }
 
   try {
-    const docId = makeDocId(data.company, data.site);
-    const doc = await dbGet(db.collection('inventory').doc(docId));
-    const stockPacks = doc.exists ? (doc.data().packs||[]).filter(p=>!p.shipped) : [];
-    const inStock = new Set(stockPacks.map(p=>p.pack_no));
+    // 같은 현장(site)의 모든 재고문서를 합쳐 조회 — 업체명 표기 차이("계룡건설산업" vs "계룡건설산업_C3") 흡수
+    let invDocs = [];
+    try {
+      const snap = await dbGet(db.collection('inventory').where('site', '==', data.site));
+      snap.forEach(d => invDocs.push({ id: d.id, packs: (d.data().packs || []) }));
+    } catch(_) {}
+    // site 일치 문서가 하나도 없으면 기존 방식(업체명|현장명 키)으로 폴백
+    if (!invDocs.length) {
+      const docId = makeDocId(data.company, data.site);
+      const doc = await dbGet(db.collection('inventory').doc(docId));
+      if (doc.exists) invDocs.push({ id: docId, packs: (doc.data().packs || []) });
+    }
+    const inStock = new Set();
     const zoneMap = {};
-    stockPacks.forEach(p => { zoneMap[p.pack_no] = p.zone; });
+    const packDocMap = {};   // pack_no -> 재고가 들어있는 문서 id (출고 기록 대상)
+    invDocs.forEach(({ id, packs }) => {
+      packs.filter(p => !p.shipped).forEach(p => {
+        inStock.add(p.pack_no);
+        zoneMap[p.pack_no] = p.zone;
+        packDocMap[p.pack_no] = id;
+      });
+    });
     const missing = data.packs.filter(p => !inStock.has(p));
-    pendingOB = {...data, selPacks: [...data.packs], missingPacks: missing};
+    pendingOB = {...data, selPacks: [...data.packs], missingPacks: missing, _packDocMap: packDocMap};
 
     let html = `<div style="font-size:.83rem;margin-bottom:10px;line-height:1.6">
       <strong>${esc(data.site)}</strong><br>
@@ -4479,29 +4495,39 @@ function confirmOutbound() {
 async function doOutbound() {
   const data = pendingOB;
   const now = firebase.firestore.Timestamp.now();
-  const docId = makeDocId(data.company, data.site);
+  const primaryId  = makeDocId(data.company, data.site);
+  const packDocMap = data._packDocMap || {};
+  // 선택 패킹을 재고문서별로 분류 (재고에 없던 미등록 패킹은 기본 문서로)
+  const byDoc = {};
+  data.selPacks.forEach(n => {
+    const did = packDocMap[n] || primaryId;
+    (byDoc[did] = byDoc[did] || []).push(n);
+  });
   try {
-    const ref = db.collection('inventory').doc(docId);
-    const doc = await dbGet(ref);
-    if (doc.exists) {
-      const existing = doc.data().packs || [];
-      const existingNos = new Set(existing.map(p=>p.pack_no));
-      const updated = existing.map(p =>
-        data.selPacks.includes(p.pack_no)
-          ? {...p, shipped: true, shipped_at: now, shipped_by: currentUser}
-          : p
-      );
-      data.selPacks.filter(n => !existingNos.has(n)).forEach(n => {
-        updated.push({pack_no:n,zone:'UNKNOWN',stacked_at:now,stacked_by:'(자동)',
-                      shipped:true,shipped_at:now,shipped_by:currentUser});
-      });
-      await ref.update({packs: updated});
-    } else {
-      const packs = data.selPacks.map(n => ({
-        pack_no:n,zone:'UNKNOWN',stacked_at:now,stacked_by:'(자동)',
-        shipped:true,shipped_at:now,shipped_by:currentUser
-      }));
-      await ref.set({company:data.company,site:data.site,packs});
+    for (const did of Object.keys(byDoc)) {
+      const nos = new Set(byDoc[did]);
+      const ref = db.collection('inventory').doc(did);
+      const doc = await dbGet(ref);
+      if (doc.exists) {
+        const existing = doc.data().packs || [];
+        const existingNos = new Set(existing.map(p=>p.pack_no));
+        const updated = existing.map(p =>
+          nos.has(p.pack_no)
+            ? {...p, shipped: true, shipped_at: now, shipped_by: currentUser}
+            : p
+        );
+        byDoc[did].filter(n => !existingNos.has(n)).forEach(n => {
+          updated.push({pack_no:n,zone:'UNKNOWN',stacked_at:now,stacked_by:'(자동)',
+                        shipped:true,shipped_at:now,shipped_by:currentUser});
+        });
+        await ref.update({packs: updated});
+      } else {
+        const packs = byDoc[did].map(n => ({
+          pack_no:n,zone:'UNKNOWN',stacked_at:now,stacked_by:'(자동)',
+          shipped:true,shipped_at:now,shipped_by:currentUser
+        }));
+        await ref.set({company:data.company,site:data.site,packs});
+      }
     }
     document.getElementById('ob-result-body').innerHTML =
       `<div class="alert alert-success">✅ ${data.selPacks.length}패킹 출고 완료<br><small>출고자: ${esc(currentUser)}</small></div>`;
