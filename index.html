@@ -3294,6 +3294,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
       <div class="card" id="prod-joblist-card" style="display:none">
         <div class="card-title">📋 작업 목록에서 선택 <span style="font-size:.7rem;color:#90a4ae;font-weight:400">QR 없이 입력</span></div>
         <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="job-tab" id="job-tab-12" onclick="switchJobTab('12')">1,2호기</button>
+          <button class="job-tab" id="job-tab-34" onclick="switchJobTab('34')">3,4호기</button>
+          <button class="job-tab" id="job-tab-dm" onclick="switchJobTab('dm')">탈형</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="joblist-search" oninput="renderJobList()" placeholder="현장·업체·코드 검색" style="flex:1;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.82rem;font-family:inherit;box-sizing:border-box">
           <button class="btn btn-sm btn-secondary" onclick="loadJobOrders(true)" title="새로고침">↻</button>
         </div>
@@ -5867,6 +5872,18 @@ function addToTGConfirmedList(rec, siteName, docId) {
 let _jobOrders = null;
 let _jobListRendered = [];
 let _jobLoading = false;
+let _jobTab = '12';
+const JOB_GROUP = { '12': '1,2호기', '34': '3,4호기', 'dm': '탈형' };
+function switchJobTab(t) { _jobTab = t; renderJobList(); }
+function _styleJobTabs() {
+  ['12','34','dm'].forEach(t => {
+    const b = document.getElementById('job-tab-' + t);
+    if (!b) return;
+    const on = t === _jobTab;
+    b.style.cssText = 'flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;'
+      + (on ? 'background:#1565c0;color:#fff' : 'background:#eceff1;color:#607d8b');
+  });
+}
 async function loadJobOrders(force) {
   const body = document.getElementById('joblist-body');
   if (!body) return;
@@ -5893,25 +5910,34 @@ async function loadJobOrders(force) {
 function renderJobList() {
   const body = document.getElementById('joblist-body');
   if (!body || !_jobOrders) return;
+  _styleJobTabs();
+  const grp = JOB_GROUP[_jobTab];
   const q = (document.getElementById('joblist-search')?.value || '').trim();
-  let list = _jobOrders;
+  let list = _jobOrders.filter(r => (r.machine_group || '') === grp);
   if (q) list = list.filter(r =>
     (r.site||'').includes(q) || (r.company||'').includes(q) || (r.req_code||'').includes(q));
   _jobListRendered = list;
   if (!list.length) {
     body.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:14px;font-size:.8rem">'
-      + (q ? '검색 결과 없음' : '등록된 작업이 없습니다. (PC에서 업로드 필요)') + '</div>';
+      + (q ? '검색 결과 없음' : grp + ' 작업이 없습니다. (PC에서 업로드 필요)') + '</div>';
     return;
   }
-  body.innerHTML = list.map((r, i) =>
-    '<div onclick="tapJobOrder(' + i + ')" style="padding:11px 12px;border:1px solid #e3e7ea;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent">'
-    + '<div style="font-weight:700;font-size:.9rem;color:#263238">' + esc(r.site||'') + '</div>'
+  body.innerHTML = list.map((r, i) => {
+    const pmBadge = r.pm === '목재'
+      ? '<span style="background:#efebe9;color:#5d4037;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700">🪵 목재</span>'
+      : r.pm === '슬리퍼'
+        ? '<span style="background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700">🛷 슬리퍼</span>'
+        : '';
+    return '<div onclick="tapJobOrder(' + i + ')" style="padding:11px 12px;border:1px solid #e3e7ea;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+      + '<div style="font-weight:700;font-size:.9rem;color:#263238;flex:1;min-width:0">' + esc(r.site||'') + '</div>'
+      + pmBadge + '</div>'
     + '<div style="color:#607d8b;font-size:.76rem;margin-top:2px">' + esc(r.company||'')
       + (r.req_code ? ' · ' + esc(r.req_code) : '') + '</div>'
     + '<div style="font-size:.8rem;margin-top:3px;color:#37474f">패킹 ' + r.pack_from + '~' + r.pack_to
       + ' <span style="color:#90a4ae">· ' + (r.total_sheets||0) + '매 / ' + (+(r.total_area||0)).toFixed(1) + '㎡</span></div>'
-    + '</div>'
-  ).join('');
+    + '</div>';
+  }).join('');
 }
 
 function tapJobOrder(i) {
@@ -5926,6 +5952,7 @@ function tapJobOrder(i) {
     req_code:  r.req_code  || '',
     pack_from: r.pack_from,
     pack_to:   r.pack_to,
+    pm:        r.pm        || '',
     d
   };
   handleProdQR(data);
