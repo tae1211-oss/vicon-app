@@ -5289,9 +5289,9 @@ function searchProd() {
   results.forEach(({ r, packs, items }) => {
     let detail;
     if (isTGsearch) {
-      const segs  = (items||[]).map(it => '순번' + it.seq + '(' + it.qty + '매)').join(', ');
+      const segs  = (items||[]).map(it => '순번' + it.seq + '(' + it.qty + 'EA)').join(', ');
       const mStr  = r.total_area   != null ? r.total_area.toFixed(1) + 'M' : '';
-      const shStr = r.total_sheets != null ? r.total_sheets + '매' : '';
+      const shStr = r.total_sheets != null ? r.total_sheets + 'EA' : '';
       detail = '<div style="text-align:left">의뢰번호: <strong>' + esc(r.req_code||'-') + '</strong></div>'
         + '<div style="text-align:left">데크순번: <strong>' + (segs||'-') + '</strong></div>'
         + (shStr ? '<div style="text-align:left">수량: <strong>' + shStr + '</strong></div>' : '')
@@ -5658,24 +5658,31 @@ async function renderTGForm(data) {
     + '</div>';
 
   html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
-    + '✏️ 데크순번별 <strong>이번에 생산한 수량(매)</strong>을 입력하세요. (분할 가능 — 남은수량 자동입력)</div>';
+    + '☑️ 생산한 <strong>데크순번을 체크</strong>하고 <strong>생산수량(EA)</strong>을 입력하세요. 체크된 순번만 등록됩니다.</div>';
+
+  html += '<div class="pack-controls">'
+    + '<button class="btn btn-sm btn-secondary" onclick="tgSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="tgSelAll(false)">전체 해제</button>'
+    + '</div>';
 
   html += '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;overflow-x:auto">'
-    + '<table style="width:100%;border-collapse:collapse;font-size:.76rem">'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.74rem">'
     + '<thead><tr style="background:#f5f5f5;color:#546e7a">'
-    + '<th style="padding:6px 4px">순번</th><th style="padding:6px 4px">길이</th>'
-    + '<th style="padding:6px 4px">목표/기생산</th><th style="padding:6px 4px">이번수량(매)</th>'
-    + '<th style="padding:6px 4px">M</th></tr></thead><tbody>';
+    + '<th style="padding:6px 2px">✓</th>'
+    + '<th style="padding:6px 4px">순번</th><th style="padding:6px 4px">생산길이</th>'
+    + '<th style="padding:6px 4px">수량(EA)</th><th style="padding:6px 4px">생산수량(EA)</th>'
+    + '<th style="padding:6px 4px">생산량(M)</th></tr></thead><tbody>';
 
   items.forEach(it => {
     const p = produced[it.seq] || 0;
     const remain = Math.max(it.qty - p, 0);
     const over = p >= it.qty;
     html += '<tr style="border-top:1px solid #eee">'
+      + '<td style="text-align:center;padding:5px 2px"><input type="checkbox" class="tg-cb" data-seq="' + it.seq + '" onchange="updateTGTotals()"></td>'
       + '<td style="text-align:center;font-weight:600;padding:5px 4px">' + it.seq + '</td>'
       + '<td style="text-align:center;padding:5px 4px">' + it.len + '</td>'
-      + '<td style="text-align:center;padding:5px 4px">' + it.qty + '매'
-        + '<br><span style="font-size:.68rem;color:' + (p>0?(over?'#c62828':'#2e7d32'):'#bbb') + '">기생산 ' + p + '매</span></td>'
+      + '<td style="text-align:center;padding:5px 4px">' + it.qty + 'EA'
+        + (p>0 ? '<br><span style="font-size:.68rem;color:' + (over?'#c62828':'#2e7d32') + '">기생산 ' + p + 'EA</span>' : '') + '</td>'
       + '<td style="text-align:center;padding:5px 4px"><input type="number" class="tg-qty" min="0" '
         + 'data-seq="' + it.seq + '" data-len="' + it.len + '" data-target="' + it.qty + '" data-produced="' + p + '" '
         + 'value="' + remain + '" inputmode="numeric" '
@@ -5687,9 +5694,9 @@ async function renderTGForm(data) {
   html += '</tbody></table></div>';
 
   html += '<div class="prod-summary-bar" id="tg-summary">'
-    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-cnt">0</div><div class="plbl">입력 순번</div></div>'
-    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-sheets">0</div><div class="plbl">총 수량(매)</div></div>'
-    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-m">0</div><div class="plbl">총 길이(M)</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-cnt">0</div><div class="plbl">선택 순번</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-sheets">0</div><div class="plbl">총 생산수량(EA)</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="tg-sum-m">0</div><div class="plbl">총 생산량(M)</div></div>'
     + '</div>'
     + '<button class="btn btn-success btn-full" style="margin-top:12px;font-size:1rem;font-weight:700" onclick="submitTGEntry()">✅ 이 QR 확정</button>'
     + '<button class="btn btn-secondary btn-full" style="margin-top:6px" onclick="cancelTGEntry()">✕ 취소 (다시 스캔)</button>';
@@ -5701,17 +5708,23 @@ async function renderTGForm(data) {
 function updateTGTotals() {
   let cnt = 0, sheets = 0, m = 0;
   document.querySelectorAll('.tg-qty').forEach(inp => {
+    const seq = inp.dataset.seq;
     const q   = parseInt(inp.value) || 0;
     const len = parseInt(inp.dataset.len) || 0;
-    const seq = inp.dataset.seq;
     const mv  = q > 0 ? +(len * q / 1000).toFixed(2) : 0;
     const cell = document.getElementById('tg-m-' + seq);
     if (cell) cell.textContent = mv ? mv.toFixed(1) : '0';
-    if (q > 0) { cnt++; sheets += q; m += mv; }
+    const cb = document.querySelector('.tg-cb[data-seq="' + seq + '"]');
+    if (cb && cb.checked && q > 0) { cnt++; sheets += q; m += mv; }
   });
   const e1 = document.getElementById('tg-sum-cnt');    if (e1) e1.textContent = cnt;
   const e2 = document.getElementById('tg-sum-sheets'); if (e2) e2.textContent = sheets;
   const e3 = document.getElementById('tg-sum-m');      if (e3) e3.textContent = m.toFixed(1);
+}
+
+function tgSelAll(val) {
+  document.querySelectorAll('.tg-cb').forEach(c => { c.checked = val; });
+  updateTGTotals();
 }
 
 function cancelTGEntry() {
@@ -5730,18 +5743,21 @@ async function submitTGEntry() {
 
   const produced = pendingTG?._produced || {};
   const items = []; const overList = [];
-  document.querySelectorAll('.tg-qty').forEach(inp => {
+  document.querySelectorAll('.tg-cb').forEach(cb => {
+    if (!cb.checked) return;
+    const seq = parseInt(cb.dataset.seq);
+    const inp = document.querySelector('.tg-qty[data-seq="' + seq + '"]');
+    if (!inp) return;
     const q = parseInt(inp.value) || 0;
     if (q <= 0) return;
-    const seq    = parseInt(inp.dataset.seq);
     const len    = parseInt(inp.dataset.len) || 0;
     const target = parseInt(inp.dataset.target) || 0;
     const p      = produced[seq] || 0;
     const area_m = +(len * q / 1000).toFixed(2);
     items.push({ seq, length: len, qty: q, area_m });
-    if (p + q > target) overList.push('순번' + seq + ' (' + (p + q) + '/' + target + '매)');
+    if (p + q > target) overList.push('순번' + seq + ' (' + (p + q) + '/' + target + 'EA)');
   });
-  if (!items.length) { toast('수량을 1개 이상 입력하세요.'); return; }
+  if (!items.length) { toast('체크한 순번에 생산수량(EA)을 입력하세요.'); return; }
 
   if (overList.length) {
     if (!confirm('목표 수량을 초과하는 항목이 있습니다:\n' + overList.join('\n') + '\n\n그래도 저장할까요?')) return;
@@ -5780,14 +5796,14 @@ function addToTGConfirmedList(rec, siteName, docId) {
   const body = document.getElementById('tg-confirmed-body');
   if (!wrap || !body) return;
   wrap.style.display = 'block';
-  const segs = (rec.items || []).map(it => '순번' + it.seq + '(' + it.qty + '매)').join(', ');
+  const segs = (rec.items || []).map(it => '순번' + it.seq + '(' + it.qty + 'EA)').join(', ');
   const item = document.createElement('div');
   item.style.cssText = 'padding:10px 10px;border-bottom:1px solid #f0f0f0;font-size:.8rem;color:#37474f';
   item.innerHTML =
     '<div style="font-weight:700;color:#1b5e20">✅ ' + esc(siteName) + '</div>'
     + '<div style="margin-top:4px;color:#546e7a;font-size:.76rem">'
     + '데크순번: ' + segs
-    + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + rec.total_sheets + '매 / ' + rec.total_area.toFixed(1) + 'M</strong>'
+    + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + rec.total_sheets + 'EA / ' + rec.total_area.toFixed(1) + 'M</strong>'
     + '</div>';
   body.appendChild(item);
 }
