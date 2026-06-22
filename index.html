@@ -510,7 +510,6 @@ function showProdMonth(year, month) {
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
     + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
     + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
-    + (currentProdType === 'tg' ? '<button onclick="downloadTGWorkLogFromStatus()" style="padding:6px 14px;background:#6a1b9a;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📋 작업일보</button>' : '')
     + '</div>';
 
   let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
@@ -575,7 +574,9 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           if (currentProdType === 'tg') {
-            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -1142,7 +1143,6 @@ function showProdMonth(year, month) {
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
     + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
     + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
-    + (currentProdType === 'tg' ? '<button onclick="downloadTGWorkLogFromStatus()" style="padding:6px 14px;background:#6a1b9a;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📋 작업일보</button>' : '')
     + '</div>';
 
   let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
@@ -1207,7 +1207,9 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           if (currentProdType === 'tg') {
-            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -1757,7 +1759,6 @@ function showProdMonth(year, month) {
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
     + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
     + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
-    + (currentProdType === 'tg' ? '<button onclick="downloadTGWorkLogFromStatus()" style="padding:6px 14px;background:#6a1b9a;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📋 작업일보</button>' : '')
     + '</div>';
 
   let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
@@ -1822,7 +1823,9 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           if (currentProdType === 'tg') {
-            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -2371,7 +2374,6 @@ function showProdMonth(year, month) {
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
     + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
     + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
-    + (currentProdType === 'tg' ? '<button onclick="downloadTGWorkLogFromStatus()" style="padding:6px 14px;background:#6a1b9a;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📋 작업일보</button>' : '')
     + '</div>';
 
   let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
@@ -2436,7 +2438,9 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           if (currentProdType === 'tg') {
-            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -3308,7 +3312,6 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         <div class="card">
           <div class="card-title">✅ 이번 세션 등록 목록</div>
           <div id="tg-confirmed-body"></div>
-          <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="downloadTGWorkLog()">📋 TG 작업일보 다운로드</button>
         </div>
       </div>
     </div>
@@ -6090,7 +6093,6 @@ function showProdMonth(year, month) {
   const dlToolbar = '<div style="display:flex;gap:8px;margin-bottom:10px">'
     + '<button onclick="downloadProdMonthImg()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📸 사진</button>'
     + '<button onclick="downloadProdMonthExcel()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📊 엑셀</button>'
-    + (currentProdType === 'tg' ? '<button onclick="downloadTGWorkLogFromStatus()" style="padding:6px 14px;background:#6a1b9a;color:#fff;border:none;border-radius:7px;font-size:.82rem;cursor:pointer;font-family:inherit">📋 작업일보</button>' : '')
     + '</div>';
 
   let sumHtml = dlToolbar + '<div id="prod-month-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px">'
@@ -6155,7 +6157,9 @@ function showProdMonth(year, month) {
         if (grp && grp.recs.length > 0) {
           const r0 = grp.recs[0];
           if (currentProdType === 'tg') {
-            detailHtml += '<td style="text-align:center;padding:3px 2px;color:#2e7d32;font-size:.85rem">&#x2705;</td>';
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -7606,6 +7610,215 @@ async function saveEditProd() {
     toast('✅ 수정되었습니다.');
     showProdMonth(year, month);
   } catch(e) { toast('수정 실패: ' + e.message); }
+}
+
+// ── TG 작업일보 ──────────────────────────────────────────────────────────────
+function openTGDailyReport(date, machine, shift) {
+  const allRecs = (window._prodRecords||[]).filter(r =>
+    r.type === 'tg' &&
+    r.date === date &&
+    String(r.machine||'') === String(machine||'') &&
+    (!shift || r.shift === shift)
+  ).sort((a,b) => (a.recorded_at?.seconds||0) - (b.recorded_at?.seconds||0));
+
+  if (!allRecs.length) { toast('해당 일자/호기/시간대 TG 기록 없음'); return; }
+
+  const d  = new Date(date + 'T12:00:00');
+  const y  = d.getFullYear(), mo = d.getMonth()+1, dy = d.getDate();
+  const dw = '일월화수목금토'[d.getDay()];
+  const curShift = shift || (allRecs[0]?.shift) || '';
+  const ROWS = 15;
+
+  const allRows = [];
+  allRecs.forEach(rec => {
+    (rec.items||[]).forEach(it => {
+      allRows.push({
+        tg_type:  rec.tg_type || '',
+        length:   it.length || 0,
+        qty:      it.qty || 0,
+        site:     rec.site || rec.company || '',
+        req_code: rec.req_code || '',
+        area_m:   it.area_m != null ? (+it.area_m).toFixed(2)
+                  : (it.length && it.qty ? (it.length*it.qty/1000).toFixed(2) : '')
+      });
+    });
+  });
+
+  const pages = [];
+  for (let i = 0; i < Math.max(1, Math.ceil(allRows.length / ROWS)); i++) {
+    const rows = allRows.slice(i*ROWS, (i+1)*ROWS);
+    let tQty = 0, tArea = 0;
+    rows.forEach(r => { tQty += r.qty||0; tArea += parseFloat(r.area_m)||0; });
+    pages.push({ rows, tQty, tArea });
+  }
+
+  const meta = { machine: String(machine), y, mo, dy, dw, shift: curShift, ROWS };
+  window._drDate = date; window._drMachine = machine;
+
+  const body = document.getElementById('dr-body');
+  body.innerHTML = '<div style="padding:20px;text-align:center;color:#90a4ae">생성 중…</div>';
+  document.getElementById('dr-modal').style.display = 'flex';
+
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(() => {
+      const canvas = renderTGDailyReportCanvas(meta, pages);
+      const dataUrl = canvas.toDataURL('image/png');
+      window._drDataUrl = dataUrl;
+      body.innerHTML = '';
+      const img = new Image();
+      img.src = dataUrl;
+      img.style.cssText = 'width:100%;max-width:780px;height:auto;display:block;margin:0 auto;border:1px solid #ddd';
+      body.appendChild(img);
+    });
+}
+
+function renderTGDailyReportCanvas(meta, pages) {
+  const S = 2, W = 790, PADX = 18, PADTOP = 16, PADBOT = 20;
+  const cw = W - PADX*2;
+  const FN = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif";
+
+  // 열 너비 힌트: 형식/작업길이/수량/현장명/의뢰번호/총길이/시간/합불/LOT NO
+  const hints = [65, 68, 48, 175, 88, 68, 52, 55, 135];
+  const hsum  = hints.reduce((a,b)=>a+b,0);
+  const colW  = hints.map(h => h/hsum*cw);
+  const colX  = [PADX];
+  colW.forEach(w => colX.push(colX[colX.length-1]+w));
+
+  const TH = 24, ROWH = 30, ROWS = meta.ROWS, TOTALH = 28;
+  const isMulti = pages.length > 1;
+  const HDR = 84, GAP1 = 10, DATE_H = 26, NOTE_H = 16, WINFO_H = 26;
+  const FOOT_H = 20, PG_H = isMulti ? 18 : 0;
+  const pageH = PADTOP + HDR + GAP1 + DATE_H + NOTE_H + WINFO_H + TH*2 + ROWS*ROWH + TOTALH + FOOT_H + PG_H + PADBOT;
+  const GAPP = 22;
+  const totalH = pages.length*pageH + (pages.length-1)*GAPP;
+
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(W*S); cv.height = Math.round(totalH*S);
+  const ctx = cv.getContext('2d');
+  ctx.scale(S,S);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,totalH);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+
+  const txt = (s, x, yy, {f='12px '+FN,a='left',c='#000',baseline='middle'}={}) => {
+    ctx.font=f; ctx.fillStyle=c; ctx.textAlign=a; ctx.textBaseline=baseline;
+    ctx.fillText(String(s??''),x,yy);
+  };
+  const cellText = (s, ci, top, h, {a='center',size=11,c='#000',padl=4}={}) => {
+    if (s===''||s==null) return;
+    const w=colW[ci], maxW=w-6;
+    let fs=size; ctx.font=fs+'px '+FN;
+    while(ctx.measureText(String(s)).width>maxW&&fs>7){fs--;ctx.font=fs+'px '+FN;}
+    const x = a==='left' ? colX[ci]+padl : colX[ci]+w/2;
+    txt(s, x, top+h/2, {f:fs+'px '+FN,a,c});
+  };
+
+  pages.forEach((pg, pi) => {
+    const oy = pi*(pageH+GAPP);
+    let y = oy + PADTOP;
+
+    // ── 헤더: 제목(좌) + 작성/조반장/확인 표(우) ──
+    const stW = 62, stX = W - PADX - stW*3;
+    txt(`(${meta.machine}) T/G 작업일보`, PADX, y+HDR/2-8, {f:'bold 22px '+FN,a:'left',baseline:'middle'});
+    ['작  성','조 / 반장','확  인'].forEach((lbl,i) => {
+      ctx.strokeRect(stX+i*stW, y, stW, TH);
+      ctx.strokeRect(stX+i*stW, y+TH, stW, 60);
+      txt(lbl, stX+i*stW+stW/2, y+TH/2, {f:'10px '+FN,a:'center'});
+    });
+    y += HDR + GAP1;
+
+    // ── 날짜줄 ──
+    const dlY = y + DATE_H/2;
+    ctx.font='13px '+FN; ctx.fillStyle='#000'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    let dx = PADX;
+    const seg1 = `${meta.y}년  ${meta.mo}월  ${meta.dy}일   ${meta.dw}요일      (`;
+    ctx.fillText(seg1, dx, dlY); dx += ctx.measureText(seg1).width;
+    const wJu = ctx.measureText('주').width;
+    ctx.fillText('주', dx, dlY);
+    if (meta.shift==='주간') drawShiftCircle(ctx, dx+wJu/2, dlY, '주', FN);
+    dx += wJu + ctx.measureText('  ').width;
+    const wYa = ctx.measureText('야').width;
+    ctx.fillText('야', dx, dlY);
+    if (meta.shift!=='주간') drawShiftCircle(ctx, dx+wYa/2, dlY, '야', FN);
+    dx += wYa;
+    ctx.fillText(`)      OP :`, dx, dlY);
+    y += DATE_H;
+
+    // ── 안내문 / 작업시간 ──
+    txt('※ 라벨에 OP 이니셜 기록 / 뒷면 특이사항 누락없이 기록', PADX, y+NOTE_H/2, {f:'11px '+FN,c:'#444'});
+    y += NOTE_H;
+    txt('■ 작업시간 : 시작            ~            종료          ■ SP name :', PADX, y+WINFO_H/2, {f:'12px '+FN});
+    y += WINFO_H;
+
+    // ── 표 헤더 2행 ──
+    const tY = y;
+    ctx.fillStyle='#d0d0d0'; ctx.fillRect(colX[0], tY, cw, TH*2); ctx.fillStyle='#000';
+
+    // 1행: 생산규격(0~2 merged) / 현장명(rowspan2) / 의뢰번호(rowspan2) / 총길이(rowspan2) / 자주검사(6~7 merged) / LOT NO(rowspan2)
+    ctx.strokeRect(colX[0], tY, colW[0]+colW[1]+colW[2], TH);
+    ctx.strokeRect(colX[3], tY, colW[3], TH*2);
+    ctx.strokeRect(colX[4], tY, colW[4], TH*2);
+    ctx.strokeRect(colX[5], tY, colW[5], TH*2);
+    ctx.strokeRect(colX[6], tY, colW[6]+colW[7], TH);
+    ctx.strokeRect(colX[8], tY, colW[8], TH*2);
+    // 2행
+    ctx.strokeRect(colX[0], tY+TH, colW[0], TH);
+    ctx.strokeRect(colX[1], tY+TH, colW[1], TH);
+    ctx.strokeRect(colX[2], tY+TH, colW[2], TH);
+    ctx.strokeRect(colX[6], tY+TH, colW[6], TH);
+    ctx.strokeRect(colX[7], tY+TH, colW[7], TH);
+
+    txt('생  산  규  격', colX[0]+(colW[0]+colW[1]+colW[2])/2, tY+TH/2, {f:'bold 11px '+FN,a:'center'});
+    txt('현  장  명',     colX[3]+colW[3]/2,                   tY+TH,    {f:'bold 11px '+FN,a:'center'});
+    txt('의뢰번호',       colX[4]+colW[4]/2,                   tY+TH,    {f:'bold 11px '+FN,a:'center'});
+    txt('총  길  이',     colX[5]+colW[5]/2,                   tY+TH,    {f:'bold 11px '+FN,a:'center'});
+    txt('자  주  검  사', colX[6]+(colW[6]+colW[7])/2,         tY+TH/2,  {f:'bold 11px '+FN,a:'center'});
+    txt('LOT  NO',        colX[8]+colW[8]/2,                   tY+TH/2,  {f:'bold 10px '+FN,a:'center'});
+    txt('(ex DB 24-09-03-1)', colX[8]+colW[8]/2,              tY+TH*1.7,{f:'8px '+FN,a:'center'});
+    txt('형  식',   colX[0]+colW[0]/2, tY+TH+TH/2, {f:'bold 11px '+FN,a:'center'});
+    txt('작업길이', colX[1]+colW[1]/2, tY+TH+TH/2, {f:'bold 11px '+FN,a:'center'});
+    txt('수  량',   colX[2]+colW[2]/2, tY+TH+TH/2, {f:'bold 11px '+FN,a:'center'});
+    txt('시  간',   colX[6]+colW[6]/2, tY+TH+TH/2, {f:'bold 11px '+FN,a:'center'});
+    txt('합 / 불',  colX[7]+colW[7]/2, tY+TH+TH/2, {f:'bold 11px '+FN,a:'center'});
+    y += TH*2;
+
+    // ── 본문 행들 ──
+    for (let r=0; r<ROWS; r++) {
+      const rowTop = y + r*ROWH;
+      for (let i=0; i<9; i++) ctx.strokeRect(colX[i], rowTop, colW[i], ROWH);
+      const row = pg.rows[r];
+      if (row) {
+        cellText(row.tg_type,  0, rowTop, ROWH);
+        cellText(row.length ? String(row.length) : '', 1, rowTop, ROWH);
+        cellText(row.qty   ? String(row.qty)    : '', 2, rowTop, ROWH);
+        cellText(row.site,     3, rowTop, ROWH, {a:'left', size:11, padl:5});
+        cellText(row.req_code, 4, rowTop, ROWH, {size:10});
+        cellText(row.area_m,   5, rowTop, ROWH);
+      }
+      txt(':', colX[6]+colW[6]/2, rowTop+ROWH/2, {f:'12px '+FN,a:'center'});
+      txt('합 / 불', colX[7]+colW[7]/2, rowTop+ROWH/2, {f:'10px '+FN,a:'center'});
+    }
+    y += ROWS*ROWH;
+
+    // ── 합계행 ──
+    ctx.fillStyle='#f0f0f0'; ctx.fillRect(colX[0], y, cw, TOTALH); ctx.fillStyle='#000';
+    ctx.strokeRect(colX[0], y, colW[0]+colW[1], TOTALH);
+    ctx.strokeRect(colX[2], y, colW[2], TOTALH);
+    ctx.strokeRect(colX[3], y, colW[3]+colW[4], TOTALH);
+    ctx.strokeRect(colX[5], y, colW[5], TOTALH);
+    ctx.strokeRect(colX[6], y, colW[6]+colW[7]+colW[8], TOTALH);
+    txt('합   계', colX[2]-6, y+TOTALH/2, {f:'bold 12px '+FN,a:'right'});
+    txt(pg.tQty ? String(pg.tQty) : '', colX[2]+colW[2]/2, y+TOTALH/2, {f:'bold 12px '+FN,a:'center'});
+    txt(pg.tArea ? (+pg.tArea).toFixed(2) : '', colX[5]+colW[5]/2, y+TOTALH/2, {f:'bold 12px '+FN,a:'center'});
+    y += TOTALH;
+
+    // ── 하단 주석 (마지막 페이지에만) ──
+    if (pi === pages.length-1) {
+      txt('" 뒷면있음 (기계정지내역 / 공정 / 기타 )"', PADX, y+FOOT_H/2+4, {f:'11px '+FN,c:'#333'});
+    }
+    if (isMulti) txt(`${pi+1} / ${pages.length}`, W-PADX, y+PG_H/2, {f:'10px '+FN,a:'right',c:'#777'});
+  });
+
+  return cv;
 }
 
 // ── 작업일보 (네이티브 캔버스 렌더링 — DOM/뷰포트/zoom 무관, 항상 동일 결과) ──
