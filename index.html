@@ -5921,22 +5921,32 @@ function renderJobList() {
   let list = _jobOrders.filter(r => (r.machine_group || '') === grp);
   if (q) list = list.filter(r =>
     (r.site||'').includes(q) || (r.company||'').includes(q) || (r.req_code||'').includes(q));
-  _jobListRendered = list;
-  if (!list.length) {
+
+  // 완료 여부: 생산기록에 같은 req_code가 있으면 완료
+  const doneReqs = new Set((window._prodRecords||[]).filter(r => r.req_code).map(r => r.req_code));
+  const active = list.filter(r => !doneReqs.has(r.req_code));
+  const done   = list.filter(r =>  doneReqs.has(r.req_code));
+  _jobListRendered = [...active, ...done];
+
+  if (!_jobListRendered.length) {
     body.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:14px;font-size:.8rem">'
       + (q ? '검색 결과 없음' : grp + ' 작업이 없습니다. (PC에서 업로드 필요)') + '</div>';
     return;
   }
-  body.innerHTML = list.map((r, i) => {
+  body.innerHTML = _jobListRendered.map((r, i) => {
+    const isDone = doneReqs.has(r.req_code);
     const pmBadge = r.pm === '목재'
       ? '<span style="background:#efebe9;color:#5d4037;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700">🪵 목재</span>'
       : r.pm === '슬리퍼'
         ? '<span style="background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700">🛷 슬리퍼</span>'
         : '';
-    return '<div onclick="tapJobOrder(' + i + ')" style="padding:11px 12px;border:1px solid #e3e7ea;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent">'
+    const wrapStyle = isDone
+      ? 'padding:11px 12px;border:1px solid #eceff1;border-radius:10px;margin-bottom:7px;cursor:pointer;opacity:0.45;-webkit-tap-highlight-color:transparent'
+      : 'padding:11px 12px;border:1px solid #e3e7ea;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent';
+    return '<div onclick="tapJobOrder(' + i + ')" style="' + wrapStyle + '">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
       + '<div style="font-weight:700;font-size:.9rem;color:#263238;flex:1;min-width:0">' + esc(r.site||'') + '</div>'
-      + pmBadge + '</div>'
+      + (isDone ? '<span style="font-size:.7rem;color:#b0bec5">완료</span>' : pmBadge) + '</div>'
     + '<div style="color:#607d8b;font-size:.76rem;margin-top:2px">' + esc(r.company||'')
       + (r.req_code ? ' · ' + esc(r.req_code) : '') + '</div>'
     + '<div style="font-size:.8rem;margin-top:3px;color:#37474f">패킹 ' + r.pack_from + '~' + r.pack_to
