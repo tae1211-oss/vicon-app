@@ -173,6 +173,7 @@ async function handleProdQR(data) {
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
   if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
+  pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
     (data.site || '') + (data.company ? ' (' + data.company + ')' : '');
@@ -249,8 +250,9 @@ async function renderDeckForm(data) {
     + '</div>';
 
   if (doneCount > 0) {
-    html += '<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#2e7d32">'
-      + '✅ 이미 생산 완료 ' + doneCount + '패킹은 자동 해제되었습니다 ('
+    const allDone = doneCount >= packs.length;
+    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+      + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
@@ -260,6 +262,7 @@ async function renderDeckForm(data) {
     + '<div class="pack-controls">'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
+    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -811,6 +814,7 @@ async function handleProdQR(data) {
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
   if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
+  pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
     (data.site || '') + (data.company ? ' (' + data.company + ')' : '');
@@ -887,8 +891,9 @@ async function renderDeckForm(data) {
     + '</div>';
 
   if (doneCount > 0) {
-    html += '<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#2e7d32">'
-      + '✅ 이미 생산 완료 ' + doneCount + '패킹은 자동 해제되었습니다 ('
+    const allDone = doneCount >= packs.length;
+    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+      + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
@@ -898,6 +903,7 @@ async function renderDeckForm(data) {
     + '<div class="pack-controls">'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
+    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -1430,6 +1436,7 @@ async function handleProdQR(data) {
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
   if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
+  pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
     (data.site || '') + (data.company ? ' (' + data.company + ')' : '');
@@ -1506,8 +1513,9 @@ async function renderDeckForm(data) {
     + '</div>';
 
   if (doneCount > 0) {
-    html += '<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#2e7d32">'
-      + '✅ 이미 생산 완료 ' + doneCount + '패킹은 자동 해제되었습니다 ('
+    const allDone = doneCount >= packs.length;
+    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+      + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
@@ -1517,6 +1525,7 @@ async function renderDeckForm(data) {
     + '<div class="pack-controls">'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
+    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -2048,6 +2057,7 @@ async function handleProdQR(data) {
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
   if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
+  pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
     (data.site || '') + (data.company ? ' (' + data.company + ')' : '');
@@ -2124,8 +2134,9 @@ async function renderDeckForm(data) {
     + '</div>';
 
   if (doneCount > 0) {
-    html += '<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#2e7d32">'
-      + '✅ 이미 생산 완료 ' + doneCount + '패킹은 자동 해제되었습니다 ('
+    const allDone = doneCount >= packs.length;
+    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+      + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
@@ -2135,6 +2146,7 @@ async function renderDeckForm(data) {
     + '<div class="pack-controls">'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
+    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -5444,6 +5456,7 @@ async function handleProdQR(data) {
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
   if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
   pendingProd = data;
+  pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
   document.getElementById('prod-entry-title').textContent =
     (data.site || '') + (data.company ? ' (' + data.company + ')' : '');
@@ -5538,8 +5551,9 @@ async function renderDeckForm(data) {
     + '</div></div>';
 
   if (doneCount > 0) {
-    html += '<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#2e7d32">'
-      + '✅ 이미 생산 완료 ' + doneCount + '패킹은 자동 해제되었습니다 ('
+    const allDone = doneCount >= packs.length;
+    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+      + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
@@ -5549,6 +5563,7 @@ async function renderDeckForm(data) {
     + '<div class="pack-controls">'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
+    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
     + '</div>'
     + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
 
@@ -5604,6 +5619,28 @@ function updatePmUI() {
 function prodPackSelAll(val) {
   document.querySelectorAll('.prod-cb').forEach(c => { c.checked = val; });
   updateProdTotals();
+}
+
+async function cancelProdRecords() {
+  if (!pendingProd) return;
+  const { company, site, req_code } = pendingProd;
+  if (!req_code) { toast('의뢰번호가 없어 취소할 수 없습니다.'); return; }
+  if (!confirm('[' + req_code + '] 생산된 패킹 기록을 전부 삭제할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
+  try {
+    const snap = await dbGet(
+      db.collection('production_deck')
+        .where('company','==', company||'')
+        .where('site','==', site||'')
+        .where('req_code','==', req_code)
+    );
+    if (snap.empty) { toast('삭제할 기록이 없습니다.'); return; }
+    const batch = db.batch();
+    snap.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    toast('✅ ' + snap.size + '건 삭제 완료');
+    if (window._prodRecords) window._prodRecords = window._prodRecords.filter(r => r.req_code !== req_code);
+    handleProdQR(pendingProd._rawData || pendingProd);
+  } catch(e) { toast('삭제 실패: ' + e.message); }
 }
 
 function updateProdTotals() {
