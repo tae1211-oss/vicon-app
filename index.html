@@ -106,6 +106,7 @@ function showPTab(name) {
     const ec = document.getElementById('prod-entry-card');
     if (ec) ec.style.display = 'none';
     pendingProd = null;
+    if (typeof setProdType === 'function') setProdType(currentProdType || 'deck');
   }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
@@ -743,6 +744,7 @@ function showPTab(name) {
     const ec = document.getElementById('prod-entry-card');
     if (ec) ec.style.display = 'none';
     pendingProd = null;
+    if (typeof setProdType === 'function') setProdType(currentProdType || 'deck');
   }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
@@ -1361,6 +1363,7 @@ function showPTab(name) {
     const ec = document.getElementById('prod-entry-card');
     if (ec) ec.style.display = 'none';
     pendingProd = null;
+    if (typeof setProdType === 'function') setProdType(currentProdType || 'deck');
   }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
@@ -1978,6 +1981,7 @@ function showPTab(name) {
     const ec = document.getElementById('prod-entry-card');
     if (ec) ec.style.display = 'none';
     pendingProd = null;
+    if (typeof setProdType === 'function') setProdType(currentProdType || 'deck');
   }
   if (name === 'psettings') {
     document.getElementById('prod-admin-sec').style.display = isAdmin ? 'block' : 'none';
@@ -5188,6 +5192,7 @@ function showPTab(name) {
     const ec = document.getElementById('prod-entry-card');
     if (ec) ec.style.display = 'none';
     pendingProd = null;
+    if (typeof setProdType === 'function') setProdType(currentProdType || 'deck');
   }
   if (name === 'search') {
     // 주/야 버튼 초기 상태
