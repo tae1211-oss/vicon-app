@@ -231,53 +231,53 @@ async function renderDeckForm(data) {
 
   let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
-    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit"></div>'
+    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
     + '<div style="display:flex;gap:8px">'
-    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="주간" ' + (defShift==='주간'?'checked':'') + ' onchange="updateShiftUI()"> 🌤️ 주간</label>'
-    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="야간" ' + (defShift==='야간'?'checked':'') + ' onchange="updateShiftUI()"> 🌙 야간</label>'
     + '</div></div>'
-    + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
     + ' &nbsp;|  총 ' + packs.length + '패킹'
-    + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
+    + (hasDetail ? '' : '<span style="color:#ff8c33"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
   if (doneCount > 0) {
     const allDone = doneCount >= packs.length;
-    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+    html += '<div style="background:' + (allDone?'rgba(34,197,94,0.1)':'rgba(255,107,0,0.1)') + ';border:1px solid ' + (allDone?'rgba(34,197,94,0.3)':'rgba(255,107,0,0.3)') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
       + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
 
-  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">'
     + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
     + '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm" style="background:#ff6b00;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;font-family:inherit" onclick="prodPackSelAll(true)">전체 선택</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
-    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
+    + '<button class="btn btn-sm" style="background:#2c1212;color:#ff5252;border:1px solid rgba(255,82,82,0.3);border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">전체 취소</button>'
     + '</div>'
-    + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
+    + '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:6px 0;max-height:280px;overflow-y:auto;background:#2c2c2e">';
 
   packs.forEach(p => {
     const done = donePacks.has(p.n);
     const info = doneInfo[p.n];
     const infoTxt = done && info ? (info.date + ' ' + info.shift + ' ' + info.machine) : '';
-    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
+    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.45;background:#1c1c1e' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
       + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
-        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
+      html += '<span style="font-size:.7rem;color:#4ade80;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#3a3a3c;border:1px solid rgba(255,107,0,0.3);color:#ff8c33;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -292,7 +292,7 @@ async function renderDeckForm(data) {
     + '<div class="prod-summary-item"><div class="pval" id="sum-sheets">-</div><div class="plbl">총 장수</div></div>'
     + '<div class="prod-summary-item"><div class="pval" id="sum-area">-</div><div class="plbl">총 면적(㎡)</div></div>'
     + '</div>'
-    + '<button class="btn btn-success btn-full" style="margin-top:12px" onclick="submitProdEntry()">✅ 생산 등록</button>';
+    + '<button class="btn btn-full" style="margin-top:12px;background:#ff6b00;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700" onclick="submitProdEntry()">✅ 생산 등록</button>';
 
   document.getElementById('prod-entry-body').innerHTML = html;
   updateShiftUI();
@@ -301,8 +301,8 @@ async function renderDeckForm(data) {
 
 function updateShiftUI() {
   const isDay = document.querySelector('input[name="prod-shift"][value="주간"]')?.checked;
-  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
-  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#ff6b00' : '#48484a';
+  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#ff6b00' : '#48484a';
 }
 
 function prodPackSelAll(val) {
@@ -872,53 +872,53 @@ async function renderDeckForm(data) {
 
   let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
-    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit"></div>'
+    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
     + '<div style="display:flex;gap:8px">'
-    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="주간" ' + (defShift==='주간'?'checked':'') + ' onchange="updateShiftUI()"> 🌤️ 주간</label>'
-    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="야간" ' + (defShift==='야간'?'checked':'') + ' onchange="updateShiftUI()"> 🌙 야간</label>'
     + '</div></div>'
-    + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
     + ' &nbsp;|  총 ' + packs.length + '패킹'
-    + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
+    + (hasDetail ? '' : '<span style="color:#ff8c33"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
   if (doneCount > 0) {
     const allDone = doneCount >= packs.length;
-    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+    html += '<div style="background:' + (allDone?'rgba(34,197,94,0.1)':'rgba(255,107,0,0.1)') + ';border:1px solid ' + (allDone?'rgba(34,197,94,0.3)':'rgba(255,107,0,0.3)') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
       + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
 
-  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">'
     + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
     + '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm" style="background:#ff6b00;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;font-family:inherit" onclick="prodPackSelAll(true)">전체 선택</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
-    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
+    + '<button class="btn btn-sm" style="background:#2c1212;color:#ff5252;border:1px solid rgba(255,82,82,0.3);border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">전체 취소</button>'
     + '</div>'
-    + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
+    + '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:6px 0;max-height:280px;overflow-y:auto;background:#2c2c2e">';
 
   packs.forEach(p => {
     const done = donePacks.has(p.n);
     const info = doneInfo[p.n];
     const infoTxt = done && info ? (info.date + ' ' + info.shift + ' ' + info.machine) : '';
-    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
+    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.45;background:#1c1c1e' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
       + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
-        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
+      html += '<span style="font-size:.7rem;color:#4ade80;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#3a3a3c;border:1px solid rgba(255,107,0,0.3);color:#ff8c33;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -933,7 +933,7 @@ async function renderDeckForm(data) {
     + '<div class="prod-summary-item"><div class="pval" id="sum-sheets">-</div><div class="plbl">총 장수</div></div>'
     + '<div class="prod-summary-item"><div class="pval" id="sum-area">-</div><div class="plbl">총 면적(㎡)</div></div>'
     + '</div>'
-    + '<button class="btn btn-success btn-full" style="margin-top:12px" onclick="submitProdEntry()">✅ 생산 등록</button>';
+    + '<button class="btn btn-full" style="margin-top:12px;background:#ff6b00;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700" onclick="submitProdEntry()">✅ 생산 등록</button>';
 
   document.getElementById('prod-entry-body').innerHTML = html;
   updateShiftUI();
@@ -942,8 +942,8 @@ async function renderDeckForm(data) {
 
 function updateShiftUI() {
   const isDay = document.querySelector('input[name="prod-shift"][value="주간"]')?.checked;
-  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
-  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#ff6b00' : '#48484a';
+  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#ff6b00' : '#48484a';
 }
 
 function prodPackSelAll(val) {
@@ -1494,53 +1494,53 @@ async function renderDeckForm(data) {
 
   let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
-    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit"></div>'
+    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
     + '<div style="display:flex;gap:8px">'
-    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="주간" ' + (defShift==='주간'?'checked':'') + ' onchange="updateShiftUI()"> 🌤️ 주간</label>'
-    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="야간" ' + (defShift==='야간'?'checked':'') + ' onchange="updateShiftUI()"> 🌙 야간</label>'
     + '</div></div>'
-    + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
     + ' &nbsp;|  총 ' + packs.length + '패킹'
-    + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
+    + (hasDetail ? '' : '<span style="color:#ff8c33"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
   if (doneCount > 0) {
     const allDone = doneCount >= packs.length;
-    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+    html += '<div style="background:' + (allDone?'rgba(34,197,94,0.1)':'rgba(255,107,0,0.1)') + ';border:1px solid ' + (allDone?'rgba(34,197,94,0.3)':'rgba(255,107,0,0.3)') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
       + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
 
-  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">'
     + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
     + '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm" style="background:#ff6b00;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;font-family:inherit" onclick="prodPackSelAll(true)">전체 선택</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
-    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
+    + '<button class="btn btn-sm" style="background:#2c1212;color:#ff5252;border:1px solid rgba(255,82,82,0.3);border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">전체 취소</button>'
     + '</div>'
-    + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
+    + '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:6px 0;max-height:280px;overflow-y:auto;background:#2c2c2e">';
 
   packs.forEach(p => {
     const done = donePacks.has(p.n);
     const info = doneInfo[p.n];
     const infoTxt = done && info ? (info.date + ' ' + info.shift + ' ' + info.machine) : '';
-    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
+    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.45;background:#1c1c1e' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
       + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
-        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
+      html += '<span style="font-size:.7rem;color:#4ade80;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#3a3a3c;border:1px solid rgba(255,107,0,0.3);color:#ff8c33;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -1555,7 +1555,7 @@ async function renderDeckForm(data) {
     + '<div class="prod-summary-item"><div class="pval" id="sum-sheets">-</div><div class="plbl">총 장수</div></div>'
     + '<div class="prod-summary-item"><div class="pval" id="sum-area">-</div><div class="plbl">총 면적(㎡)</div></div>'
     + '</div>'
-    + '<button class="btn btn-success btn-full" style="margin-top:12px" onclick="submitProdEntry()">✅ 생산 등록</button>';
+    + '<button class="btn btn-full" style="margin-top:12px;background:#ff6b00;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700" onclick="submitProdEntry()">✅ 생산 등록</button>';
 
   document.getElementById('prod-entry-body').innerHTML = html;
   updateShiftUI();
@@ -1564,8 +1564,8 @@ async function renderDeckForm(data) {
 
 function updateShiftUI() {
   const isDay = document.querySelector('input[name="prod-shift"][value="주간"]')?.checked;
-  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
-  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#ff6b00' : '#48484a';
+  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#ff6b00' : '#48484a';
 }
 
 function prodPackSelAll(val) {
@@ -2115,53 +2115,53 @@ async function renderDeckForm(data) {
 
   let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
-    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit"></div>'
+    + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
     + '<div style="display:flex;gap:8px">'
-    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="주간" ' + (defShift==='주간'?'checked':'') + ' onchange="updateShiftUI()"> 🌤️ 주간</label>'
-    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">'
+    + '<label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">'
     + '<input type="radio" name="prod-shift" value="야간" ' + (defShift==='야간'?'checked':'') + ' onchange="updateShiftUI()"> 🌙 야간</label>'
     + '</div></div>'
-    + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
     + ' &nbsp;|  총 ' + packs.length + '패킹'
-    + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
+    + (hasDetail ? '' : '<span style="color:#ff8c33"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
   if (doneCount > 0) {
     const allDone = doneCount >= packs.length;
-    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+    html += '<div style="background:' + (allDone?'rgba(34,197,94,0.1)':'rgba(255,107,0,0.1)') + ';border:1px solid ' + (allDone?'rgba(34,197,94,0.3)':'rgba(255,107,0,0.3)') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
       + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
 
-  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">'
     + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
     + '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm" style="background:#ff6b00;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;font-family:inherit" onclick="prodPackSelAll(true)">전체 선택</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
-    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
+    + '<button class="btn btn-sm" style="background:#2c1212;color:#ff5252;border:1px solid rgba(255,82,82,0.3);border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">전체 취소</button>'
     + '</div>'
-    + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
+    + '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:6px 0;max-height:280px;overflow-y:auto;background:#2c2c2e">';
 
   packs.forEach(p => {
     const done = donePacks.has(p.n);
     const info = doneInfo[p.n];
     const infoTxt = done && info ? (info.date + ' ' + info.shift + ' ' + info.machine) : '';
-    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
+    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.45;background:#1c1c1e' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
       + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
-        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
+      html += '<span style="font-size:.7rem;color:#4ade80;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#3a3a3c;border:1px solid rgba(255,107,0,0.3);color:#ff8c33;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -2176,7 +2176,7 @@ async function renderDeckForm(data) {
     + '<div class="prod-summary-item"><div class="pval" id="sum-sheets">-</div><div class="plbl">총 장수</div></div>'
     + '<div class="prod-summary-item"><div class="pval" id="sum-area">-</div><div class="plbl">총 면적(㎡)</div></div>'
     + '</div>'
-    + '<button class="btn btn-success btn-full" style="margin-top:12px" onclick="submitProdEntry()">✅ 생산 등록</button>';
+    + '<button class="btn btn-full" style="margin-top:12px;background:#ff6b00;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700" onclick="submitProdEntry()">✅ 생산 등록</button>';
 
   document.getElementById('prod-entry-body').innerHTML = html;
   updateShiftUI();
@@ -2185,8 +2185,8 @@ async function renderDeckForm(data) {
 
 function updateShiftUI() {
   const isDay = document.querySelector('input[name="prod-shift"][value="주간"]')?.checked;
-  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
-  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+  document.getElementById('lbl-shift-day').style.borderColor   = isDay  ? '#ff6b00' : '#48484a';
+  document.getElementById('lbl-shift-night').style.borderColor = !isDay ? '#ff6b00' : '#48484a';
 }
 
 function prodPackSelAll(val) {
@@ -2801,7 +2801,11 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
     </div>
 
     <div class="home-header">
-      <div class="home-logo">🏭</div>
+      <div class="home-logo">
+        <img src="https://cdn.imweb.me/upload/S202211296a245b31c2e07/75050230ade41.png"
+             style="height:52px;object-fit:contain;filter:brightness(1.1)"
+             onerror="this.outerHTML='<span style=\'font-size:2rem\'>🏭</span>'">
+      </div>
       <div class="home-title">비콘㈜ 관리시스템</div>
       <div class="home-sub">업무 영역을 선택하세요</div>
     </div>
@@ -3277,7 +3281,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           </div>
           <div class="form-group" style="margin:0">
             <label style="font-size:.78rem;color:#546e7a;font-weight:600">호기</label>
-            <select id="prod-machine" style="width:100%;border:1.5px solid #cfd8dc;border-radius:8px;padding:8px;font-size:.85rem;background:#fff;font-family:inherit">
+            <select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">
               <option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>
             </select>
           </div>
@@ -3285,10 +3289,10 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         <div class="form-group" style="margin:0">
           <label style="font-size:.78rem;color:#546e7a;font-weight:600">주간 / 야간</label>
           <div style="display:flex;gap:8px;margin-top:4px">
-            <label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">
+            <label id="lbl-shift-day" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">
               <input type="radio" name="prod-shift" value="주간" onchange="updateShiftUI()"> 🌤️ 주간
             </label>
-            <label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #cfd8dc;border-radius:10px;cursor:pointer;font-size:.9rem;transition:border-color .15s">
+            <label id="lbl-shift-night" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px solid #48484a;border-radius:10px;cursor:pointer;font-size:.9rem;color:#fff;transition:border-color .15s">
               <input type="radio" name="prod-shift" value="야간" onchange="updateShiftUI()"> 🌙 야간
             </label>
           </div>
@@ -5531,10 +5535,10 @@ async function renderDeckForm(data) {
     + ' &nbsp;|&nbsp; 🏗️ <strong>' + esc(sesMachine) + '</strong>'
     + ' &nbsp;|&nbsp; <strong style="color:' + (sesShift==='야간'?'#1565c0':'#e65100') + '">' + sesShift + '</strong>'
     + ' <span style="color:#90a4ae;font-size:.72rem">(위 세션카드에서 변경)</span></div>'
-    + '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
     + ' &nbsp;|  총 ' + packs.length + '패킹'
-    + (hasDetail ? '' : '<span style="color:#f57f17"> (장수·면적 정보 없음)</span>')
+    + (hasDetail ? '' : '<span style="color:#ff8c33"> (장수·면적 정보 없음)</span>')
     + '</div>';
 
   // ── 포장방식 선택 (작업지시서 pm 기본값, 변경 가능) ──────────
@@ -5554,33 +5558,33 @@ async function renderDeckForm(data) {
 
   if (doneCount > 0) {
     const allDone = doneCount >= packs.length;
-    html += '<div style="background:' + (allDone?'#e8f5e9':'#fff8e1') + ';border:1px solid ' + (allDone?'#a5d6a7':'#ffe082') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
+    html += '<div style="background:' + (allDone?'rgba(34,197,94,0.1)':'rgba(255,107,0,0.1)') + ';border:1px solid ' + (allDone?'rgba(34,197,94,0.3)':'rgba(255,107,0,0.3)') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone?'#2e7d32':'#e65100') + '">'
       + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + '패킹은 자동 해제됨 ('
       + packs.filter(p=>donePacks.has(p.n)).map(p=>p.n).join(', ') + '번)'
       + '</div>';
   }
 
-  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">'
     + '☑️ <strong>등록할 패킹을 체크</strong>하세요. 체크된 패킹만 등록됩니다.</div>'
     + '<div class="pack-controls">'
-    + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm" style="background:#ff6b00;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;font-family:inherit" onclick="prodPackSelAll(true)">전체 선택</button>'
     + '<button class="btn btn-sm btn-secondary" onclick="prodPackSelAll(false)">전체 해제</button>'
-    + '<button class="btn btn-sm" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">🗑️ 전체 취소</button>'
+    + '<button class="btn btn-sm" style="background:#2c1212;color:#ff5252;border:1px solid rgba(255,82,82,0.3);border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit" onclick="cancelProdRecords()">전체 취소</button>'
     + '</div>'
-    + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;max-height:280px;overflow-y:auto">';
+    + '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:6px 0;max-height:280px;overflow-y:auto;background:#2c2c2e">';
 
   packs.forEach(p => {
     const done = donePacks.has(p.n);
     const info = doneInfo[p.n];
     const infoTxt = done && info ? (info.date + ' ' + info.shift + ' ' + info.machine) : '';
-    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.55;background:#f1f8e9' : '') + '">'
+    html += '<div class="pack-detail-row" style="' + (done ? 'opacity:.45;background:#1c1c1e' : '') + '">'
       + '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:' + (done ? 'default' : 'pointer') + '">'
       + '<input type="checkbox" class="prod-cb" value="' + p.n + '" '
       + (done ? 'disabled ' : 'checked ') + 'onchange="updateProdTotals()">'
       + '<span style="font-weight:600;min-width:38px">' + p.n + '</span>';
     if (done) {
-      html += '<span style="font-size:.7rem;color:#388e3c;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
-        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
+      html += '<span style="font-size:.7rem;color:#4ade80;display:flex;align-items:center;gap:6px">✅ ' + esc(infoTxt)
+        + ' <button onclick="quickEditProdRecord(\'' + (info.docId||'') + '\',\'' + (info.date||'') + '\',\'' + (info.machine||'') + '\',\'' + (info.shift||'') + '\')" style="background:#3a3a3c;border:1px solid rgba(255,107,0,0.3);color:#ff8c33;border-radius:5px;padding:2px 7px;font-size:.72rem;cursor:pointer;font-family:inherit;line-height:1.5">✏️ 수정</button></span>';
     } else if (p.s !== null) {
       html += '<span class="pack-detail-badge"><span>' + p.s + '장</span><span>' + p.a + '㎡</span></span>';
     } else {
@@ -5606,8 +5610,8 @@ function updateShiftUI() {
   const isDay = document.querySelector('input[name="prod-shift"][value="주간"]')?.checked;
   const dayEl   = document.getElementById('lbl-shift-day');
   const nightEl = document.getElementById('lbl-shift-night');
-  if (dayEl)   dayEl.style.borderColor   = isDay  ? '#e65100' : '#cfd8dc';
-  if (nightEl) nightEl.style.borderColor = !isDay ? '#e65100' : '#cfd8dc';
+  if (dayEl)   dayEl.style.borderColor   = isDay  ? '#ff6b00' : '#48484a';
+  if (nightEl) nightEl.style.borderColor = !isDay ? '#ff6b00' : '#48484a';
 }
 
 function updatePmUI() {
@@ -5754,13 +5758,13 @@ async function renderTGForm(data) {
     + ' &nbsp;|&nbsp; <strong style="color:' + (sesShift==='야간'?'#1565c0':'#e65100') + '">' + sesShift + '</strong>'
     + ' <span style="color:#90a4ae;font-size:.72rem">(위 세션카드에서 변경)</span></div>';
 
-  html += '<div style="font-size:.78rem;color:#546e7a;margin-bottom:8px">'
+  html += '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px">'
     + '<strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
     + ' &nbsp;|&nbsp; <strong>TYPE:</strong> ' + esc(data.tg_type || '-')
     + ' / 높이 ' + esc(String(data.h ?? '-')) + ' / 피복 ' + esc(String(data.cov ?? '-'))
     + '</div>';
 
-  html += '<div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.77rem;color:#1565c0">'
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">'
     + '☑️ 생산한 <strong>데크순번을 체크</strong>하고 <strong>생산수량(EA)</strong>을 입력하세요. 체크된 순번만 등록됩니다.</div>';
 
   html += '<div class="pack-controls">'
@@ -5988,28 +5992,28 @@ function renderJobList() {
   body.innerHTML = _jobListRendered.map((r, i) => {
     const st = jobStatus(r);
     const pmBadge = r.pm === '목재'
-      ? '<span style="background:#efebe9;color:#5d4037;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700">🪵 목재</span>'
+      ? '<span style="background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.25);border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700">🪵 목재</span>'
       : r.pm === '슬리퍼'
-        ? '<span style="background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:700">🛷 슬리퍼</span>'
+        ? '<span style="background:rgba(255,107,0,0.15);color:#ff8c33;border:1px solid rgba(255,107,0,0.3);border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700">🛷 슬리퍼</span>'
         : '';
     const statusBadge = st === 'done'
-      ? '<span style="font-size:.7rem;color:#b0bec5;font-weight:600">완료</span>'
+      ? '<span style="font-size:.7rem;color:#48484a;font-weight:600;background:rgba(255,255,255,0.06);border-radius:6px;padding:2px 8px">완료</span>'
       : st === 'partial'
-        ? '<span style="font-size:.7rem;color:#ff8f00;font-weight:600">진행중</span>'
+        ? '<span style="font-size:.7rem;color:#ff8c33;font-weight:700;background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);border-radius:6px;padding:2px 8px">진행중</span>'
         : pmBadge;
     const wrapStyle = st === 'done'
-      ? 'padding:11px 12px;border:1px solid #eceff1;border-radius:10px;margin-bottom:7px;cursor:pointer;opacity:0.4;-webkit-tap-highlight-color:transparent'
+      ? 'background:#2c2c2e;padding:13px 14px;border:1px solid rgba(255,255,255,0.07);border-radius:14px;margin-bottom:8px;cursor:pointer;opacity:0.38;-webkit-tap-highlight-color:transparent'
       : st === 'partial'
-        ? 'padding:11px 12px;border:1px solid #ffe082;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent'
-        : 'padding:11px 12px;border:1px solid #e3e7ea;border-radius:10px;margin-bottom:7px;cursor:pointer;-webkit-tap-highlight-color:transparent';
+        ? 'background:#2c2c2e;padding:13px 14px;border:1px solid rgba(255,107,0,0.45);border-radius:14px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent'
+        : 'background:#2c2c2e;padding:13px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent';
     return '<div onclick="tapJobOrder(' + i + ')" style="' + wrapStyle + '">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
-      + '<div style="font-weight:700;font-size:.9rem;color:#263238;flex:1;min-width:0">' + esc(r.site||'') + '</div>'
+      + '<div style="font-weight:800;font-size:.92rem;color:#fff;flex:1;min-width:0">' + esc(r.site||'') + '</div>'
       + statusBadge + '</div>'
-    + '<div style="color:#607d8b;font-size:.76rem;margin-top:2px">' + esc(r.company||'')
+    + '<div style="color:#aeaeb2;font-size:.76rem;margin-top:4px;font-weight:500">' + esc(r.company||'')
       + (r.req_code ? ' · ' + esc(r.req_code) : '') + '</div>'
-    + '<div style="font-size:.8rem;margin-top:3px;color:#37474f">패킹 ' + r.pack_from + '~' + r.pack_to
-      + ' <span style="color:#90a4ae">· ' + (r.total_sheets||0) + '매 / ' + (+(r.total_area||0)).toFixed(1) + '㎡</span></div>'
+    + '<div style="font-size:.78rem;margin-top:5px;color:#8e8e93;font-weight:500">패킹 ' + r.pack_from + '~' + r.pack_to
+      + ' · ' + (r.total_sheets||0) + '매 / ' + (+(r.total_area||0)).toFixed(1) + '㎡</div>'
     + '</div>';
   }).join('');
 }

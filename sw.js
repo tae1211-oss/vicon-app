@@ -1,6 +1,6 @@
-const CACHE_NAME = 'vicon-v28';
+﻿const CACHE_NAME = 'vicon-v29';
 
-// 앱 껍데기(HTML/아이콘)만 캐시 — Firebase 데이터는 항상 네트워크
+// ??猿띾뜲湲?HTML/?꾩씠肄?留?罹먯떆 ??Firebase ?곗씠?곕뒗 ??긽 ?ㅽ듃?뚰겕
 const PRECACHE = [
   '/',
   '/index.html',
@@ -27,7 +27,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Firebase / 외부 API 요청은 항상 네트워크
+  // Firebase / ?몃? API ?붿껌? ??긽 ?ㅽ듃?뚰겕
   if (
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('firebase') ||
@@ -37,10 +37,10 @@ self.addEventListener('fetch', e => {
     url.hostname.includes('unpkg') ||
     url.hostname.includes('jsdelivr')
   ) {
-    return; // 브라우저 기본 동작 (네트워크)
+    return; // 釉뚮씪?곗? 湲곕낯 ?숈옉 (?ㅽ듃?뚰겕)
   }
 
-  // 앱 HTML은 네트워크 우선 → 실패 시 캐시
+  // ??HTML? ?ㅽ듃?뚰겕 ?곗꽑 ???ㅽ뙣 ??罹먯떆
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -54,7 +54,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // 나머지 정적 파일은 캐시 우선 → 없으면 네트워크
+  // ?섎㉧吏 ?뺤쟻 ?뚯씪? 罹먯떆 ?곗꽑 ???놁쑝硫??ㅽ듃?뚰겕
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
