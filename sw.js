@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'vicon-v29';
+﻿const CACHE_NAME = 'vicon-v30';
 
 // ??猿띾뜲湲?HTML/?꾩씠肄?留?罹먯떆 ??Firebase ?곗씠?곕뒗 ??긽 ?ㅽ듃?뚰겕
 const PRECACHE = [
@@ -59,3 +59,4 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
+
