@@ -233,7 +233,7 @@ async function renderDeckForm(data) {
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
     + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#1c1c1e;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
@@ -880,7 +880,7 @@ async function renderDeckForm(data) {
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
     + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#1c1c1e;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
@@ -1508,7 +1508,7 @@ async function renderDeckForm(data) {
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
     + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#1c1c1e;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
@@ -2135,7 +2135,7 @@ async function renderDeckForm(data) {
     + '<div class="form-group" style="margin:0"><label>생산 일자</label>'
     + '<input type="date" id="prod-date" value="' + defDate + '" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;font-family:inherit;background:#3a3a3c;color:#fff"></div>'
     + '<div class="form-group" style="margin:0"><label>호기</label>'
-    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#1c1c1e;font-family:inherit">'
+    + '<select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">'
     + '<option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>'
     + '</select></div></div>'
     + '<div class="form-group" style="margin-bottom:12px"><label>주간 / 야간</label>'
@@ -3305,7 +3305,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
           </div>
           <div class="form-group" style="margin:0">
             <label style="font-size:.78rem;color:#546e7a;font-weight:600">호기</label>
-            <select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#1c1c1e;font-family:inherit">
+            <select id="prod-machine" style="width:100%;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">
               <option>1호기</option><option>2호기</option><option>3호기</option><option>4호기</option><option>탈형</option>
             </select>
           </div>
@@ -4330,8 +4330,7 @@ async function handleInbound(data) {
       + '<button class="btn btn-sm btn-secondary" onclick="packSelAll(\'ib\',true)">전체선택</button>'
       + '<button class="btn btn-sm btn-secondary" onclick="packSelAll(\'ib\',false)">전체해제</button>'
       + '</div>'
-      + '<div class="pack-grid" id="ib-pack-grid">';
-      + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 0 8px" id="ib-pack-grid">';
+      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 0 8px" id="ib-pack-grid">';
 
     if (alreadyOut.length > 0) {
       html += '<div style="background:rgba(198,40,40,0.12);border:1px solid rgba(229,115,115,0.4);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.78rem;grid-column:1/-1">'
@@ -4363,9 +4362,8 @@ async function handleInbound(data) {
       }
     });
 
-    html += '</div>'
-      + '📍 구역 선택 후 적재'
-      + '</button>';
+    html += '</div>';
+    html += '<button class="btn btn-success btn-full" style="margin-top:12px" onclick="openZonePicker()">구역 선택 후 적재</button>';
     bodyEl.innerHTML = html;
     // 스캔/탭 직후 패킹 체크 창으로 이동
     setTimeout(() =>
