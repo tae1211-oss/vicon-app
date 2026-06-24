@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'vicon-v31';
+﻿const CACHE_NAME = 'vicon-v32';
 
 // ??猿띾뜲湲?HTML/?꾩씠肄?留?罹먯떆 ??Firebase ?곗씠?곕뒗 ??긽 ?ㅽ듃?뚰겕
 const PRECACHE = [

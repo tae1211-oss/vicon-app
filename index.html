@@ -5973,10 +5973,18 @@ async function loadJobOrders(force) {
     try {
       snap = await dbGet(db.collection('job_orders').orderBy('updated_at', 'desc'));
     } catch(_) {
-      snap = await dbGet(db.collection('job_orders'));   // 인덱스 문제 시 정렬 없이
+      snap = await dbGet(db.collection('job_orders'));
     }
     _jobOrders = [];
     snap.forEach(doc => _jobOrders.push({ id: doc.id, ...doc.data() }));
+    // 완료 표시용: 생산 기록 없으면 production_deck 로드
+    if (!window._prodRecords || window._prodRecords.length === 0) {
+      try {
+        const psnap = await dbGet(db.collection('production_deck').limit(2000));
+        window._prodRecords = [];
+        psnap.forEach(doc => window._prodRecords.push({ id: doc.id, ...doc.data() }));
+      } catch(_) {}
+    }
     renderJobList();
   } catch(e) {
     body.innerHTML = '<div class="alert alert-error">' + esc(e.message) + '</div>';
