@@ -6747,13 +6747,38 @@ async function downloadDailyAllReport() {
     }
 
     if (!cnt) { toast('생성된 일보 없음'); return; }
-    toast(`${cnt}개 일보 압축 중…`);
-    const blob = await zip.generateAsync({type:'blob'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `생산일보_${dateStr}.zip`; a.click();
-    URL.revokeObjectURL(url);
-    toast(`완료: ${cnt}개 일보 다운로드`);
+
+    // 모바일: 공유 시트 / PC: ZIP 다운로드
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile && navigator.canShare) {
+      // PNG Blob 파일 배열로 변환
+      toast(`${cnt}개 일보 공유 준비 중…`);
+      const files = [];
+      for (const [name, file] of Object.entries(zip.files)) {
+        const content = await file.async('blob');
+        files.push(new File([content], name, {type:'image/png'}));
+      }
+      if (navigator.canShare({files})) {
+        await navigator.share({ files, title: `생산일보 ${date}` });
+        toast('공유 완료');
+      } else {
+        // canShare가 false면 ZIP으로 폴백
+        const blob = await zip.generateAsync({type:'blob'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `생산일보_${dateStr}.zip`; a.click();
+        URL.revokeObjectURL(url);
+        toast(`완료: ${cnt}개 일보 ZIP 다운로드`);
+      }
+    } else {
+      toast(`${cnt}개 일보 압축 중…`);
+      const blob = await zip.generateAsync({type:'blob'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `생산일보_${dateStr}.zip`; a.click();
+      URL.revokeObjectURL(url);
+      toast(`완료: ${cnt}개 일보 ZIP 다운로드`);
+    }
   } catch(e) { toast('오류: ' + e.message); }
 }
 
