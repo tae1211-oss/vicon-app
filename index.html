@@ -6675,74 +6675,86 @@ async function downloadDailyAllReport() {
     const dw = '일월화수목금토'[dObj.getDay()];
     const dateStr = date.replace(/-/g,'');
     const zip = new JSZip();
-    let cnt = 0;
+    const shOrd = {'주간':0,'야간':1};
+    const macOrd = m => { const n = parseInt(m); return isNaN(n) ? 99 : n; };
 
-    // ── 데크: machine+shift 그룹별 PNG ──
-    const deckGroups = {};
+    // 모든 그룹을 [shift, type, machine] 순으로 정렬해서 처리
+    // → 주간 데크1,2,3,4호기 → 주간 TG → 야간 데크 → 야간 TG
+    const allGroups = [];
+    const deckGroups = {}, tgGroups = {};
     deckRecs.forEach(r => {
-      const key = (r.machine||'') + '|' + (r.shift||'');
-      if (!deckGroups[key]) deckGroups[key] = [];
-      deckGroups[key].push(r);
+      const k = (r.machine||'')+'|'+(r.shift||'');
+      if (!deckGroups[k]) deckGroups[k] = [];
+      deckGroups[k].push(r);
     });
-    for (const key of Object.keys(deckGroups)) {
-      const [machine, shift] = key.split('|');
-      const recs = deckGroups[key].sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
-      const ROWS = 13;
-      const pages = [];
-      for (let i = 0; i < Math.max(1, Math.ceil(recs.length/ROWS)); i++) {
-        const slice = recs.slice(i*ROWS, (i+1)*ROWS);
-        let tArea = 0, tSheets = 0;
-        const rows = slice.map(r => {
-          const nos = (r.packs||[]).map(p=>Number(p.pack_no)).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
-          const packStr = nos.length ? (nos[0]===nos[nos.length-1] ? String(nos[0]) : nos[0]+'-'+nos[nos.length-1]) : '';
-          tArea += r.total_area||0; tSheets += r.total_sheets||0;
-          return { site: r.site||'', packStr, req: r.req_code||'',
-            area: r.total_area!=null?(+r.total_area).toFixed(2):'',
-            qty:  r.total_sheets!=null?String(r.total_sheets):'', pm: r.pack_method||'' };
-        });
-        pages.push({ rows, tArea, tSheets });
-      }
-      const meta = { machine, y, mo, dy, dw, shift, ROWS };
-      const canvas = renderDailyReportCanvas(meta, pages);
-      const dataUrl = canvas.toDataURL('image/png');
-      const b64 = dataUrl.split(',')[1];
-      zip.file(`데크_${machine}_${shift}_${dateStr}.png`, b64, {base64:true});
-      cnt++;
-    }
-
-    // ── TG: machine+shift 그룹별 PNG ──
-    const tgGroups = {};
     tgRecs.forEach(r => {
-      const key = (r.machine||'') + '|' + (r.shift||'');
-      if (!tgGroups[key]) tgGroups[key] = [];
-      tgGroups[key].push(r);
+      const k = (r.machine||'')+'|'+(r.shift||'');
+      if (!tgGroups[k]) tgGroups[k] = [];
+      tgGroups[k].push(r);
     });
-    for (const key of Object.keys(tgGroups)) {
-      const [machine, shift] = key.split('|');
-      const recs = tgGroups[key].sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
-      const ROWS = 15;
-      const allRows = [];
-      recs.forEach(rec => {
-        (rec.items||[]).forEach(it => {
-          allRows.push({
-            tg_type: rec.tg_type||'', length: it.length||0, qty: it.qty||0,
-            site: rec.site||rec.company||'', req_code: rec.req_code||'',
-            area_m: it.area_m!=null?(+it.area_m).toFixed(2)
-              :(it.length&&it.qty?(it.length*it.qty/1000).toFixed(2):'')
+    Object.keys(deckGroups).forEach(k => {
+      const [machine, shift] = k.split('|');
+      allGroups.push({type:'deck', machine, shift, recs: deckGroups[k]});
+    });
+    Object.keys(tgGroups).forEach(k => {
+      const [machine, shift] = k.split('|');
+      allGroups.push({type:'tg', machine, shift, recs: tgGroups[k]});
+    });
+    // 정렬: 주간→야간, 호기순, 데크→TG
+    allGroups.sort((a, b) =>
+      (shOrd[a.shift]||0) - (shOrd[b.shift]||0) ||
+      macOrd(a.machine) - macOrd(b.machine) ||
+      (a.type === 'deck' ? 0 : 1) - (b.type === 'deck' ? 0 : 1)
+    );
+
+    let cnt = 0;
+    for (const g of allGroups) {
+      const {type, machine, shift, recs} = g;
+      let canvas;
+      if (type === 'deck') {
+        const ROWS = 13;
+        const sorted = recs.slice().sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
+        const pages = [];
+        for (let i = 0; i < Math.max(1, Math.ceil(sorted.length/ROWS)); i++) {
+          const slice = sorted.slice(i*ROWS, (i+1)*ROWS);
+          let tArea = 0, tSheets = 0;
+          const rows = slice.map(r => {
+            const nos = (r.packs||[]).map(p=>Number(p.pack_no)).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+            const packStr = nos.length ? (nos[0]===nos[nos.length-1] ? String(nos[0]) : nos[0]+'-'+nos[nos.length-1]) : '';
+            tArea += r.total_area||0; tSheets += r.total_sheets||0;
+            return { site: r.site||'', packStr, req: r.req_code||'',
+              area: r.total_area!=null?(+r.total_area).toFixed(2):'',
+              qty:  r.total_sheets!=null?String(r.total_sheets):'', pm: r.pack_method||'' };
+          });
+          pages.push({ rows, tArea, tSheets });
+        }
+        canvas = renderDailyReportCanvas({ machine, y, mo, dy, dw, shift, ROWS }, pages);
+      } else {
+        const ROWS = 15;
+        const sorted = recs.slice().sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
+        const allRows = [];
+        sorted.forEach(rec => {
+          (rec.items||[]).forEach(it => {
+            allRows.push({
+              tg_type: rec.tg_type||'', length: it.length||0, qty: it.qty||0,
+              site: rec.site||rec.company||'', req_code: rec.req_code||'',
+              area_m: it.area_m!=null?(+it.area_m).toFixed(2)
+                :(it.length&&it.qty?(it.length*it.qty/1000).toFixed(2):'')
+            });
           });
         });
-      });
-      const pages = [];
-      for (let i = 0; i < Math.max(1, Math.ceil(allRows.length/ROWS)); i++) {
-        const rows = allRows.slice(i*ROWS, (i+1)*ROWS);
-        let tQty = 0, tArea = 0;
-        rows.forEach(r => { tQty += r.qty||0; tArea += parseFloat(r.area_m)||0; });
-        pages.push({ rows, tQty, tArea });
+        const pages = [];
+        for (let i = 0; i < Math.max(1, Math.ceil(allRows.length/ROWS)); i++) {
+          const rows = allRows.slice(i*ROWS, (i+1)*ROWS);
+          let tQty = 0, tArea = 0;
+          rows.forEach(r => { tQty += r.qty||0; tArea += parseFloat(r.area_m)||0; });
+          pages.push({ rows, tQty, tArea });
+        }
+        canvas = renderTGDailyReportCanvas({ machine, y, mo, dy, dw, shift, ROWS }, pages);
       }
-      const meta = { machine, y, mo, dy, dw, shift, ROWS };
-      const canvas = renderTGDailyReportCanvas(meta, pages);
-      const b64 = canvas.toDataURL('image/png').split(',')[1];
-      zip.file(`TG_${machine}_${shift}_${dateStr}.png`, b64, {base64:true});
+      const typeName = type === 'deck' ? '데크' : 'TG';
+      const fname = `${String(cnt+1).padStart(2,'0')}_${typeName}_${machine}_${shift}_${dateStr}.png`;
+      zip.file(fname, canvas.toDataURL('image/png').split(',')[1], {base64:true});
       cnt++;
     }
 
