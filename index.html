@@ -3773,7 +3773,7 @@ function renderLoadingList() {
   const MAC = { '12': ['1호기','2호기','1,2호기'], '34': ['3호기','4호기','3,4호기'], 'dm': ['탈형'] };
   const searchQ = (document.getElementById('ll-search')?.value || '').trim();
   let recs = _llRecords.filter(r => MAC[_llTab].includes(r.machine));
-  if (searchQ) recs = recs.filter(r => (r.site || '').includes(searchQ));
+  if (searchQ) { const q = searchQ.toLowerCase(); recs = recs.filter(r => (r.site || '').toLowerCase().includes(q)); }
 
   recs = recs.map(r => {
     const did    = makeDocId(r.company, r.site);
