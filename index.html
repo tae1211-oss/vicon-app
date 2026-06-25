@@ -2770,6 +2770,7 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
 </style>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -3283,10 +3284,10 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <!-- ── 현황 ── -->
   <div class="page active" id="ppage-stat">
     <div class="card" style="padding:12px 14px;margin-bottom:8px">
-      <div style="font-size:.78rem;color:#aeaeb2;font-weight:600;margin-bottom:6px">📥 일별 전체 일보 다운로드</div>
+      <div style="font-size:.78rem;color:#aeaeb2;font-weight:600;margin-bottom:6px">📥 일별 일보 사진 일괄 다운로드</div>
       <div style="display:flex;align-items:center;gap:8px">
         <input type="date" id="daily-dl-date" style="flex:1;min-width:0;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">
-        <button onclick="downloadDailyAllReport()" style="padding:8px 16px;background:#ff6b00;color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">데크+TG 다운로드</button>
+        <button onclick="downloadDailyAllReport()" style="padding:8px 16px;background:#ff6b00;color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">일보 ZIP 다운로드</button>
       </div>
     </div>
     <div class="card">
@@ -6651,12 +6652,12 @@ function downloadProdMonthExcel() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// ── 일별 전체 일보 다운로드 (데크+TG) ────────────────────────
+// ── 일별 일보 사진 일괄 다운로드 (데크+TG → ZIP) ─────────────
 async function downloadDailyAllReport() {
-  const dateEl = document.getElementById('daily-dl-date');
-  const date = dateEl?.value;
+  const date = document.getElementById('daily-dl-date')?.value;
   if (!date) { toast('날짜를 선택하세요'); return; }
-  if (!db) { toast('Firebase 미연결'); return; }
+  if (!db)   { toast('Firebase 미연결'); return; }
+  if (typeof JSZip === 'undefined') { toast('JSZip 로드 중, 잠시 후 다시 시도하세요'); return; }
   toast('데이터 조회 중…');
   try {
     const [deckSnap, tgSnap] = await Promise.all([
@@ -6667,100 +6668,92 @@ async function downloadDailyAllReport() {
     const tgRecs   = []; tgSnap.forEach(doc   => tgRecs.push(doc.data()));
     if (!deckRecs.length && !tgRecs.length) { toast('해당 날짜 생산 기록 없음'); return; }
 
-    const _dw = '일월화수목금토';
+    await (document.fonts?.ready || Promise.resolve());
+
     const dObj = new Date(date + 'T12:00:00');
-    const dateLbl = date + '(' + _dw[dObj.getDay()] + ')';
-    const shOrd = {'주간':0,'야간':1};
-    const macOrd = m => { const n = parseInt(m); return isNaN(n) ? 99 : n; };
-    const sortFn = (a,b) => macOrd(a.machine)-macOrd(b.machine) || (shOrd[a.shift]||0)-(shOrd[b.shift]||0);
-    deckRecs.sort(sortFn); tgRecs.sort(sortFn);
+    const y = dObj.getFullYear(), mo = dObj.getMonth()+1, dy = dObj.getDate();
+    const dw = '일월화수목금토'[dObj.getDay()];
+    const dateStr = date.replace(/-/g,'');
+    const zip = new JSZip();
+    let cnt = 0;
 
-    const bd = 'border:1px solid #bbb';
-    const thCell = (bg, txt) => `<td style="${bd};background:${bg};font-weight:bold;text-align:center;padding:5px 8px;font-size:11px;font-family:Arial">${txt}</td>`;
-    const tdCell = (bg, txt, align) => `<td style="${bd};background:${bg};text-align:${align||'center'};padding:4px 8px;font-size:11px;font-family:Arial">${txt??''}</td>`;
-
-    let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-      + '<head><meta charset="utf-8">'
-      + '<xml><x:ExcelWorkbook><x:ExcelWorksheets>'
-      + '<x:ExcelWorksheet><x:Name>데크</x:Name><x:WorksheetOptions><x:Selected/></x:WorksheetOptions></x:ExcelWorksheet>'
-      + '<x:ExcelWorksheet><x:Name>TG</x:Name></x:ExcelWorksheet>'
-      + '</x:ExcelWorksheets></x:ExcelWorkbook></xml></head><body>';
-
-    // ─ 데크 ─
-    html += '<table cellspacing="0">';
-    html += `<tr><td colspan="8" style="${bd};background:#e3f2fd;font-size:13px;font-weight:bold;font-family:Arial;padding:8px">${dateLbl} 데크 생산 일보</td></tr>`;
-    html += '<tr>' + thCell('#bbdefb','호기') + thCell('#bbdefb','주야') + thCell('#bbdefb','현장명') + thCell('#bbdefb','의뢰번호') + thCell('#bbdefb','패킹') + thCell('#bbdefb','장수') + thCell('#bbdefb','면적(㎡)') + thCell('#bbdefb','포장방법') + '</tr>';
-    if (deckRecs.length) {
-      let totS = 0, totA = 0;
-      deckRecs.forEach((r, i) => {
-        const bg = i%2===0 ? '#fff' : '#f7faff';
-        const packs = (r.packs||[]).map(p=>p.pack_no).join(', ');
-        totS += (r.total_sheets||0); totA += +(r.total_area||0);
-        html += '<tr>'
-          + tdCell(bg, esc(r.machine||''))
-          + tdCell(bg, esc(r.shift||''))
-          + tdCell(bg, esc(r.site||''), 'left')
-          + tdCell(bg, esc(r.req_code||''))
-          + tdCell(bg, packs)
-          + tdCell(bg, r.total_sheets||0)
-          + tdCell(bg, (+(r.total_area||0)).toFixed(1))
-          + tdCell(bg, esc(r.pm||''))
-          + '</tr>';
-      });
-      html += '<tr>'
-        + `<td colspan="5" style="${bd};background:#e3f2fd;font-weight:bold;text-align:right;padding:4px 8px;font-size:11px;font-family:Arial">합계</td>`
-        + thCell('#e3f2fd', totS) + thCell('#e3f2fd', totA.toFixed(1))
-        + `<td style="${bd}"></td></tr>`;
-    } else {
-      html += `<tr><td colspan="8" style="${bd};color:#aaa;text-align:center;padding:10px;font-size:11px;font-family:Arial">기록 없음</td></tr>`;
+    // ── 데크: machine+shift 그룹별 PNG ──
+    const deckGroups = {};
+    deckRecs.forEach(r => {
+      const key = (r.machine||'') + '|' + (r.shift||'');
+      if (!deckGroups[key]) deckGroups[key] = [];
+      deckGroups[key].push(r);
+    });
+    for (const key of Object.keys(deckGroups)) {
+      const [machine, shift] = key.split('|');
+      const recs = deckGroups[key].sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
+      const ROWS = 13;
+      const pages = [];
+      for (let i = 0; i < Math.max(1, Math.ceil(recs.length/ROWS)); i++) {
+        const slice = recs.slice(i*ROWS, (i+1)*ROWS);
+        let tArea = 0, tSheets = 0;
+        const rows = slice.map(r => {
+          const nos = (r.packs||[]).map(p=>Number(p.pack_no)).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+          const packStr = nos.length ? (nos[0]===nos[nos.length-1] ? String(nos[0]) : nos[0]+'-'+nos[nos.length-1]) : '';
+          tArea += r.total_area||0; tSheets += r.total_sheets||0;
+          return { site: r.site||'', packStr, req: r.req_code||'',
+            area: r.total_area!=null?(+r.total_area).toFixed(2):'',
+            qty:  r.total_sheets!=null?String(r.total_sheets):'', pm: r.pack_method||'' };
+        });
+        pages.push({ rows, tArea, tSheets });
+      }
+      const meta = { machine, y, mo, dy, dw, shift, ROWS };
+      const canvas = renderDailyReportCanvas(meta, pages);
+      const dataUrl = canvas.toDataURL('image/png');
+      const b64 = dataUrl.split(',')[1];
+      zip.file(`데크_${machine}_${shift}_${dateStr}.png`, b64, {base64:true});
+      cnt++;
     }
-    html += '</table>';
 
-    // ─ TG ─
-    html += '<br><table cellspacing="0">';
-    html += `<tr><td colspan="7" style="${bd};background:#fce4ec;font-size:13px;font-weight:bold;font-family:Arial;padding:8px">${dateLbl} TG 생산 일보</td></tr>`;
-    html += '<tr>' + thCell('#f8bbd0','호기') + thCell('#f8bbd0','주야') + thCell('#f8bbd0','현장명') + thCell('#f8bbd0','의뢰번호') + thCell('#f8bbd0','구분') + thCell('#f8bbd0','길이×수량') + thCell('#f8bbd0','면적(㎡)') + '</tr>';
-    if (tgRecs.length) {
-      let totA = 0;
-      tgRecs.forEach((r, ri) => {
-        const bg = ri%2===0 ? '#fff' : '#fff5f8';
-        const items = r.items || [];
-        if (!items.length) {
-          html += '<tr>' + tdCell(bg,esc(r.machine||'')) + tdCell(bg,esc(r.shift||'')) + tdCell(bg,esc(r.site||r.company||''),'left') + tdCell(bg,esc(r.req_code||'')) + tdCell(bg,esc(r.tg_type||'')) + tdCell(bg,'-') + tdCell(bg,'-') + '</tr>';
-        } else {
-          items.forEach((it, ii) => {
-            const area = it.area_m != null ? (+it.area_m).toFixed(2) : (it.length && it.qty ? (it.length*it.qty/1000).toFixed(2) : '');
-            totA += parseFloat(area)||0;
-            const qtyStr = (it.length ? it.length+'m × ' : '') + (it.qty||0) + '매';
-            if (ii === 0) {
-              const rs = items.length;
-              html += '<tr>'
-                + `<td rowspan="${rs}" style="${bd};background:${bg};text-align:center;padding:4px 8px;font-size:11px;font-family:Arial">${esc(r.machine||'')}</td>`
-                + `<td rowspan="${rs}" style="${bd};background:${bg};text-align:center;padding:4px 8px;font-size:11px;font-family:Arial">${esc(r.shift||'')}</td>`
-                + `<td rowspan="${rs}" style="${bd};background:${bg};text-align:left;padding:4px 8px;font-size:11px;font-family:Arial">${esc(r.site||r.company||'')}</td>`
-                + `<td rowspan="${rs}" style="${bd};background:${bg};text-align:center;padding:4px 8px;font-size:11px;font-family:Arial">${esc(r.req_code||'')}</td>`
-                + `<td rowspan="${rs}" style="${bd};background:${bg};text-align:center;padding:4px 8px;font-size:11px;font-family:Arial">${esc(r.tg_type||'')}</td>`
-                + tdCell(bg, qtyStr) + tdCell(bg, area) + '</tr>';
-            } else {
-              html += '<tr>' + tdCell(bg, qtyStr) + tdCell(bg, area) + '</tr>';
-            }
+    // ── TG: machine+shift 그룹별 PNG ──
+    const tgGroups = {};
+    tgRecs.forEach(r => {
+      const key = (r.machine||'') + '|' + (r.shift||'');
+      if (!tgGroups[key]) tgGroups[key] = [];
+      tgGroups[key].push(r);
+    });
+    for (const key of Object.keys(tgGroups)) {
+      const [machine, shift] = key.split('|');
+      const recs = tgGroups[key].sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
+      const ROWS = 15;
+      const allRows = [];
+      recs.forEach(rec => {
+        (rec.items||[]).forEach(it => {
+          allRows.push({
+            tg_type: rec.tg_type||'', length: it.length||0, qty: it.qty||0,
+            site: rec.site||rec.company||'', req_code: rec.req_code||'',
+            area_m: it.area_m!=null?(+it.area_m).toFixed(2)
+              :(it.length&&it.qty?(it.length*it.qty/1000).toFixed(2):'')
           });
-        }
+        });
       });
-      html += '<tr>'
-        + `<td colspan="6" style="${bd};background:#fce4ec;font-weight:bold;text-align:right;padding:4px 8px;font-size:11px;font-family:Arial">합계</td>`
-        + thCell('#fce4ec', totA.toFixed(2) + ' ㎡') + '</tr>';
-    } else {
-      html += `<tr><td colspan="7" style="${bd};color:#aaa;text-align:center;padding:10px;font-size:11px;font-family:Arial">기록 없음</td></tr>`;
+      const pages = [];
+      for (let i = 0; i < Math.max(1, Math.ceil(allRows.length/ROWS)); i++) {
+        const rows = allRows.slice(i*ROWS, (i+1)*ROWS);
+        let tQty = 0, tArea = 0;
+        rows.forEach(r => { tQty += r.qty||0; tArea += parseFloat(r.area_m)||0; });
+        pages.push({ rows, tQty, tArea });
+      }
+      const meta = { machine, y, mo, dy, dw, shift, ROWS };
+      const canvas = renderTGDailyReportCanvas(meta, pages);
+      const b64 = canvas.toDataURL('image/png').split(',')[1];
+      zip.file(`TG_${machine}_${shift}_${dateStr}.png`, b64, {base64:true});
+      cnt++;
     }
-    html += '</table></body></html>';
 
-    const blob = new Blob(['﻿' + html], {type:'application/vnd.ms-excel;charset=utf-8'});
+    if (!cnt) { toast('생성된 일보 없음'); return; }
+    toast(`${cnt}개 일보 압축 중…`);
+    const blob = await zip.generateAsync({type:'blob'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = '생산일보_' + date.replace(/-/g,'') + '.xls'; a.click();
+    a.href = url; a.download = `생산일보_${dateStr}.zip`; a.click();
     URL.revokeObjectURL(url);
-    toast('다운로드 완료');
+    toast(`완료: ${cnt}개 일보 다운로드`);
   } catch(e) { toast('오류: ' + e.message); }
 }
 
