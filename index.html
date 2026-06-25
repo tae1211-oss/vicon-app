@@ -4797,7 +4797,9 @@ function renderInvList(data) {
   const sorted = [...data].sort((a,b) => {
     const ac = (a.packs||[]).filter(p=>!p.shipped).length;
     const bc = (b.packs||[]).filter(p=>!p.shipped).length;
-    return bc - ac;
+    const aEmpty = ac === 0, bEmpty = bc === 0;
+    if (aEmpty !== bEmpty) return aEmpty ? 1 : -1;        // 재고 0인 현장은 아래로
+    return (a.site||'').localeCompare(b.site||'', 'ko');  // 가나다순
   });
   el.innerHTML = sorted.map(d => {
     const active  = (d.packs||[]).filter(p=>!p.shipped);
