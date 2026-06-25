@@ -4290,6 +4290,20 @@ async function handleInbound(data) {
     const packs = [];
     for (let i = data.pack_from; i <= data.pack_to; i++) packs.push(i);
 
+    // ── req_code가 있으면 job_orders에서 정식 업체명/현장명 가져오기 ──
+    // (계획표에 이름이 두 개로 혼용되는 경우 inventory가 두 문서로 쪼개지는 것 방지)
+    if (data.req_code && db) {
+      try {
+        const snap = await dbGet(db.collection('job_orders').where('req_code', '==', data.req_code).orderBy('updated_at', 'desc').limit(1));
+        if (!snap.empty) {
+          const jo = snap.docs[0].data();
+          if (jo.company) data.company = jo.company;
+          if (jo.site)    data.site    = jo.site;
+          titleEl.textContent = '📥 입고: ' + data.site;
+        }
+      } catch(_) {}
+    }
+
     // ── 현재 재고에서 이미 입고된 팩 / 이미 출고된 팩 조회 ──
     bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>재고 확인 중…</div>';
     const stockSet = new Set();
