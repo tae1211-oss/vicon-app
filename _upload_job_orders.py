@@ -60,11 +60,12 @@ def tg(text):
             urllib.request.urlopen(req, timeout=10)
         except Exception:
             pass
-WORK_ORDER_DIRS     = [
-    r"C:\Users\user\Desktop\비콘공용폴더",
-    r"C:\Users\user\Desktop\비콘공용폴더\4. 생산관리-탈형\1. 작업지시서",
+# 작업지시서 직접 스캔 경로 (경로, 호기그룹 기본값)
+WORK_ORDER_DIRS = [
+    (r"C:\Users\user\Desktop\비콘공용폴더\1. 생산관리-일체형\1. 작업지시서", "일체형"),
+    (r"C:\Users\user\Desktop\비콘공용폴더\4. 생산관리-탈형\1. 작업지시서",   "탈형"),
 ]
-SEARCH_DEPTH        = 5          # 폴더 재귀 최대 깊이
+SEARCH_DEPTH = 4
 PROJECT_ID          = "vicon-3factory"
 
 WO_SHEET   = "DECK작업지시서"
@@ -255,10 +256,9 @@ def main():
         return
 
     dry = "--dry-run" in args
-    clear = "--clear" in args
 
-    # 기존 job_orders 전체 삭제
-    if clear and not dry:
+    # 기존 job_orders 전체 삭제 (항상 실행)
+    if not dry:
         import firebase_admin
         from firebase_admin import credentials, firestore as _fs
         if not firebase_admin._apps:
@@ -273,17 +273,22 @@ def main():
         batch2.commit()
         print("  → 삭제 완료")
 
-    print("[1/3] 생산계획표 요청코드 수집:", PLAN_FILE)
+    # [1] 갑지에서 현재 진행 중인 req_code + 호기그룹 수집
+    print("[1/3] 생산계획표 갑지에서 활성 req_code 수집:", PLAN_FILE)
     reqs = collect_req_codes(PLAN_FILE)   # {req_code: 호기그룹}
-    print("   →", len(reqs), "개 요청코드")
+    print("   →", len(reqs), "개 req_code")
 
-    print("[2/3] 작업지시서 폴더 스캔:", WORK_ORDER_DIRS)
+    # [2] 작업지시서 두 경로에서 파일 인덱스 구성
+    print("[2/3] 작업지시서 폴더 스캔")
     idx = []
-    for d in WORK_ORDER_DIRS:
-        idx += build_file_index(d, SEARCH_DEPTH)
-    print("   →", len(idx), "개 파일(# 포함)")
+    for wo_dir, _ in WORK_ORDER_DIRS:
+        partial = build_file_index(wo_dir, SEARCH_DEPTH)
+        print(f"   {len(partial)}개  ({wo_dir})")
+        idx += partial
+    print(f"   총 {len(idx)}개 파일(# 포함)")
 
-    print("[3/3] 작업지시서 열어 면적·포장방법 추출")
+    # [3] 각 req_code의 최신 작업지시서 파일 열어 업체명·현장명·면적 추출
+    print("[3/3] 작업지시서 열어 업체명·현장명·면적 추출")
     records, missing = [], []
     for code, group in reqs.items():
         path = find_work_order(idx, code)
@@ -301,7 +306,7 @@ def main():
 
     print("\n── 추출 완료 ──")
     print("  성공:", len(records), "건 / 파일없음·실패:", len(missing), "건")
-    for r in records[:60]:
+    for r in records[:80]:
         print("   - [%s] %s (%s)  pack %d~%d  %d ea / %.2f m2  pm:%s" %
               (r.get("machine_group", "?"), r["site"], r["company"], r["pack_from"], r["pack_to"],
                r["total_sheets"], r["total_area"], r.get("pm") or "-"))
@@ -314,17 +319,17 @@ def main():
     if not records:
         msg = f"[작업지시서 업로드] 업로드할 데이터 없음\n생산계획표: {os.path.basename(PLAN_FILE)}"
         print(msg); tg(msg); return
-    print("\n업로드 중…")
+    print("\n업로드 중...")
     n = upload(records)
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     msg = (
         f"[작업지시서 업로드] 완료 ({now_str})\n"
         f"생산계획표: {os.path.basename(PLAN_FILE)}\n"
-        f"업로드: {n}건"
+        f"업로드: {n}건 (업체명·현장명은 작업지시서 파일 기준)"
         + (f" / 누락: {len(missing)}건" if missing else "")
     )
     if missing:
-        msg += "\n누락: " + ", ".join(missing[:10]) + ("…" if len(missing) > 10 else "")
+        msg += "\n누락: " + ", ".join(missing[:10]) + ("..." if len(missing) > 10 else "")
     print("job_orders upload done:", n)
     tg(msg)
 

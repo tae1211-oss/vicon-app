@@ -432,6 +432,16 @@ mismatches = []
 skip_list = []
 qty_issues = []   # 수량·면적 불일치
 
+# req_code+wo_file 단위로 pack_details 합산 (주간+야간 합쳐서 WO 전체와 비교)
+from collections import defaultdict
+_agg_pd = defaultdict(lambda: defaultdict(lambda: {"sheets": 0, "area": 0.0}))
+for _r in matched:
+    _k = (_r["req_code"], _r.get("wo_file"))
+    for _pno, _pd in (_r.get("pack_details") or {}).items():
+        _agg_pd[_k][_pno]["sheets"] += _pd["sheets"]
+        _agg_pd[_k][_pno]["area"]    = round(_agg_pd[_k][_pno]["area"] + _pd["area"], 3)
+_qty_checked = set()  # 이미 체크한 (req_code, wo_file)
+
 for rec in recs_s:
     wo_file  = rec.get("wo_file")
     is_giga  = (_wt.get(wo_file) == "giga") if wo_file else (rec["machine"] == "탈형")
@@ -482,10 +492,13 @@ for rec in recs_s:
         n = 1
     else:
         grid = _wc[wo_file]
-        # 수량·면적 불일치 체크
-        issues = check_qty(grid, is_giga, rec.get("pack_details", {}))
-        for iss in issues:
-            qty_issues.append(f"{rec['req_code']} / {iss}")
+        # 수량·면적 불일치 체크 — 주간+야간 합산 후 WO와 1회만 비교
+        _agg_key = (rec["req_code"], wo_file)
+        if _agg_key not in _qty_checked:
+            _qty_checked.add(_agg_key)
+            issues = check_qty(grid, is_giga, dict(_agg_pd[_agg_key]))
+            for iss in issues:
+                qty_issues.append(f"{rec['req_code']} / {iss}")
         segs = extract(grid, is_giga, set(rec["packs"]))
         if not segs:
             tlog(f"  세그 없음: {rec['req_code']} 패킹{rec['packs']}")
@@ -534,10 +547,16 @@ else:
         for s in skip_list: lines.append(f"  - {s}")
     if mismatches:
         lines.append(f"작업지시서 불일치 {len(mismatches)}건 (빨간행):")
-        for m in mismatches: lines.append(f"  - {m}")
+        show_m = mismatches[:10]
+        for m in show_m: lines.append(f"  - {m}")
+        if len(mismatches) > 10:
+            lines.append(f"  ... 외 {len(mismatches)-10}건 생략")
     if qty_issues:
         lines.append(f"수량·면적 불일치 {len(qty_issues)}건:")
-        for q in qty_issues: lines.append(f"  - {q}")
+        show_q = qty_issues[:10]
+        for q in show_q: lines.append(f"  - {q}")
+        if len(qty_issues) > 10:
+            lines.append(f"  ... 외 {len(qty_issues)-10}건 생략")
 
 tg("\n".join(lines))
 tlog("완료: " + " / ".join(lines[1:]))

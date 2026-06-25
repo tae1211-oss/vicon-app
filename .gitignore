@@ -1,0 +1,11 @@
+# Firebase 서비스 계정 비밀키 - 절대 커밋 금지
+vicon-service-account.json
+*-service-account.json
+
+# Python
+__pycache__/
+*.pyc
+
+# 임시 출력/디버그 파일
+*_out.txt
+_chk_out.txt
