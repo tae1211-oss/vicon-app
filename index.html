@@ -3284,11 +3284,14 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
   <!-- ── 현황 ── -->
   <div class="page active" id="ppage-stat">
     <div class="card" style="padding:12px 14px;margin-bottom:8px">
-      <div style="font-size:.78rem;color:#aeaeb2;font-weight:600;margin-bottom:6px">📥 일별 일보 사진 일괄 다운로드</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input type="date" id="daily-dl-date" style="flex:1;min-width:0;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit">
-        <button onclick="downloadDailyAllReport()" style="padding:8px 16px;background:#ff6b00;color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">일보 ZIP 다운로드</button>
+      <div style="font-size:.78rem;color:#aeaeb2;font-weight:600;margin-bottom:8px">📥 일별 일보 사진 일괄 다운로드</div>
+      <input type="date" id="daily-dl-date" style="width:100%;box-sizing:border-box;border:1.5px solid #48484a;border-radius:8px;padding:8px;font-size:.85rem;background:#3a3a3c;color:#fff;font-family:inherit;margin-bottom:8px">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="dl-shift-all"  onclick="setDlShift('all')"  style="flex:1;padding:7px 0;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;background:#ff6b00;color:#fff">전체</button>
+        <button id="dl-shift-day"  onclick="setDlShift('주간')" style="flex:1;padding:7px 0;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;background:#3a3a3c;color:#aeaeb2">주간</button>
+        <button id="dl-shift-night" onclick="setDlShift('야간')" style="flex:1;padding:7px 0;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;background:#3a3a3c;color:#aeaeb2">야간</button>
       </div>
+      <button onclick="downloadDailyAllReport()" style="width:100%;padding:9px 0;background:#ff6b00;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit">일보 다운로드</button>
     </div>
     <div class="card">
       <div class="card-title" id="prod-stat-title">📊 데크 생산 현황</div>
@@ -6652,7 +6655,19 @@ function downloadProdMonthExcel() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// ── 일별 일보 사진 일괄 다운로드 (데크+TG → ZIP) ─────────────
+let _dlShift = 'all';
+function setDlShift(v) {
+  _dlShift = v;
+  ['all','day','night'].forEach(k => {
+    const el = document.getElementById('dl-shift-' + k);
+    if (!el) return;
+    const active = (k === 'all' && v === 'all') || (k === 'day' && v === '주간') || (k === 'night' && v === '야간');
+    el.style.background = active ? '#ff6b00' : '#3a3a3c';
+    el.style.color = active ? '#fff' : '#aeaeb2';
+  });
+}
+
+// ── 일별 일보 사진 일괄 다운로드 (데크+TG) ──────────────────
 async function downloadDailyAllReport() {
   const date = document.getElementById('daily-dl-date')?.value;
   if (!date) { toast('날짜를 선택하세요'); return; }
@@ -6664,9 +6679,15 @@ async function downloadDailyAllReport() {
       dbGet(db.collection('production_deck').where('date','==',date)),
       dbGet(db.collection('production_tg').where('date','==',date)),
     ]);
-    const deckRecs = []; deckSnap.forEach(doc => deckRecs.push(doc.data()));
-    const tgRecs   = []; tgSnap.forEach(doc   => tgRecs.push(doc.data()));
-    if (!deckRecs.length && !tgRecs.length) { toast('해당 날짜 생산 기록 없음'); return; }
+    let deckRecs = []; deckSnap.forEach(doc => deckRecs.push(doc.data()));
+    let tgRecs   = []; tgSnap.forEach(doc   => tgRecs.push(doc.data()));
+
+    // 주간/야간 필터
+    if (_dlShift !== 'all') {
+      deckRecs = deckRecs.filter(r => r.shift === _dlShift);
+      tgRecs   = tgRecs.filter(r   => r.shift === _dlShift);
+    }
+    if (!deckRecs.length && !tgRecs.length) { toast('해당 조건의 생산 기록 없음'); return; }
 
     await (document.fonts?.ready || Promise.resolve());
 
@@ -6674,40 +6695,34 @@ async function downloadDailyAllReport() {
     const y = dObj.getFullYear(), mo = dObj.getMonth()+1, dy = dObj.getDate();
     const dw = '일월화수목금토'[dObj.getDay()];
     const dateStr = date.replace(/-/g,'');
-    const zip = new JSZip();
     const shOrd = {'주간':0,'야간':1};
     const macOrd = m => { const n = parseInt(m); return isNaN(n) ? 99 : n; };
 
-    // 모든 그룹을 [shift, type, machine] 순으로 정렬해서 처리
-    // → 주간 데크1,2,3,4호기 → 주간 TG → 야간 데크 → 야간 TG
+    // 그룹 구성
     const allGroups = [];
-    const deckGroups = {}, tgGroups = {};
-    deckRecs.forEach(r => {
-      const k = (r.machine||'')+'|'+(r.shift||'');
-      if (!deckGroups[k]) deckGroups[k] = [];
-      deckGroups[k].push(r);
-    });
-    tgRecs.forEach(r => {
-      const k = (r.machine||'')+'|'+(r.shift||'');
-      if (!tgGroups[k]) tgGroups[k] = [];
-      tgGroups[k].push(r);
-    });
-    Object.keys(deckGroups).forEach(k => {
-      const [machine, shift] = k.split('|');
-      allGroups.push({type:'deck', machine, shift, recs: deckGroups[k]});
-    });
-    Object.keys(tgGroups).forEach(k => {
-      const [machine, shift] = k.split('|');
-      allGroups.push({type:'tg', machine, shift, recs: tgGroups[k]});
-    });
-    // 정렬: 주간→야간, 호기순, 데크→TG
+    const grp = (recs, type) => {
+      const map = {};
+      recs.forEach(r => {
+        const k = (r.machine||'')+'|'+(r.shift||'');
+        if (!map[k]) map[k] = [];
+        map[k].push(r);
+      });
+      Object.keys(map).forEach(k => {
+        const [machine, shift] = k.split('|');
+        allGroups.push({type, machine, shift, recs: map[k]});
+      });
+    };
+    grp(deckRecs, 'deck'); grp(tgRecs, 'tg');
+
+    // 정렬: 주간→야간 / 호기순 / 데크→TG
     allGroups.sort((a, b) =>
       (shOrd[a.shift]||0) - (shOrd[b.shift]||0) ||
-      macOrd(a.machine) - macOrd(b.machine) ||
-      (a.type === 'deck' ? 0 : 1) - (b.type === 'deck' ? 0 : 1)
+      macOrd(a.machine)   - macOrd(b.machine)   ||
+      (a.type==='deck'?0:1) - (b.type==='deck'?0:1)
     );
 
-    let cnt = 0;
+    // PNG 생성 — 순서 보장을 위해 배열로 관리
+    const orderedFiles = []; // [{name, dataUrl}]
     for (const g of allGroups) {
       const {type, machine, shift, recs} = g;
       let canvas;
@@ -6716,80 +6731,81 @@ async function downloadDailyAllReport() {
         const sorted = recs.slice().sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
         const pages = [];
         for (let i = 0; i < Math.max(1, Math.ceil(sorted.length/ROWS)); i++) {
-          const slice = sorted.slice(i*ROWS, (i+1)*ROWS);
-          let tArea = 0, tSheets = 0;
+          const slice = sorted.slice(i*ROWS,(i+1)*ROWS);
+          let tArea=0, tSheets=0;
           const rows = slice.map(r => {
             const nos = (r.packs||[]).map(p=>Number(p.pack_no)).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
-            const packStr = nos.length ? (nos[0]===nos[nos.length-1] ? String(nos[0]) : nos[0]+'-'+nos[nos.length-1]) : '';
-            tArea += r.total_area||0; tSheets += r.total_sheets||0;
-            return { site: r.site||'', packStr, req: r.req_code||'',
-              area: r.total_area!=null?(+r.total_area).toFixed(2):'',
-              qty:  r.total_sheets!=null?String(r.total_sheets):'', pm: r.pack_method||'' };
+            const packStr = nos.length?(nos[0]===nos[nos.length-1]?String(nos[0]):nos[0]+'-'+nos[nos.length-1]):'';
+            tArea+=r.total_area||0; tSheets+=r.total_sheets||0;
+            return {site:r.site||'',packStr,req:r.req_code||'',
+              area:r.total_area!=null?(+r.total_area).toFixed(2):'',
+              qty:r.total_sheets!=null?String(r.total_sheets):'',pm:r.pack_method||''};
           });
-          pages.push({ rows, tArea, tSheets });
+          pages.push({rows,tArea,tSheets});
         }
-        canvas = renderDailyReportCanvas({ machine, y, mo, dy, dw, shift, ROWS }, pages);
+        canvas = renderDailyReportCanvas({machine,y,mo,dy,dw,shift,ROWS},pages);
       } else {
         const ROWS = 15;
         const sorted = recs.slice().sort((a,b)=>(a.recorded_at?.seconds||0)-(b.recorded_at?.seconds||0));
         const allRows = [];
-        sorted.forEach(rec => {
-          (rec.items||[]).forEach(it => {
-            allRows.push({
-              tg_type: rec.tg_type||'', length: it.length||0, qty: it.qty||0,
-              site: rec.site||rec.company||'', req_code: rec.req_code||'',
-              area_m: it.area_m!=null?(+it.area_m).toFixed(2)
-                :(it.length&&it.qty?(it.length*it.qty/1000).toFixed(2):'')
-            });
-          });
-        });
+        sorted.forEach(rec => (rec.items||[]).forEach(it => allRows.push({
+          tg_type:rec.tg_type||'',length:it.length||0,qty:it.qty||0,
+          site:rec.site||rec.company||'',req_code:rec.req_code||'',
+          area_m:it.area_m!=null?(+it.area_m).toFixed(2):(it.length&&it.qty?(it.length*it.qty/1000).toFixed(2):'')
+        })));
         const pages = [];
-        for (let i = 0; i < Math.max(1, Math.ceil(allRows.length/ROWS)); i++) {
-          const rows = allRows.slice(i*ROWS, (i+1)*ROWS);
-          let tQty = 0, tArea = 0;
-          rows.forEach(r => { tQty += r.qty||0; tArea += parseFloat(r.area_m)||0; });
-          pages.push({ rows, tQty, tArea });
+        for (let i=0;i<Math.max(1,Math.ceil(allRows.length/ROWS));i++) {
+          const rows=allRows.slice(i*ROWS,(i+1)*ROWS);
+          let tQty=0,tArea=0;
+          rows.forEach(r=>{tQty+=r.qty||0;tArea+=parseFloat(r.area_m)||0;});
+          pages.push({rows,tQty,tArea});
         }
-        canvas = renderTGDailyReportCanvas({ machine, y, mo, dy, dw, shift, ROWS }, pages);
+        canvas = renderTGDailyReportCanvas({machine,y,mo,dy,dw,shift,ROWS},pages);
       }
-      const typeName = type === 'deck' ? '데크' : 'TG';
-      const fname = `${String(cnt+1).padStart(2,'0')}_${typeName}_${machine}_${shift}_${dateStr}.png`;
-      zip.file(fname, canvas.toDataURL('image/png').split(',')[1], {base64:true});
-      cnt++;
+      const typeName = type==='deck'?'데크':'TG';
+      const num = String(orderedFiles.length+1).padStart(2,'0');
+      orderedFiles.push({
+        name: `${num}_${typeName}_${machine}_${shift}_${dateStr}.png`,
+        dataUrl: canvas.toDataURL('image/png')
+      });
     }
 
-    if (!cnt) { toast('생성된 일보 없음'); return; }
+    if (!orderedFiles.length) { toast('생성된 일보 없음'); return; }
 
-    // 모바일: 공유 시트 / PC: ZIP 다운로드
+    // 모바일: 공유 시트 (순서 보장 배열 사용) / PC: ZIP
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile && navigator.canShare) {
-      // PNG Blob 파일 배열로 변환
-      toast(`${cnt}개 일보 공유 준비 중…`);
-      const files = [];
-      for (const [name, file] of Object.entries(zip.files)) {
-        const content = await file.async('blob');
-        files.push(new File([content], name, {type:'image/png'}));
-      }
+      toast(`${orderedFiles.length}개 일보 공유 준비 중…`);
+      const files = orderedFiles.map(f => {
+        const arr = atob(f.dataUrl.split(',')[1]);
+        const u8 = new Uint8Array(arr.length);
+        for (let i=0;i<arr.length;i++) u8[i]=arr.charCodeAt(i);
+        return new File([u8], f.name, {type:'image/png'});
+      });
       if (navigator.canShare({files})) {
-        await navigator.share({ files, title: `생산일보 ${date}` });
+        await navigator.share({files, title:`생산일보 ${date}`});
         toast('공유 완료');
       } else {
-        // canShare가 false면 ZIP으로 폴백
+        // 폴백: ZIP
+        const zip = new JSZip();
+        orderedFiles.forEach(f => zip.file(f.name, f.dataUrl.split(',')[1], {base64:true}));
         const blob = await zip.generateAsync({type:'blob'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = `생산일보_${dateStr}.zip`; a.click();
+        a.href=url; a.download=`생산일보_${dateStr}.zip`; a.click();
         URL.revokeObjectURL(url);
-        toast(`완료: ${cnt}개 일보 ZIP 다운로드`);
+        toast(`완료: ${orderedFiles.length}개 ZIP 다운로드`);
       }
     } else {
-      toast(`${cnt}개 일보 압축 중…`);
+      toast(`${orderedFiles.length}개 일보 압축 중…`);
+      const zip = new JSZip();
+      orderedFiles.forEach(f => zip.file(f.name, f.dataUrl.split(',')[1], {base64:true}));
       const blob = await zip.generateAsync({type:'blob'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `생산일보_${dateStr}.zip`; a.click();
+      a.href=url; a.download=`생산일보_${dateStr}.zip`; a.click();
       URL.revokeObjectURL(url);
-      toast(`완료: ${cnt}개 일보 ZIP 다운로드`);
+      toast(`완료: ${orderedFiles.length}개 ZIP 다운로드`);
     }
   } catch(e) { toast('오류: ' + e.message); }
 }
