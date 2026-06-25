@@ -168,11 +168,13 @@ def extract_job_order(path):
     if not company or not site:
         return None
 
-    # 포장방법: 일반 데크=D5(col4), 탈형=G5(col7)
-    pm_raw = str(ws.cell(5, 4).value or "").strip()
-    if not pm_raw:
-        pm_raw = str(ws.cell(5, 7).value or "").strip()
-    pm = "슬리퍼" if "슬리퍼" in pm_raw else ("목재" if "목재" in pm_raw else "")
+    # 포장방법: 5행 전체에서 목재/슬리퍼 키워드 탐색
+    # (일반 데크=D5 / 탈형 GIGA DECK=E5 등 양식차 흡수)
+    pm = ""
+    for _c in range(1, 11):
+        _v = str(ws.cell(5, _c).value or "")
+        if "슬리퍼" in _v: pm = "슬리퍼"; break
+        if "목재" in _v: pm = "목재"; break
 
     rows = list(ws.iter_rows(min_row=ROW_START, max_row=ws.max_row or ROW_START, values_only=True))
     pack_sa = {}  # pack_no -> [sheets, area]
