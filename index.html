@@ -5522,6 +5522,22 @@ async function handleProdQR(data) {
   document.getElementById('prod-entry-body').innerHTML =
     '<div class="loading"><span class="spinner"></span>기존 생산 확인 중…</div>';
   await renderDeckForm(data);
+  // QR 스캔 후 패킹번호 선택 폼으로 자동 스크롤
+  // 카메라 종료/렌더 직후 리플로우로 스크롤이 취소될 수 있어 여러 번 재시도
+  scrollToProdEntry();
+}
+
+// 패킹번호 선택 폼으로 스크롤 (모바일 리플로우 대비 다중 재시도)
+function scrollToProdEntry() {
+  const go = () => {
+    const el = document.getElementById('prod-entry-card');
+    if (!el || el.style.display === 'none') return;
+    const sticky = document.querySelector('.prod-tabs-sticky');
+    const offset = (sticky ? sticky.getBoundingClientRect().height : 0) + 8;
+    const y = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  };
+  [60, 250, 550, 900].forEach(t => setTimeout(go, t));
 }
 
 // ── 세션 초기화 (탭 진입 시) ────────────────────────────
