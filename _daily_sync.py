@@ -91,6 +91,7 @@ def fetch(date_str):
                      "date": s("date"), "machine": s("machine"), "shift": s("shift"),
                      "company": s("company"), "site": s("site"), "req_code": s("req_code"),
                      "recorded_by": s("recorded_by"),
+                     "recorded_at": f.get("recorded_at", {}).get("timestampValue", ""),
                      "packs": sorted([p for p in packs if p is not None]),
                      "pack_details": pack_details})
     return recs
@@ -424,8 +425,11 @@ lr_G = last_data_row(ws_G)
 tlog(f"마지막행: 메가 {lr_M} / 기가 {lr_G}")
 
 # 7) 정렬 + 추가
+# 날짜 → 호기(1~4→탈형) → 주야간 → 작업일보 입력 순서(recorded_at)
+# recorded_at 없는 옛 기록은 stable sort로 조회 순서 유지
 SHIFT_ORD = {"주간": 0, "야간": 1}
-recs_s = sorted(matched, key=lambda x: (x["date"], mno(x["machine"]), SHIFT_ORD.get(x["shift"], 9)))
+recs_s = sorted(matched, key=lambda x: (x["date"], mno(x["machine"]),
+                                        SHIFT_ORD.get(x["shift"], 9), x.get("recorded_at") or ""))
 
 add_M = add_G = skip = 0
 mismatches = []
