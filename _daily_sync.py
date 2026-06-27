@@ -52,6 +52,20 @@ def tg(text):
         except Exception as e:
             print(f"TG 오류: {e}")
 
+# ── 전역 예외 안전망: 어떤 예외로 죽어도 반드시 텔레그램 발송 ──
+# (예: 보고서가 Excel에서 열려 저장 실패 등 PermissionError 외 예외로 조용히 죽는 것 방지)
+import traceback as _tb_mod
+def _excepthook(etype, evalue, etb):
+    tb = "".join(_tb_mod.format_exception(etype, evalue, etb))
+    try:
+        tg(f"[비콘 3공장] ❌ {TARGET} 동기화 비정상 종료\n"
+           f"{etype.__name__}: {evalue}\n"
+           f"(보고서 파일이 열려 있으면 닫고 수동 재실행하세요)")
+    except Exception:
+        pass
+    sys.__excepthook__(etype, evalue, etb)
+sys.excepthook = _excepthook
+
 # ── Firestore 조회 ───────────────────────────────────────────
 def fetch(date_str):
     q = {"structuredQuery": {
