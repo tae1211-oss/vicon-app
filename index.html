@@ -3788,11 +3788,12 @@ function renderLoadingList() {
     return {...r, _done: done, _partial: partial, _total: total, _inInv: inInv, _doneAt: doneAt};
   });
 
-  // 미완료(등록 순) → 완료(완료 시각 순: 최근 완료가 위, 먼저 완료한 게 제일 아래)
+  // 적재중(진행중) → 대기(등록 순) → 완료(완료 시각 순: 최근 완료가 위, 먼저 완료한 게 제일 아래)
   recs.sort((a, b) => {
-    if (a._done !== b._done) return a._done ? 1 : -1;
-    if (a._done && b._done) return b._doneAt - a._doneAt;
-    return 0;
+    if (a._done !== b._done) return a._done ? 1 : -1;            // 완료 → 맨 아래
+    if (a._done && b._done) return b._doneAt - a._doneAt;        // 완료끼리: 최근 완료 위
+    if (a._partial !== b._partial) return a._partial ? -1 : 1;   // 적재중(진행중) → 맨 위
+    return 0;                                                    // 대기: 등록 순 유지
   });
 
   if (!recs.length) {
@@ -6061,7 +6062,8 @@ function renderJobList() {
   const active  = list.filter(r => jobStatus(r) === 'none');
   const partial = list.filter(r => jobStatus(r) === 'partial');
   const done    = list.filter(r => jobStatus(r) === 'done');
-  _jobListRendered = [...active, ...partial, ...done];
+  // 생산중(진행중) → 대기 → 완료(맨 아래)
+  _jobListRendered = [...partial, ...active, ...done];
 
   if (!_jobListRendered.length) {
     body.innerHTML = '<div style="color:#90a4ae;text-align:center;padding:14px;font-size:.8rem">'
