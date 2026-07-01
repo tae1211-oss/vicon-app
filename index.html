@@ -77,14 +77,16 @@ function setProdType(type) {
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
   const isTG   = type === 'tg';
-  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
+  const isForming = type === 'forming';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG||isForming) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
-  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pf = document.getElementById('pforming-entry'); if (_pf) _pf.style.display = isForming ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG||isForming) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : (isForming ? '🔧 포밍 QR 스캔' : '📐 데크 QR 스캔');
   const _pjl = document.getElementById('prod-joblist-card');
   if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
-  setProdMachineOptions(isTG);
+  setProdMachineOptions(type);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -170,8 +172,9 @@ function stopProdScan() {
 
 async function handleProdQR(data) {
   if (data.type === 'tg_order') { handleTGQR(data); return; }
+  if (data.type === 'forming_order') { handleFormingQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
-  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
+  if (currentProdType === 'tg' || currentProdType === 'forming') { toast('데크 QR은 데크 공정(📐 데크 탭)에서 스캔하세요.'); return; }
   pendingProd = data;
   pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
@@ -724,14 +727,16 @@ function setProdType(type) {
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
   const isTG   = type === 'tg';
-  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
+  const isForming = type === 'forming';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG||isForming) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
-  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pf = document.getElementById('pforming-entry'); if (_pf) _pf.style.display = isForming ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG||isForming) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : (isForming ? '🔧 포밍 QR 스캔' : '📐 데크 QR 스캔');
   const _pjl = document.getElementById('prod-joblist-card');
   if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
-  setProdMachineOptions(isTG);
+  setProdMachineOptions(type);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -817,8 +822,9 @@ function stopProdScan() {
 
 async function handleProdQR(data) {
   if (data.type === 'tg_order') { handleTGQR(data); return; }
+  if (data.type === 'forming_order') { handleFormingQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
-  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
+  if (currentProdType === 'tg' || currentProdType === 'forming') { toast('데크 QR은 데크 공정(📐 데크 탭)에서 스캔하세요.'); return; }
   pendingProd = data;
   pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
@@ -1352,14 +1358,16 @@ function setProdType(type) {
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
   const isTG   = type === 'tg';
-  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
+  const isForming = type === 'forming';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG||isForming) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
-  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pf = document.getElementById('pforming-entry'); if (_pf) _pf.style.display = isForming ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG||isForming) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : (isForming ? '🔧 포밍 QR 스캔' : '📐 데크 QR 스캔');
   const _pjl = document.getElementById('prod-joblist-card');
   if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
-  setProdMachineOptions(isTG);
+  setProdMachineOptions(type);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -1445,8 +1453,9 @@ function stopProdScan() {
 
 async function handleProdQR(data) {
   if (data.type === 'tg_order') { handleTGQR(data); return; }
+  if (data.type === 'forming_order') { handleFormingQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
-  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
+  if (currentProdType === 'tg' || currentProdType === 'forming') { toast('데크 QR은 데크 공정(📐 데크 탭)에서 스캔하세요.'); return; }
   pendingProd = data;
   pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
@@ -1979,14 +1988,16 @@ function setProdType(type) {
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
   const isTG   = type === 'tg';
-  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
+  const isForming = type === 'forming';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG||isForming) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
-  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pf = document.getElementById('pforming-entry'); if (_pf) _pf.style.display = isForming ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG||isForming) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : (isForming ? '🔧 포밍 QR 스캔' : '📐 데크 QR 스캔');
   const _pjl = document.getElementById('prod-joblist-card');
   if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
-  setProdMachineOptions(isTG);
+  setProdMachineOptions(type);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -2072,8 +2083,9 @@ function stopProdScan() {
 
 async function handleProdQR(data) {
   if (data.type === 'tg_order') { handleTGQR(data); return; }
+  if (data.type === 'forming_order') { handleFormingQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
-  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
+  if (currentProdType === 'tg' || currentProdType === 'forming') { toast('데크 QR은 데크 공정(📐 데크 탭)에서 스캔하세요.'); return; }
   pendingProd = data;
   pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
@@ -3394,7 +3406,22 @@ header h1{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
         </div>
       </div>
     </div>
-    <!-- 준비중 (신선/포밍) -->
+    <!-- 포밍 결과 -->
+    <div id="pforming-entry" style="display:none">
+      <div id="forming-entry-card" style="display:none">
+        <div class="card">
+          <div class="card-title" id="forming-entry-title">✏️ 포밍 생산 내역 입력</div>
+          <div id="forming-entry-body"></div>
+        </div>
+      </div>
+      <div id="forming-confirmed-wrap" style="display:none">
+        <div class="card">
+          <div class="card-title">✅ 이번 세션 등록 목록</div>
+          <div id="forming-confirmed-body"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 준비중 (신선) -->
     <div id="pother-entry" style="display:none">
       <div class="card" style="text-align:center;padding:36px 16px">
         <div style="font-size:2.5rem;margin-bottom:10px">🚧</div>
@@ -5235,14 +5262,16 @@ function setProdType(type) {
   document.getElementById('ptype-' + type).classList.add('active');
   const isDeck = type === 'deck';
   const isTG   = type === 'tg';
-  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG) ? 'block' : 'none';
+  const isForming = type === 'forming';
+  const _pc = document.getElementById('pentry-common'); if (_pc) _pc.style.display = (isDeck||isTG||isForming) ? 'block' : 'none';
   document.getElementById('pdeck-entry').style.display  = isDeck ? 'block' : 'none';
   const _ptg = document.getElementById('ptg-entry'); if (_ptg) _ptg.style.display = isTG ? 'block' : 'none';
-  document.getElementById('pother-entry').style.display = (isDeck||isTG) ? 'none' : 'block';
-  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : '📐 데크 QR 스캔';
+  const _pf = document.getElementById('pforming-entry'); if (_pf) _pf.style.display = isForming ? 'block' : 'none';
+  document.getElementById('pother-entry').style.display = (isDeck||isTG||isForming) ? 'none' : 'block';
+  const _pst = document.getElementById('prod-scan-title'); if (_pst) _pst.textContent = isTG ? '⚙️ TG QR 스캔' : (isForming ? '🔧 포밍 QR 스캔' : '📐 데크 QR 스캔');
   const _pjl = document.getElementById('prod-joblist-card');
   if (_pjl) { _pjl.style.display = isDeck ? 'block' : 'none'; if (isDeck && typeof loadJobOrders === 'function') loadJobOrders(); }
-  setProdMachineOptions(isTG);
+  setProdMachineOptions(type);
   const title = {deck:'데크',fresh:'신선',tg:'TG',forming:'포밍'}[type] || type;
   document.getElementById('prod-stat-title').textContent = '📊 ' + title + ' 생산 현황';
   if (document.getElementById('ppage-stat').classList.contains('active')) loadProdStat();
@@ -5393,7 +5422,7 @@ function searchProd() {
     if (dateVal && r.date !== dateVal) return;
     if (machine && r.machine !== machine) return;
     if (shift && r.shift !== shift) return;
-    if (isTGsearch) {
+    if (Array.isArray(r.items)) {
       if (!isNaN(packNo)) {
         const matched = (r.items || []).filter(it => +it.seq === packNo);
         if (!matched.length) return;
@@ -5423,14 +5452,15 @@ function searchProd() {
   let html = '<div style="font-size:.75rem;color:#90a4ae;margin-bottom:8px">' + results.length + '건 검색됨</div>';
   results.forEach(({ r, packs, items }) => {
     let detail;
-    if (isTGsearch) {
+    if (items) {
       const segs  = (items||[]).map(it => '순번' + it.seq + '(' + it.qty + 'EA)').join(', ');
-      const mStr  = r.total_area   != null ? r.total_area.toFixed(1) + 'M' : '';
+      const _isForm = r.type === 'forming';
+      const mStr  = r.total_area   != null ? r.total_area.toFixed(1) + (_isForm ? '㎡' : 'M') : '';
       const shStr = r.total_sheets != null ? r.total_sheets + 'EA' : '';
       detail = '<div style="text-align:left">의뢰번호: <strong>' + esc(r.req_code||'-') + '</strong></div>'
-        + '<div style="text-align:left">데크순번: <strong>' + (segs||'-') + '</strong></div>'
+        + '<div style="text-align:left">' + (_isForm ? '순번' : '데크순번') + ': <strong>' + (segs||'-') + '</strong></div>'
         + (shStr ? '<div style="text-align:left">수량: <strong>' + shStr + '</strong></div>' : '')
-        + (mStr  ? '<div style="text-align:left">길이합: <strong>' + mStr + '</strong></div>' : '');
+        + (mStr  ? '<div style="text-align:left">' + (_isForm ? '생산량' : '길이합') + ': <strong>' + mStr + '</strong></div>' : '');
     } else {
       const packNos = packs.map(p => p.pack_no).join(', ');
       const areaStr = r.total_area != null ? r.total_area.toFixed(1) + '㎡' : '';
@@ -5513,8 +5543,9 @@ function stopProdScan() {
 
 async function handleProdQR(data) {
   if (data.type === 'tg_order') { handleTGQR(data); return; }
+  if (data.type === 'forming_order') { handleFormingQR(data); return; }
   if (data.type !== 'job_order') { toast('작업지시서 QR이 아닙니다.'); return; }
-  if (currentProdType === 'tg') { toast('TG 모드입니다. 데크 QR은 데크 공정에서 스캔하세요.'); return; }
+  if (currentProdType === 'tg' || currentProdType === 'forming') { toast('데크 QR은 데크 공정(📐 데크 탭)에서 스캔하세요.'); return; }
   pendingProd = data;
   pendingProd._rawData = data;
   document.getElementById('prod-entry-card').style.display = 'block';
@@ -5769,14 +5800,15 @@ function addToConfirmedList(rec, siteName, docId) {
 // ═════════════════════════════════════════════════════════
 let pendingTG = null;
 let _tgSessionRecs = [];
-function prodCollection() { return currentProdType === 'tg' ? 'production_tg' : 'production_deck'; }
+function prodCollection() { return currentProdType === 'tg' ? 'production_tg' : currentProdType === 'forming' ? 'production_forming' : 'production_deck'; }
 
 // 공정별 호기 옵션 (TG=1~7호기, 데크=1~4호기+탈형)
-function setProdMachineOptions(isTG) {
+function setProdMachineOptions(type) {
   const sel = document.getElementById('prod-machine');
   if (!sel) return;
-  const opts = isTG ? ['1호기','2호기','3호기','4호기','5호기','6호기','7호기']
-                    : ['1호기','2호기','3호기','4호기','탈형'];
+  const opts = (type === true || type === 'tg') ? ['1호기','2호기','3호기','4호기','5호기','6호기','7호기']
+             : (type === 'forming') ? ['포밍1호기','포밍2호기','탈형/단열']
+             : ['1호기','2호기','3호기','4호기','탈형'];
   const cur = sel.value;
   sel.innerHTML = opts.map(o => '<option' + (o === cur ? ' selected' : '') + '>' + o + '</option>').join('');
   if (!opts.includes(cur)) sel.value = opts[0];
@@ -5985,6 +6017,314 @@ function addToTGConfirmedList(rec, siteName, docId) {
     + '데크순번: ' + segs
     + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + rec.total_sheets + 'EA / ' + rec.total_area.toFixed(1) + 'M</strong>'
     + '</div>';
+  body.appendChild(item);
+}
+
+// ═════════════════════════════════════════════════════════
+//  포밍 생산입력 (메가=패킹·㎡[데크식] / 기가=순번·길이·수량 분할[TG식])
+//  QR type="forming_order": 메가=pack_from + d:[[P/C,면적]], 기가=d:[[순번,길이,수량]]
+//  → production_forming (form_type: 'mega'|'giga')
+// ═════════════════════════════════════════════════════════
+let pendingForming = null;
+let _formingMode = 'mega';
+let _formingSessionRecs = [];
+
+function handleFormingQR(data) {
+  if (currentProdType !== 'forming') setProdType('forming');
+  pendingForming = data;
+  _formingMode = (data.pack_from != null || data.pf != null) ? 'mega' : 'giga';
+  const card = document.getElementById('forming-entry-card');
+  if (card) card.style.display = 'block';
+  const title = document.getElementById('forming-entry-title');
+  if (title) title.textContent = (data.site || '') + (data.company ? ' (' + data.company + ')' : '')
+    + (_formingMode === 'mega' ? '  · 메가(패킹)' : '  · 기가(순번)');
+  const bodyEl = document.getElementById('forming-entry-body');
+  if (bodyEl) bodyEl.innerHTML = '<div class="loading"><span class="spinner"></span>기존 생산 확인 중…</div>';
+  renderFormingForm(data);
+  scrollToFormingEntry();
+}
+
+function scrollToFormingEntry() {
+  const go = () => {
+    const el = document.getElementById('forming-entry-card');
+    if (!el || el.style.display === 'none') return;
+    const sticky = document.querySelector('.prod-tabs-sticky');
+    const offset = (sticky ? sticky.getBoundingClientRect().height : 0) + 8;
+    const y = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  };
+  [60, 250, 550, 900].forEach(t => setTimeout(go, t));
+}
+
+async function renderFormingForm(data) {
+  if (_formingMode === 'giga') return renderFormingGiga(data);
+  return renderFormingMega(data);
+}
+
+// ── 메가 포밍: P/C별 ㎡ (데크식 체크 입력) ──
+async function renderFormingMega(data) {
+  const packs = (data.d || []).map(x => ({ n: x[0], a: x[1] }));
+  pendingForming._packs = packs;
+
+  const donePacks = new Set();
+  if (db && (data.company || data.site)) {
+    try {
+      const snap = await dbGet(db.collection('production_forming')
+        .where('company', '==', data.company || '')
+        .where('site', '==', data.site || ''));
+      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 4);
+      const cstr = cutoff.toISOString().slice(0, 10);
+      snap.forEach(doc => {
+        const d = doc.data();
+        if ((d.form_type || 'mega') === 'mega' && (d.date || '9999') >= cstr) {
+          (d.packs || []).forEach(p => donePacks.add(p.pack_no));
+        }
+      });
+    } catch (e) {}
+  }
+
+  const doneCount = packs.filter(p => donePacks.has(p.n)).length;
+  const sesDate    = document.getElementById('prod-date')?.value || getProductionDate();
+  const sesMachine = document.getElementById('prod-machine')?.value || '포밍1호기';
+  const sesShift   = document.querySelector('input[name="prod-shift"]:checked')?.value || getDefaultShift();
+
+  let html = '<div style="background:#f3f4f6;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.78rem;color:#37474f">'
+    + '📅 <strong>' + sesDate + '</strong> &nbsp;|&nbsp; 🏗️ <strong>' + esc(sesMachine) + '</strong>'
+    + ' &nbsp;|&nbsp; <strong style="color:' + (sesShift === '야간' ? '#1565c0' : '#e65100') + '">' + sesShift + '</strong>'
+    + ' <span style="color:#90a4ae;font-size:.72rem">(위 세션카드에서 변경)</span></div>'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px"><strong>의뢰번호:</strong> ' + esc(data.req_code || '-')
+    + ' &nbsp;|  총 ' + packs.length + 'P/C · 메가(패킹별 ㎡)</div>';
+
+  if (doneCount > 0) {
+    const allDone = doneCount >= packs.length;
+    html += '<div style="background:' + (allDone ? 'rgba(34,197,94,0.1)' : 'rgba(255,107,0,0.1)') + ';border:1px solid ' + (allDone ? 'rgba(34,197,94,0.3)' : 'rgba(255,107,0,0.3)') + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:' + (allDone ? '#2e7d32' : '#e65100') + '">'
+      + (allDone ? '✅ 완료' : '🔶 진행중') + ' — 이미 생산된 ' + doneCount + 'P/C는 자동 해제됨</div>';
+  }
+
+  html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">☑️ <strong>생산한 P/C를 체크</strong>하세요. 체크된 P/C만 등록됩니다.</div>'
+    + '<div class="pack-controls">'
+    + '<button class="btn btn-sm" style="background:#ff6b00;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:700;font-family:inherit" onclick="formingPackSelAll(true)">전체 선택</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="formingPackSelAll(false)">전체 해제</button></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 0 8px">';
+
+  packs.forEach(p => {
+    const done = donePacks.has(p.n);
+    const areaStr = p.a != null ? (+p.a).toFixed(1) + '㎡' : '';
+    if (done) {
+      html += '<div style="background:#1c1c1e;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:11px 4px;text-align:center;opacity:.45">'
+        + '<input type="checkbox" class="forming-cb" value="' + p.n + '" data-area="' + (p.a || 0) + '" disabled style="display:none">'
+        + '<div style="font-size:13px;font-weight:700;color:#636366">' + p.n + '</div>'
+        + '<div style="font-size:8.5px;color:#78909c">' + areaStr + '</div>'
+        + '<div style="font-size:9px;color:#4ade80">완료</div></div>';
+    } else {
+      html += '<label style="display:block;background:#ff6b00;border-radius:10px;padding:11px 4px;text-align:center;cursor:pointer;margin:0" onclick="var cb=this.querySelector(\'input\');cb.checked=!cb.checked;this.style.background=cb.checked?\'#ff6b00\':\'#3a3a3c\';updateFormingMegaTotals()">'
+        + '<input type="checkbox" class="forming-cb" value="' + p.n + '" data-area="' + (p.a || 0) + '" checked style="display:none">'
+        + '<div style="font-size:13px;font-weight:700;color:#fff">' + p.n + '</div>'
+        + '<div style="font-size:8.5px;color:#ffe0b2">' + areaStr + '</div></label>';
+    }
+  });
+
+  html += '</div>'
+    + '<div class="prod-summary-bar" id="forming-summary">'
+    + '<div class="prod-summary-item"><div class="pval" id="fm-sum-packs">0</div><div class="plbl">선택 P/C</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="fm-sum-area">-</div><div class="plbl">총 면적(㎡)</div></div></div>'
+    + '<button class="btn btn-success btn-full" style="margin-top:12px;font-size:1rem;font-weight:700" onclick="submitFormingEntry()">✅ 이 QR 확정</button>'
+    + '<button class="btn btn-secondary btn-full" style="margin-top:6px" onclick="cancelFormingEntry()">✕ 취소 (다시 스캔)</button>';
+
+  document.getElementById('forming-entry-body').innerHTML = html;
+  updateFormingMegaTotals();
+}
+
+function formingPackSelAll(val) {
+  document.querySelectorAll('.forming-cb').forEach(c => {
+    if (c.disabled) return;
+    c.checked = val;
+    const lbl = c.closest('label');
+    if (lbl) lbl.style.background = val ? '#ff6b00' : '#3a3a3c';
+  });
+  updateFormingMegaTotals();
+}
+
+function updateFormingMegaTotals() {
+  let cnt = 0, area = 0;
+  document.querySelectorAll('.forming-cb:checked').forEach(c => {
+    if (c.disabled) return;
+    cnt++; area += parseFloat(c.dataset.area) || 0;
+  });
+  const e1 = document.getElementById('fm-sum-packs'); if (e1) e1.textContent = cnt;
+  const e2 = document.getElementById('fm-sum-area');  if (e2) e2.textContent = area ? area.toFixed(1) : '-';
+}
+
+// ── 기가 포밍: 순번·길이·수량 분할 (TG식) — ㎡=길이*수량/1000 ──
+async function renderFormingGiga(data) {
+  const items = (data.d || []).map(x => ({ seq: x[0], len: x[1], qty: x[2] }));
+  pendingForming._items = items;
+
+  const produced = {};
+  if (db && (data.company || data.site)) {
+    try {
+      const snap = await dbGet(db.collection('production_forming')
+        .where('company', '==', data.company || '')
+        .where('site', '==', data.site || ''));
+      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 6);
+      const cstr = cutoff.toISOString().slice(0, 10);
+      snap.forEach(doc => {
+        const d = doc.data();
+        if ((d.form_type || '') === 'giga' && (d.date || '9999') >= cstr && (d.req_code || '') === (data.req_code || '')) {
+          (d.items || []).forEach(it => { produced[it.seq] = (produced[it.seq] || 0) + (it.qty || 0); });
+        }
+      });
+    } catch (e) {}
+  }
+  pendingForming._produced = produced;
+
+  const sesDate    = document.getElementById('prod-date')?.value || getProductionDate();
+  const sesMachine = document.getElementById('prod-machine')?.value || '포밍1호기';
+  const sesShift   = document.querySelector('input[name="prod-shift"]:checked')?.value || getDefaultShift();
+
+  let html = '<div style="background:#f3f4f6;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.78rem;color:#37474f">'
+    + '📅 <strong>' + sesDate + '</strong> &nbsp;|&nbsp; 🏗️ <strong>' + esc(sesMachine) + '</strong>'
+    + ' &nbsp;|&nbsp; <strong style="color:' + (sesShift === '야간' ? '#1565c0' : '#e65100') + '">' + sesShift + '</strong>'
+    + ' <span style="color:#90a4ae;font-size:.72rem">(위 세션카드에서 변경)</span></div>'
+    + '<div style="font-size:.78rem;color:#8e8e93;margin-bottom:8px"><strong>의뢰번호:</strong> ' + esc(data.req_code || '-') + ' · 기가(순번별 분할)</div>'
+    + '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.77rem;color:#aeaeb2">☑️ 생산한 <strong>순번을 체크</strong>하고 <strong>생산수량(EA)</strong>을 입력하세요. 체크된 순번만 등록됩니다.</div>'
+    + '<div class="pack-controls"><button class="btn btn-sm btn-secondary" onclick="formingGigaSelAll(true)">전체 체크</button>'
+    + '<button class="btn btn-sm btn-secondary" onclick="formingGigaSelAll(false)">전체 해제</button></div>'
+    + '<div style="border:1px solid #e0e0e0;border-radius:10px;margin:6px 0;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.74rem">'
+    + '<thead><tr style="background:#f5f5f5;color:#546e7a"><th style="padding:6px 2px">✓</th><th style="padding:6px 4px">순번</th><th style="padding:6px 4px">길이</th>'
+    + '<th style="padding:6px 4px">수량(EA)</th><th style="padding:6px 4px">생산수량(EA)</th><th style="padding:6px 4px">생산량(㎡)</th></tr></thead><tbody>';
+
+  items.forEach(it => {
+    const p = produced[it.seq] || 0;
+    const remain = Math.max(it.qty - p, 0);
+    const over = p >= it.qty;
+    html += '<tr style="border-top:1px solid #eee">'
+      + '<td style="text-align:center;padding:5px 2px"><input type="checkbox" class="forming-gcb" data-seq="' + it.seq + '" checked onchange="updateFormingGigaTotals()"></td>'
+      + '<td style="text-align:center;font-weight:600;padding:5px 4px">' + it.seq + '</td>'
+      + '<td style="text-align:center;padding:5px 4px">' + it.len + '</td>'
+      + '<td style="text-align:center;padding:5px 4px">' + it.qty + 'EA'
+        + (p > 0 ? '<br><span style="font-size:.68rem;color:' + (over ? '#c62828' : '#2e7d32') + '">기생산 ' + p + 'EA</span>' : '') + '</td>'
+      + '<td style="text-align:center;padding:5px 4px"><input type="number" class="forming-gqty" min="0" '
+      + 'data-seq="' + it.seq + '" data-len="' + it.len + '" data-target="' + it.qty + '" data-produced="' + p + '" '
+      + 'value="' + remain + '" inputmode="numeric" style="width:60px;border:1.5px solid #cfd8dc;border-radius:8px;padding:6px;font-size:.85rem;text-align:center;font-family:inherit" oninput="updateFormingGigaTotals()"></td>'
+      + '<td style="text-align:center;padding:5px 4px;color:#7b1fa2" id="fg-m-' + it.seq + '">0</td></tr>';
+  });
+  html += '</tbody></table></div>'
+    + '<div class="prod-summary-bar"><div class="prod-summary-item"><div class="pval" id="fg-sum-cnt">0</div><div class="plbl">선택 순번</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="fg-sum-ea">0</div><div class="plbl">총 생산수량(EA)</div></div>'
+    + '<div class="prod-summary-item"><div class="pval" id="fg-sum-m">0</div><div class="plbl">총 생산량(㎡)</div></div></div>'
+    + '<button class="btn btn-success btn-full" style="margin-top:12px;font-size:1rem;font-weight:700" onclick="submitFormingEntry()">✅ 이 QR 확정</button>'
+    + '<button class="btn btn-secondary btn-full" style="margin-top:6px" onclick="cancelFormingEntry()">✕ 취소 (다시 스캔)</button>';
+
+  document.getElementById('forming-entry-body').innerHTML = html;
+  updateFormingGigaTotals();
+}
+
+function formingGigaSelAll(val) {
+  document.querySelectorAll('.forming-gcb').forEach(c => { c.checked = val; });
+  updateFormingGigaTotals();
+}
+
+function updateFormingGigaTotals() {
+  let cnt = 0, ea = 0, m = 0;
+  document.querySelectorAll('.forming-gqty').forEach(inp => {
+    const seq = inp.dataset.seq;
+    const q   = parseInt(inp.value) || 0;
+    const len = parseInt(inp.dataset.len) || 0;
+    const mv  = q > 0 ? +(len * q / 1000).toFixed(2) : 0;
+    const cell = document.getElementById('fg-m-' + seq); if (cell) cell.textContent = mv ? mv.toFixed(1) : '0';
+    const cb = document.querySelector('.forming-gcb[data-seq="' + seq + '"]');
+    if (cb && cb.checked && q > 0) { cnt++; ea += q; m += mv; }
+  });
+  const e1 = document.getElementById('fg-sum-cnt'); if (e1) e1.textContent = cnt;
+  const e2 = document.getElementById('fg-sum-ea');  if (e2) e2.textContent = ea;
+  const e3 = document.getElementById('fg-sum-m');    if (e3) e3.textContent = m.toFixed(1);
+}
+
+function cancelFormingEntry() {
+  const card = document.getElementById('forming-entry-card');
+  if (card) card.style.display = 'none';
+  pendingForming = null;
+}
+
+async function submitFormingEntry() {
+  if (!db) { toast('Firebase 미연결'); return; }
+  if (!currentUser) { toast('먼저 이름을 설정하세요.'); return; }
+  const date    = document.getElementById('prod-date')?.value || getProductionDate();
+  const machine = document.getElementById('prod-machine')?.value || '포밍1호기';
+  const shift   = document.querySelector('input[name="prod-shift"]:checked')?.value || '주간';
+  if (!date) { toast('생산 일자를 입력하세요.'); return; }
+  const base = {
+    date, shift, machine,
+    company:  pendingForming.company  || '',
+    site:     pendingForming.site     || '',
+    req_code: pendingForming.req_code || '',
+    recorded_at: firebase.firestore.Timestamp.now(),
+    recorded_by: currentUser
+  };
+
+  let rec, siteName = pendingForming.site || pendingForming.company || '';
+  if (_formingMode === 'mega') {
+    const packs = [];
+    document.querySelectorAll('.forming-cb:checked').forEach(c => {
+      if (c.disabled) return;
+      packs.push({ pack_no: +c.value, area: parseFloat(c.dataset.area) || 0 });
+    });
+    if (!packs.length) { toast('생산한 P/C를 체크하세요.'); return; }
+    const totArea = +packs.reduce((s, p) => s + (p.area || 0), 0).toFixed(2);
+    rec = { type: 'forming', form_type: 'mega', ...base, packs, pack_count: packs.length, total_area: totArea };
+  } else {
+    const produced = pendingForming?._produced || {};
+    const items = []; const overList = [];
+    document.querySelectorAll('.forming-gcb').forEach(cb => {
+      if (!cb.checked) return;
+      const seq = parseInt(cb.dataset.seq);
+      const inp = document.querySelector('.forming-gqty[data-seq="' + seq + '"]');
+      if (!inp) return;
+      const q = parseInt(inp.value) || 0; if (q <= 0) return;
+      const len    = parseInt(inp.dataset.len) || 0;
+      const target = parseInt(inp.dataset.target) || 0;
+      const p      = produced[seq] || 0;
+      const area_m = +(len * q / 1000).toFixed(2);
+      items.push({ seq, length: len, qty: q, area_m });
+      if (p + q > target) overList.push('순번' + seq + ' (' + (p + q) + '/' + target + 'EA)');
+    });
+    if (!items.length) { toast('체크한 순번에 생산수량(EA)을 입력하세요.'); return; }
+    if (overList.length && !confirm('목표 수량을 초과하는 항목이 있습니다:\n' + overList.join('\n') + '\n\n그래도 저장할까요?')) return;
+    const totEA = items.reduce((s, it) => s + it.qty, 0);
+    const totM  = +items.reduce((s, it) => s + it.area_m, 0).toFixed(2);
+    rec = { type: 'forming', form_type: 'giga', ...base, items, pack_count: items.length, total_sheets: totEA, total_area: totM };
+  }
+
+  try {
+    const docRef = await db.collection('production_forming').add(rec);
+    document.getElementById('forming-entry-card').style.display = 'none';
+    pendingForming = null;
+    addToFormingConfirmedList(rec, siteName, docRef.id);
+    if (window._prodRecords) window._prodRecords.push({ ...rec, id: docRef.id });
+    toast('✅ 확정 완료! 다음 QR을 스캔하세요.');
+  } catch (e) { toast('저장 실패: ' + e.message); }
+}
+
+function addToFormingConfirmedList(rec, siteName, docId) {
+  const wrap = document.getElementById('forming-confirmed-wrap');
+  const body = document.getElementById('forming-confirmed-body');
+  if (!wrap || !body) return;
+  wrap.style.display = 'block';
+  _formingSessionRecs.push({ ...rec, _siteName: siteName, _docId: docId });
+  let detail;
+  if (rec.form_type === 'mega') {
+    detail = '팩번호: ' + (rec.packs || []).map(p => p.pack_no).join(', ')
+      + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + (rec.total_area || 0).toFixed(1) + '㎡</strong>';
+  } else {
+    detail = '순번: ' + (rec.items || []).map(it => it.seq + '(' + it.qty + 'EA)').join(', ')
+      + ' &nbsp;|&nbsp; <strong style="color:#2e7d32">' + (rec.total_sheets || 0) + 'EA / ' + (rec.total_area || 0).toFixed(1) + '㎡</strong>';
+  }
+  const item = document.createElement('div');
+  item.style.cssText = 'padding:10px 10px;border-bottom:1px solid #f0f0f0;font-size:.8rem;color:#37474f';
+  item.innerHTML = '<div style="font-weight:700;color:#1b5e20">✅ ' + esc(siteName)
+    + ' <span style="font-size:.7rem;color:#78909c">' + (rec.form_type === 'mega' ? '메가' : '기가') + '</span></div>'
+    + '<div style="margin-top:4px;color:#546e7a;font-size:.76rem">' + detail + '</div>';
   body.appendChild(item);
 }
 
