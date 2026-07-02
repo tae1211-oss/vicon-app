@@ -592,6 +592,11 @@ function showProdMonth(year, month) {
             detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
               + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
               + '</td>';
+          } else if (currentProdType === 'forming') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+              + '<button onclick="openFormingDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="포밍 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -1240,6 +1245,11 @@ function showProdMonth(year, month) {
             detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
               + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
               + '</td>';
+          } else if (currentProdType === 'forming') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+              + '<button onclick="openFormingDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="포밍 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -1871,6 +1881,11 @@ function showProdMonth(year, month) {
             detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
               + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
               + '</td>';
+          } else if (currentProdType === 'forming') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+              + '<button onclick="openFormingDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="포밍 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -2500,6 +2515,11 @@ function showProdMonth(year, month) {
           if (currentProdType === 'tg') {
             detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
               + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
+              + '</td>';
+          } else if (currentProdType === 'forming') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+              + '<button onclick="openFormingDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="포밍 작업일보">&#x1F4CB;</button>'
               + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
@@ -6805,6 +6825,11 @@ function showProdMonth(year, month) {
             detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
               + '<button onclick="openTGDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="TG 작업일보">&#x1F4CB;</button>'
               + '</td>';
+          } else if (currentProdType === 'forming') {
+            detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
+              + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
+              + '<button onclick="openFormingDailyReport(\'' + date + '\',\'' + m + '\',\'' + sh + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="포밍 작업일보">&#x1F4CB;</button>'
+              + '</td>';
           } else {
           detailHtml += '<td style="text-align:center;padding:3px 2px;white-space:nowrap">'
             + '<button onclick="openEditProdGroup(\'' + date + '\',\'' + m + '\',\'' + sh + '\',\'' + year + '\',\'' + month + '\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:1px 2px" title="수정">&#x270F;&#xFE0F;</button>'
@@ -8858,6 +8883,226 @@ function drawShiftCircle(ctx, cx, cy, ch, FN) {
   ctx.fillStyle = '#c0392b'; ctx.font = 'bold 13px '+FN; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(ch, cx, cy);
   ctx.restore();
+}
+
+// ── 포밍 작업일보 (PDF 양식 재현, 20행/페이지, 넘치면 2페이지) ──
+function openFormingDailyReport(date, machine, shift) {
+  const allRecs = (window._prodRecords||[]).filter(r =>
+    r.date === date &&
+    String(r.machine||'') === String(machine||'') &&
+    (!shift || r.shift === shift)
+  ).sort((a,b) => (a.recorded_at?.seconds||0) - (b.recorded_at?.seconds||0));
+  if (!allRecs.length) { toast('해당 일자/호기/시간대 기록 없음'); return; }
+
+  const d  = new Date(date + 'T12:00:00');
+  const y  = d.getFullYear(), mo = d.getMonth()+1, dy = d.getDate();
+  const dw = '일월화수목금토'[d.getDay()];
+  const curShift = shift || (allRecs[0] && allRecs[0].shift) || '';
+  const ROWS = 20;
+
+  const pages = [];
+  for (let i = 0; i < Math.max(1, Math.ceil(allRecs.length / ROWS)); i++) {
+    const recs = allRecs.slice(i*ROWS, (i+1)*ROWS);
+    let tArea = 0;
+    const rows = recs.map(r => {
+      let packStr;
+      if (Array.isArray(r.items)) {           // 기가(순번식)
+        const seqs = r.items.map(it => Number(it.seq)).filter(n => !isNaN(n)).sort((a,b)=>a-b);
+        packStr = seqs.length ? (seqs[0]===seqs[seqs.length-1] ? String(seqs[0]) : seqs[0]+'-'+seqs[seqs.length-1]) : '';
+      } else {                                 // 메가(패킹식)
+        const nos = (r.packs||[]).map(p => Number(p.pack_no)).filter(n => !isNaN(n)).sort((a,b)=>a-b);
+        packStr = nos.length ? (nos[0]===nos[nos.length-1] ? String(nos[0]) : nos[0]+'-'+nos[nos.length-1]) : '';
+      }
+      tArea += r.total_area || 0;
+      return {
+        req:  r.req_code || '',
+        packStr,
+        site: r.site || '',
+        area: r.total_area != null ? (+r.total_area).toFixed(2) : ''
+      };
+    });
+    pages.push({ rows, tArea });
+  }
+
+  const meta = { machine: String(machine), y, mo, dy, dw, shift: curShift, ROWS };
+  window._drDate = date; window._drMachine = machine;
+
+  const body = document.getElementById('dr-body');
+  body.innerHTML = '<div style="padding:20px;text-align:center;color:#90a4ae">생성 중…</div>';
+  document.getElementById('dr-modal').style.display = 'flex';
+
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(() => {
+      const canvas = renderFormingDailyReportCanvas(meta, pages);
+      const dataUrl = canvas.toDataURL('image/png');
+      window._drDataUrl = dataUrl;
+      body.innerHTML = '';
+      const img = new Image();
+      img.src = dataUrl;
+      img.style.cssText = 'width:100%;max-width:780px;height:auto;display:block;margin:0 auto;border:1px solid #ddd';
+      body.appendChild(img);
+    });
+}
+
+function renderFormingDailyReportCanvas(meta, pages) {
+  const S = 2, W = 790, PADX = 18, PADTOP = 16, PADBOT = 16;
+  const cw = W - PADX*2;
+  const FN = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif";
+
+  // 의뢰번호,패킹번호,원자재번호,현장명,면적,시간,합/불
+  const hints = [100, 90, 100, 250, 80, 90, 70];
+  const hsum  = hints.reduce((a,b)=>a+b, 0);
+  const colW  = hints.map(h => h/hsum*cw);
+  const colX  = [PADX];
+  colW.forEach(w => colX.push(colX[colX.length-1] + w));   // colX[0..7]
+
+  const TH = 24, ROWH = 26, ROWS = meta.ROWS, TOTALH = 24;
+  const isMulti = pages.length > 1;
+  const HDR = 78, GAP1 = 8, DATE_H = 24, NOTE_H = 16, WINFO_H = 22;
+  const STOPT_H = 20, STOPHDR = 22, STOP_ROWS = 3, STOPROW = 22;
+  const SPECT_H = 20, SPEC_BOX = 70, FOOT_H = 16*4 + 8, PG_H = isMulti ? 18 : 0;
+  const pageH = PADTOP + HDR + GAP1 + DATE_H + NOTE_H + WINFO_H + TH*2 + ROWS*ROWH + TOTALH
+              + 10 + STOPT_H + STOPHDR + STOP_ROWS*STOPROW
+              + 10 + SPECT_H + SPEC_BOX + 8 + FOOT_H + PG_H + PADBOT;
+  const GAPP = 22;
+  const totalH = pages.length*pageH + (pages.length-1)*GAPP;
+
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(W*S); cv.height = Math.round(totalH*S);
+  const ctx = cv.getContext('2d'); ctx.scale(S, S);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, totalH);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.textBaseline = 'middle';
+
+  const txt = (s, x, yy, { f = '12px '+FN, a = 'left', c = '#000', baseline = 'middle' } = {}) => {
+    ctx.font = f; ctx.fillStyle = c; ctx.textAlign = a; ctx.textBaseline = baseline; ctx.fillText(s, x, yy);
+  };
+  // 셀 폭 초과 시 폰트 자동 축소
+  const cellText = (s, ci, top, h, { a = 'center', size = 12, c = '#000', padl = 6 } = {}) => {
+    if (s === '' || s == null) return;
+    const w = colW[ci], maxW = w - 8;
+    let fs = size; ctx.font = fs+'px '+FN;
+    while (ctx.measureText(s).width > maxW && fs > 7) { fs--; ctx.font = fs+'px '+FN; }
+    const x = a === 'left' ? colX[ci] + padl : colX[ci] + w/2;
+    txt(s, x, top + h/2, { f: fs+'px '+FN, a, c });
+  };
+  const fitText = (s, x, yy, maxW, { a = 'left', size = 11, c = '#000' } = {}) => {
+    let fs = size; ctx.font = fs+'px '+FN;
+    while (ctx.measureText(s).width > maxW && fs > 6) { fs--; ctx.font = fs+'px '+FN; }
+    txt(s, x, yy, { f: fs+'px '+FN, a, c });
+  };
+
+  pages.forEach((pg, pi) => {
+    const oy = pi*(pageH + GAPP);
+    let y = oy + PADTOP;
+
+    // ── 제목 + 서명표 ──
+    const stW = 68, stX = W - PADX - stW*3;
+    txt(`(${meta.machine}) 포밍기 작업일보`, PADX, y + HDR/2 - 6, { f: 'bold 22px '+FN, a: 'left' });
+    ['작 성','조 / 반장','확 인'].forEach((s, i) => {
+      ctx.strokeRect(stX + i*stW, y, stW, TH);
+      ctx.strokeRect(stX + i*stW, y + TH, stW, 44);
+      txt(s, stX + i*stW + stW/2, y + TH/2, { f: '11px '+FN, a: 'center' });
+    });
+    y += HDR + GAP1;
+
+    // ── 날짜줄 (주/야 원) ──
+    const dlY = y + DATE_H/2; ctx.textBaseline = 'middle';
+    let dx = PADX; ctx.font = '13px '+FN; ctx.fillStyle = '#000'; ctx.textAlign = 'left';
+    const seg1 = `${meta.y}년 ${meta.mo}월 ${meta.dy}일   ${meta.dw}요일      (`;
+    ctx.fillText(seg1, dx, dlY); dx += ctx.measureText(seg1).width;
+    const wJu = ctx.measureText('주').width; ctx.fillText('주', dx, dlY);
+    if (meta.shift === '주간') drawShiftCircle(ctx, dx + wJu/2, dlY, '주', FN);
+    dx += wJu + ctx.measureText(', ').width;
+    const wYa = ctx.measureText('야').width; ctx.fillText('야', dx, dlY);
+    if (meta.shift !== '주간') drawShiftCircle(ctx, dx + wYa/2, dlY, '야', FN);
+    dx += wYa; ctx.fillText(`)        OP :`, dx, dlY);
+    y += DATE_H;
+
+    txt('※ 강판에 날짜 및 OP이니셜 / 자주검사 기록 명확하게 기록할 것', PADX, y + NOTE_H/2, { f: '11px '+FN, c: '#444' });
+    y += NOTE_H;
+    txt('■ 작업시간 : 시작            ~            종료', PADX, y + WINFO_H/2, { f: '12px '+FN });
+    y += WINFO_H;
+
+    // ── 표 헤더 2행 ──
+    const tY = y;
+    ctx.fillStyle = '#e8e8e8'; ctx.fillRect(colX[0], tY, cw, TH*2); ctx.fillStyle = '#000';
+    for (let i = 0; i < 5; i++) ctx.strokeRect(colX[i], tY, colW[i], TH*2);
+    ctx.strokeRect(colX[5], tY, colW[5]+colW[6], TH);
+    ctx.strokeRect(colX[5], tY+TH, colW[5], TH);
+    ctx.strokeRect(colX[6], tY+TH, colW[6], TH);
+    ['의뢰번호','패킹번호','원자재 번호','현 장 명','면 적'].forEach((s, i) =>
+      txt(s, colX[i]+colW[i]/2, tY+TH, { f: 'bold 12px '+FN, a: 'center' }));
+    txt('자 주 검 사', colX[5]+(colW[5]+colW[6])/2, tY+TH/2, { f: 'bold 12px '+FN, a: 'center' });
+    txt('시 간', colX[5]+colW[5]/2, tY+TH+TH/2, { f: 'bold 11px '+FN, a: 'center' });
+    txt('합 / 불', colX[6]+colW[6]/2, tY+TH+TH/2, { f: 'bold 11px '+FN, a: 'center' });
+    y += TH*2;
+
+    // ── 본문 20행 ──
+    for (let r = 0; r < ROWS; r++) {
+      const rowTop = y + r*ROWH;
+      for (let i = 0; i < 7; i++) ctx.strokeRect(colX[i], rowTop, colW[i], ROWH);
+      const row = pg.rows[r];
+      if (row) {
+        cellText(row.req,     0, rowTop, ROWH);
+        cellText(row.packStr, 1, rowTop, ROWH);
+        cellText(row.site,    3, rowTop, ROWH, { a: 'left' });
+        cellText(row.area,    4, rowTop, ROWH);
+      }
+      txt(':',     colX[5]+colW[5]/2, rowTop+ROWH/2, { f: '12px '+FN, a: 'center' });
+      txt('합 / 불', colX[6]+colW[6]/2, rowTop+ROWH/2, { f: '11px '+FN, a: 'center' });
+    }
+    y += ROWS*ROWH;
+
+    // ── Total 행 ──
+    ctx.fillStyle = '#e8e8e8'; ctx.fillRect(colX[0], y, cw, TOTALH); ctx.fillStyle = '#000';
+    ctx.strokeRect(colX[0], y, colW[0], TOTALH);
+    ctx.strokeRect(colX[1], y, colW[1], TOTALH);
+    ctx.strokeRect(colX[2], y, colW[2]+colW[3], TOTALH);
+    ctx.strokeRect(colX[4], y, colW[4], TOTALH);
+    ctx.strokeRect(colX[5], y, colW[5]+colW[6], TOTALH);
+    txt('Total', colX[1]+colW[1]/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
+    txt((+pg.tArea).toFixed(2), colX[4]+colW[4]/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
+    y += TOTALH;
+
+    // ── 기계정지 내역 ──
+    y += 10;
+    txt('■ 기계정지 내역', PADX, y+STOPT_H/2, { f: 'bold 13px '+FN });
+    y += STOPT_H;
+    const sc = [PADX, PADX+90, PADX+180, PADX+275, PADX+375, W-PADX];
+    ['시 작','종 료','공무 / OP','수 리 부','세부내용'].forEach((s, i) => {
+      ctx.strokeRect(sc[i], y, sc[i+1]-sc[i], STOPHDR);
+      txt(s, (sc[i]+sc[i+1])/2, y+STOPHDR/2, { f: 'bold 10px '+FN, a: 'center' });
+    });
+    y += STOPHDR;
+    for (let r = 0; r < STOP_ROWS; r++) {
+      const rt = y + r*STOPROW;
+      for (let i = 0; i < 5; i++) ctx.strokeRect(sc[i], rt, sc[i+1]-sc[i], STOPROW);
+      txt(':', (sc[0]+sc[1])/2, rt+STOPROW/2, { f: '11px '+FN, a: 'center' });
+      txt(':', (sc[1]+sc[2])/2, rt+STOPROW/2, { f: '11px '+FN, a: 'center' });
+      txt('공 / OP', (sc[2]+sc[3])/2, rt+STOPROW/2, { f: '10px '+FN, a: 'center' });
+    }
+    y += STOP_ROWS*STOPROW;
+
+    // ── 기타작업등 특이사항 ──
+    y += 10;
+    txt('■ 기타작업등 특이사항', PADX, y+SPECT_H/2, { f: 'bold 13px '+FN });
+    y += SPECT_H;
+    ctx.strokeRect(PADX, y, cw, SPEC_BOX);
+    y += SPEC_BOX;
+
+    // ── 푸터 ──
+    y += 8;
+    ['■ OP주관 자주검사 시기 : 코일교체시 / 교대후 바로 / 설비수리시 / 현장변경시 / 롤청소후 / 휴식후(식사포함) / 관리자 지시시',
+     '■ 자주검사 항목 : 치수검사 / 꺽임검사 / 외관검사 / 평탄도 / 갈라짐 등',
+     '■ 생산일자 및 작업자 이니셜 필히 기재',
+     '■ 성형강판 대차에 제품보관 : 바닥보관금지'
+    ].forEach((s, i) => fitText(s, PADX, y + 8 + i*16, cw, { size: 11 }));
+    y += FOOT_H;
+
+    if (isMulti) txt(`${pi+1} / ${pages.length}`, W-PADX, y+PG_H/2, { f: '10px '+FN, a: 'right', c: '#777' });
+  });
+
+  return cv;
 }
 
 function closeDailyReport() {
