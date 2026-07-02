@@ -8661,7 +8661,7 @@ function openDailyReport(date, machine, shift) {
   const y  = d.getFullYear(), mo = d.getMonth()+1, dy = d.getDate();
   const dw = '일월화수목금토'[d.getDay()];
   const curShift = shift || (allRecs[0] && allRecs[0].shift) || '';
-  const ROWS = 13;
+  const ROWS = 16;
 
   // 페이지별 구조화 데이터
   const pages = [];
@@ -8720,10 +8720,14 @@ function renderDailyReportCanvas(meta, pages) {
   const colX  = [PADX];
   colW.forEach(w => colX.push(colX[colX.length-1] + w));   // colX[0..8]
 
-  const TH = 24, ROWH = 32, ROWS = meta.ROWS, TOTALH = 28;
+  const TH = 24, ROWH = 27, ROWS = meta.ROWS, TOTALH = 26;
   const isMulti = pages.length > 1;
   const HDR = 84, GAP1 = 10, DATE_H = 26, NOTE_H = 16, WINFO_H = 26, PG_H = isMulti ? 18 : 0;
-  const pageH = PADTOP + HDR + GAP1 + DATE_H + NOTE_H + WINFO_H + TH*2 + ROWS*ROWH + TOTALH + PG_H + PADBOT;
+  const STOPT_H = 20, STOPHDR = 30, STOP_ROWS = 5, STOPROW = 22;
+  const ETCT_H = 20, ETC_BOX = 82, FOOT_H = 16*3 + 8;
+  const pageH = PADTOP + HDR + GAP1 + DATE_H + NOTE_H + WINFO_H + TH*2 + ROWS*ROWH + TOTALH
+              + 10 + STOPT_H + STOPHDR + STOP_ROWS*STOPROW
+              + 10 + ETCT_H + ETC_BOX + 8 + FOOT_H + PG_H + PADBOT;
   const GAPP = 22;
   const totalH = pages.length*pageH + (pages.length-1)*GAPP;
 
@@ -8751,6 +8755,11 @@ function renderDailyReportCanvas(meta, pages) {
     if (a === 'left') x = colX[ci] + padl;
     else x = colX[ci] + w/2;
     txt(s, x, top + h/2, { f: fs+'px '+FN, a, c });
+  };
+  const fitText = (s, x, yy, maxW, { a = 'left', size = 11, c = '#000' } = {}) => {
+    let fs = size; ctx.font = fs+'px '+FN;
+    while (ctx.measureText(s).width > maxW && fs > 6) { fs--; ctx.font = fs+'px '+FN; }
+    txt(s, x, yy, { f: fs+'px '+FN, a, c });
   };
 
   pages.forEach((pg, pi) => {
@@ -8829,7 +8838,7 @@ function renderDailyReportCanvas(meta, pages) {
         if (!row.packStr || fitsOne) {
           cellText(combined, 0, rowTop, ROWH, { a: 'left' });
         } else {
-          txt(row.site, colX[0]+6, rowTop + ROWH*0.34, { f: '12px '+FN, a: 'left' });
+          fitText(row.site, colX[0]+6, rowTop + ROWH*0.34, colW[0]-10, { size: 12 });
           txt(row.packStr, colX[0]+6, rowTop + ROWH*0.72, { f: '10px '+FN, a: 'left', c: '#444' });
         }
         cellText(row.req,  1, rowTop, ROWH);
@@ -8864,10 +8873,48 @@ function renderDailyReportCanvas(meta, pages) {
     ctx.strokeRect(colX[2], y, colW[2], TOTALH);
     ctx.strokeRect(colX[3], y, colW[3], TOTALH);
     ctx.strokeRect(colX[4], y, colW[4]+colW[5]+colW[6]+colW[7], TOTALH);
-    txt('합   계', colX[2]-8, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'right' });
+    txt('Total', colX[0]+(colW[0]+colW[1])/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
     txt((+pg.tArea).toFixed(2), colX[2]+colW[2]/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
     txt(pg.tSheets ? String(pg.tSheets) : '', colX[3]+colW[3]/2, y+TOTALH/2, { f: 'bold 12px '+FN, a: 'center' });
     y += TOTALH;
+
+    // ── 기계정지 내역 ──
+    y += 10;
+    txt('■ 기계정지 내역', PADX, y+STOPT_H/2, { f: 'bold 13px '+FN });
+    y += STOPT_H;
+    const sc = [PADX, PADX+95, PADX+190, PADX+280, PADX+380, W-PADX];
+    ctx.strokeRect(sc[0], y, sc[2]-sc[0], TH); txt('시  간', (sc[0]+sc[2])/2, y+TH/2, { f: 'bold 11px '+FN, a: 'center' });
+    ctx.strokeRect(sc[2], y, sc[3]-sc[2], STOPHDR);
+    txt('공무 / OP', (sc[2]+sc[3])/2, y+STOPHDR/2-5, { f: 'bold 10px '+FN, a: 'center' });
+    txt('(동그라미 표시)', (sc[2]+sc[3])/2, y+STOPHDR/2+8, { f: '8px '+FN, a: 'center', c: '#555' });
+    ctx.strokeRect(sc[3], y, sc[4]-sc[3], STOPHDR); txt('수 리 부', (sc[3]+sc[4])/2, y+STOPHDR/2, { f: 'bold 11px '+FN, a: 'center' });
+    ctx.strokeRect(sc[4], y, sc[5]-sc[4], STOPHDR); txt('세부내용', (sc[4]+sc[5])/2, y+STOPHDR/2, { f: 'bold 11px '+FN, a: 'center' });
+    ctx.strokeRect(sc[0], y+TH, sc[1]-sc[0], STOPHDR-TH); txt('시 작', (sc[0]+sc[1])/2, y+TH+(STOPHDR-TH)/2, { f: 'bold 10px '+FN, a: 'center' });
+    ctx.strokeRect(sc[1], y+TH, sc[2]-sc[1], STOPHDR-TH); txt('종 료', (sc[1]+sc[2])/2, y+TH+(STOPHDR-TH)/2, { f: 'bold 10px '+FN, a: 'center' });
+    y += STOPHDR;
+    for (let r = 0; r < STOP_ROWS; r++) {
+      const rt = y + r*STOPROW;
+      for (let i = 0; i < 5; i++) ctx.strokeRect(sc[i], rt, sc[i+1]-sc[i], STOPROW);
+      txt(':', (sc[0]+sc[1])/2, rt+STOPROW/2, { f: '11px '+FN, a: 'center' });
+      txt(':', (sc[1]+sc[2])/2, rt+STOPROW/2, { f: '11px '+FN, a: 'center' });
+      txt('공 / OP', (sc[2]+sc[3])/2, rt+STOPROW/2, { f: '10px '+FN, a: 'center' });
+    }
+    y += STOP_ROWS*STOPROW;
+
+    // ── 기타작업 ──
+    y += 10;
+    fitText('■ 기타작업 (슬리퍼정리, TG정리, 슬리퍼 및 파이프작업등 인원 및 시간 기록)', PADX, y+ETCT_H/2, cw, { size: 12 });
+    y += ETCT_H;
+    ctx.strokeRect(PADX, y, cw, ETC_BOX);
+    y += ETC_BOX;
+
+    // ── 하단 안내문구 ──
+    y += 8;
+    ['■ OP주관 자주검사 시기 : 교대후 바로 / 공정전환시 / 현장변경시 / 휴식후(식사포함) / 관리자 지시시',
+     '■ 자주검사 항목 : 박리여부 / 단부재 / 천공여부(과용접) / 치수검사 / 외관검사 / 강판갈라짐 / 포장검사 / 소둔선체결등',
+     '■ 꼬리표에 생산일자 필히 기재'
+    ].forEach((s, i) => fitText(s, PADX, y + 8 + i*16, cw, { size: 11 }));
+    y += FOOT_H;
 
     // ── 페이지 번호 ──
     if (isMulti) txt(`${pi+1} / ${pages.length}`, W-PADX, y+PG_H/2, { f: '10px '+FN, a: 'right', c: '#777' });
